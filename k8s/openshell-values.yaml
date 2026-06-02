@@ -1,0 +1,20 @@
+service:
+  type: LoadBalancer
+  port: 8080
+  healthPort: 8081
+  metricsPort: 9090
+
+server:
+  sandboxNamespace: openshell
+  disableTls: true
+  auth:
+    allowUnauthenticatedUsers: true
+
+networkPolicy:
+  enabled: true
+
+pkiInitJob:
+  enabled: true
+
+certManager:
+  enabled: false

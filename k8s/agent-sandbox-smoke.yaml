@@ -1,0 +1,12 @@
+apiVersion: agents.x-k8s.io/v1alpha1
+kind: Sandbox
+metadata:
+  name: sandbox-smoke
+  namespace: default
+spec:
+  podTemplate:
+    spec:
+      containers:
+        - name: shell
+          image: busybox:1.36
+          command: ["/bin/sh", "-c", "sleep 36000"]

@@ -1,0 +1,22 @@
+subscription_id     = "67638d45-2cd3-41c7-9e70-87082e5ae065"
+tenant_id           = "a3feb24c-4d96-4fc9-8b1e-eeff74e23366"
+location            = "eastus"
+resource_group_name = "rg-azure-k3s-lab-tf"
+cluster_name        = "azure-k3s-lab"
+admin_username      = "azureuser"
+ssh_public_key      = "ssh-ed25519 AAAA..."
+vm_size             = "Standard_B2s"
+vnet_cidr           = "10.100.0.0/16"
+subnet_cidr         = "10.100.0.0/24"
+k3s_cluster_cidr    = "10.42.0.0/16"
+k3s_service_cidr    = "10.43.0.0/16"
+k3s_version         = "v1.35.5+k3s1"
+server_name         = "cp-0"
+worker_names        = ["worker-1", "worker-2"]
+
+tags = {
+  environment = "lab"
+  managed-by  = "terraform"
+  workload    = "k3s"
+}
+

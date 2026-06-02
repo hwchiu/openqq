@@ -1,0 +1,48 @@
+apiVersion: agents.x-k8s.io/v1alpha1
+kind: Sandbox
+metadata:
+  name: mariadb-sandbox
+  namespace: default
+spec:
+  volumeClaimTemplates:
+    - metadata:
+        name: mariadb-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 8Gi
+  podTemplate:
+    metadata:
+      labels:
+        app: mariadb-sandbox
+    spec:
+      containers:
+        - name: mariadb
+          image: mariadb:11.8
+          ports:
+            - containerPort: 3306
+              name: mysql
+          env:
+            - name: MARIADB_ROOT_PASSWORD
+              value: change-me-root-password
+            - name: MARIADB_DATABASE
+              value: appdb
+            - name: MARIADB_USER
+              value: appuser
+            - name: MARIADB_PASSWORD
+              value: change-me-app-password
+          volumeMounts:
+            - name: mariadb-data
+              mountPath: /var/lib/mysql
+          readinessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 30
+            periodSeconds: 10

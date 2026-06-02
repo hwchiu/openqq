@@ -1,0 +1,19 @@
+#cloud-config
+package_update: true
+packages:
+  - curl
+
+write_files:
+  - path: /usr/local/bin/install-k3s-agent.sh
+    permissions: "0755"
+    content: |
+      #!/usr/bin/env bash
+      set -euxo pipefail
+      until curl -k --max-time 5 "https://${server_private}:6443/cacerts" >/dev/null; do
+        sleep 5
+      done
+      curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION='${k3s_version}' K3S_URL='https://${server_private}:6443' K3S_TOKEN='${k3s_token}' sh -
+
+runcmd:
+  - [ bash, /usr/local/bin/install-k3s-agent.sh ]
+

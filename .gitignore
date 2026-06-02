@@ -1,0 +1,21 @@
+# Secrets & credentials
+.env
+*.env.local
+
+# Terraform
+*.tfvars
+*.tfstate
+*.tfstate.*
+.terraform/
+crash.log
+
+# Azure CLI session
+.azure/
+
+# Generated cluster artifacts (kubeconfig, cluster.env, raw certs)
+generated/
+
+# Kubeconfig files that may appear at repo root
+kubeconfig
+kubeconfig.raw
+*.kubeconfig
