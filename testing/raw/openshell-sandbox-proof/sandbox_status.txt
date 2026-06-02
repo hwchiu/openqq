@@ -1,0 +1,21 @@
+SANDBOX STATUS:
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
+status:
+  conditions:
+  - lastTransitionTime: "2026-06-02T16:33:25Z"
+    message: Pod is Ready; Service Exists
+    observedGeneration: 3
+    reason: DependenciesReady
+    status: "True"
+    type: Ready
+  podIPs:
+  - 10.42.2.12
+  replicas: 1
+  selector: agents.x-k8s.io/sandbox-name-hash=1cbae0a3
+  service: proof-demo
+  serviceFQDN: proof-demo.openshell.svc.cluster.local

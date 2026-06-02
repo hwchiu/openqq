@@ -36,7 +36,7 @@ Use Azure CLI only as a fallback when Azure MCP is unavailable.
 8. [k8s/README.md](/Users/hwchiu/hwchiu/openqq/k8s/README.md)
 9. [docs/openshell-compatibility.md](/Users/hwchiu/hwchiu/openqq/docs/openshell-compatibility.md)
 10. [docs/runbooks/terraform-k3s.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/terraform-k3s.md)
-11. [docs/runbooks/security-comparison.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/security-comparison.md)
+11. [testing/openshell-sandbox-validation-2026-06-03.md](/Users/hwchiu/hwchiu/openqq/testing/openshell-sandbox-validation-2026-06-03.md)
 
 ## Important ambiguity
 

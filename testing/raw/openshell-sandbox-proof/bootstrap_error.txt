@@ -1,0 +1,5 @@
+POD DESCRIBE ERROR HISTORY:
+Error:   × Network namespace creation failed and proxy mode requires isolation.
+  │ Ensure CAP_NET_ADMIN and CAP_SYS_ADMIN are available and iproute2 is
+  │ installed. Error: /usr/sbin/ip netns add sandbox-<id> failed: mount
+  │ --make-shared /run/netns failed: Permission denied
