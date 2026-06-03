@@ -151,6 +151,79 @@ Permission denied</span></pre>
 
 <!-- ══════════════════ 3. 架構設計 ══════════════════ -->
 <div id="tab-arch" class="tab-panel">
+
+  <section class="section">
+    <h2 class="section-title">openqq、agent-sandbox、OpenShell 各自負責什麼？</h2>
+    <p>這三個名詞很容易混在一起，但它們分屬不同層次，負責的事情完全不同。</p>
+
+    <div class="cards-4" style="margin-top:20px;">
+      <div class="card" style="border-top:3px solid var(--accent-3);">
+        <div class="card-icon">🧪</div>
+        <div class="card-title">openqq（本專案）</div>
+        <p>黑箱測試框架，不是沙箱本身。負責：</p>
+        <ul style="font-size:13px;padding-left:18px;margin:8px 0 0;">
+          <li>用 Terraform 在 Azure 建立 k3s 叢集</li>
+          <li>安裝 OpenShell stack</li>
+          <li>從外部執行驗證腳本（curl、python3…）</li>
+          <li>收集與保存原始測試輸出</li>
+        </ul>
+        <p style="margin-top:10px;font-size:12px;color:var(--muted);">📌 openqq 自己不提供任何沙箱或安全能力。</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--accent-4);">
+        <div class="card-icon">☸️</div>
+        <div class="card-title">agent-sandbox（k8s SIG）</div>
+        <p>Kubernetes SIG 專案，提供 <code>Sandbox</code> CRD 與 controller。負責：</p>
+        <ul style="font-size:13px;padding-left:18px;margin:8px 0 0;">
+          <li>為每個 Sandbox CR 建立 Pod / Service / PVC</li>
+          <li>維持 stable identity 與 lifecycle</li>
+          <li>保證 singleton 語意</li>
+        </ul>
+        <p style="margin-top:10px;font-size:12px;color:var(--muted);">📌 agent-sandbox 是底層承載器，<strong>不負責</strong> policy enforcement 或安全控制。</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--accent);">
+        <div class="card-icon">🔒</div>
+        <div class="card-title">OpenShell（NVIDIA）</div>
+        <p>完整的 AI Agent 安全 runtime 系統。負責：</p>
+        <ul style="font-size:13px;padding-left:18px;margin:8px 0 0;">
+          <li>CLI：操作入口（建立 sandbox、套用 policy）</li>
+          <li>Gateway：control plane，管理政策版本與 session</li>
+          <li>Driver：將抽象語意轉成 k8s / 其他平台操作</li>
+          <li>Supervisor：在容器內執行所有 enforcement</li>
+        </ul>
+        <p style="margin-top:10px;font-size:12px;color:var(--muted);">📌 真正的安全特性（Landlock、netns、L7 policy、熱重載）全部由 OpenShell 提供。</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:32px;">三者的關係</h3>
+    <p class="callout" style="margin-bottom:16px;">OpenShell <strong>利用</strong> agent-sandbox 來承載 workload；agent-sandbox 只管 Pod 生命週期，安全控制全由 OpenShell 的 Driver + Supervisor 負責。openqq 則站在系統外部，驗證整個堆疊的行為是否符合預期。</p>
+
+    <h3>Sandbox 建立完整呼叫鏈</h3>
+    <div class="pipeline">
+      <div class="pipe-step"><strong>CLI</strong><br><span class="dim">openshell sandbox create</span></div>
+      <div class="pipe-step"><strong>Gateway</strong><br><span class="dim">control plane，接受請求</span></div>
+      <div class="pipe-step"><strong>k8s Driver</strong><br><span class="dim">建立 Sandbox CR</span></div>
+      <div class="pipe-step"><strong>agent-sandbox controller</strong><br><span class="dim">建立 Pod / Service / PVC</span></div>
+      <div class="pipe-step"><strong>Supervisor</strong><br><span class="dim">拉取政策，套用 Landlock / netns</span></div>
+      <div class="pipe-step"><strong>agent child</strong><br><span class="dim">受保護地執行任務</span></div>
+    </div>
+
+    <h3 style="margin-top:32px;">agent-sandbox 提供 vs OpenShell 額外提供</h3>
+    <table class="data-table">
+      <thead><tr><th>能力</th><th>agent-sandbox</th><th>OpenShell</th></tr></thead>
+      <tbody>
+        <tr><td>建立 Pod / Service / PVC</td><td><span class="tag green">✓</span></td><td><span class="tag" style="background:#ddd;color:#666;">—</span></td></tr>
+        <tr><td>Stable identity / singleton 語意</td><td><span class="tag green">✓</span></td><td><span class="tag" style="background:#ddd;color:#666;">—</span></td></tr>
+        <tr><td>Landlock 檔案系統沙箱</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ Supervisor</span></td></tr>
+        <tr><td>獨立網路命名空間（netns）</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ Supervisor</span></td></tr>
+        <tr><td>預設封鎖所有出口流量</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ Supervisor</span></td></tr>
+        <tr><td>Binary 級別 allowlist</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ Supervisor</span></td></tr>
+        <tr><td>L7 Method / Path 級別控制</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ Supervisor</span></td></tr>
+        <tr><td>Policy 熱重載（不重啟 Pod）</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ Gateway + Supervisor</span></td></tr>
+        <tr><td>OCSF 結構化安全日誌</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ Supervisor</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
   <section class="section">
     <h2 class="section-title">五層架構堆疊</h2>
     <div class="layer-stack">
