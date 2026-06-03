@@ -110,6 +110,18 @@
   </section>
 
   <section class="section">
+    <h2 class="section-title">替代方向</h2>
+    <table class="data-table">
+      <thead><tr><th>方向</th><th>目前判讀</th><th>理由</th></tr></thead>
+      <tbody>
+        <tr><td>`server.enableUserNamespaces=true`</td><td><span class="tag warn">不是直接解法</span></td><td>官方文件把它定位成 defense-in-depth；supervisor 啟動順序仍保留 privileged bootstrap helpers 與 netns setup。</td></tr>
+        <tr><td>`supervisor.sideloadMethod=init-container`</td><td><span class="tag warn">不是主因</span></td><td>我們的最小矩陣已證明 `image volume` 可在 Kata 下單獨運作；真正阻塞的是 `privileged`。</td></tr>
+        <tr><td>OpenShell `vm` compute driver</td><td><span class="tag green">最值得追</span></td><td>官方本來就提供 VM-backed sandbox 路徑，目標與「想要 VM 邊界」完全一致。</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
     <h2 class="section-title">閱讀順序</h2>
     <table class="data-table">
       <thead><tr><th>文件</th><th>用途</th></tr></thead>

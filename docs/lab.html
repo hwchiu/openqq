@@ -16,7 +16,8 @@
       <a href="index.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent-2);color:var(--accent-2);font-size:13px;font-weight:600;white-space:nowrap;">← 架構介紹</a>
       <span class="brand"><span class="brand-mark"></span>OpenShell Lab</span>
       <a href="report.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent-4);color:var(--accent-4);font-size:13px;font-weight:600;white-space:nowrap;">Executive Report</a>
-      <a href="lab-gvisor.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;background:var(--accent-3);color:#fff;font-size:13px;font-weight:600;white-space:nowrap;">gVisor 實驗 →</a>
+      <a href="lab-gvisor.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;background:var(--accent-3);color:#fff;font-size:13px;font-weight:600;white-space:nowrap;">gVisor 實驗</a>
+      <a href="lab-kata.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;background:#0f766e;color:#fff;font-size:13px;font-weight:600;white-space:nowrap;">Kata 實驗 →</a>
     </div>
     <nav class="tab-nav" id="tabNav">
       <button class="tab-btn active" onclick="showTab('impl',this)">架構細節</button>
@@ -47,7 +48,7 @@
 
   <div class="status-strip">
     <strong>基準組狀態</strong>
-    <p>這一頁是 OpenShell 在 `k3s + containerd + runc` 上的基準組。Landlock filesystem sandbox、預設 deny egress、binary allowlist、L7 method/path 控制、policy hot-reload 全部成立。這也是用來對照 [gVisor 實驗](/Users/hwchiu/hwchiu/openqq/docs/lab-gvisor.html) 的基線，方便看清楚哪些能力是 OpenShell 本身提供、哪些能力會受 runtime 切換影響。</p>
+        <p>這一頁是 OpenShell 在 `k3s + containerd + runc` 上的基準組。Landlock filesystem sandbox、預設 deny egress、binary allowlist、L7 method/path 控制、policy hot-reload 全部成立。這也是用來對照 [gVisor 實驗](/Users/hwchiu/hwchiu/openqq/docs/lab-gvisor.html) 與 [Kata 實驗](/Users/hwchiu/hwchiu/openqq/docs/lab-kata.html) 的基線，方便看清楚哪些能力是 OpenShell 本身提供、哪些能力會受 runtime 切換影響。</p>
   </div>
 
   <section class="section">
@@ -66,8 +67,8 @@
       <div class="spotlight">
         <span class="kicker">Compare</span>
         <h3>對照 gVisor</h3>
-        <p>gVisor 組保留了 L7 與 hot-reload，但失去了這一頁看到的 Landlock filesystem enforcement。兩頁要一起看，才不會把 runtime 差異講錯。</p>
-        <p class="evidence-note"><a href="lab-gvisor.html">查看 gVisor 對照 →</a></p>
+        <p>gVisor 組保留了 L7 與 hot-reload，但失去了這一頁看到的 Landlock filesystem enforcement；Kata 組則更早卡在 privileged 相容性。三頁一起看，才不會把 runtime 差異講錯。</p>
+        <p class="evidence-note"><a href="lab-gvisor.html">查看 gVisor 對照 →</a> · <a href="lab-kata.html">查看 Kata 對照 →</a></p>
       </div>
     </div>
     <p class="evidence-note" style="margin-top:16px;">runc 基準組的 OpenShell 特性驗證報告：<a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-sandbox-validation-2026-06-03.md" target="_blank">openshell-sandbox-validation-2026-06-03.md</a></p>

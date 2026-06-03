@@ -1,3 +1,11 @@
+supervisor:
+  # Empty = chart auto-detects:
+  # - K8s >= 1.35 prefers image-volume
+  # - older clusters fall back to init-container
+  # For experiments you can force:
+  # sideloadMethod: init-container
+  sideloadMethod: ""
+
 service:
   type: LoadBalancer
   port: 8080
@@ -6,6 +14,10 @@ service:
 
 server:
   sandboxNamespace: openshell
+  # Official docs: user namespaces add host-isolation defense in depth, but do
+  # not remove the supervisor's privileged bootstrap helpers for netns setup.
+  # Keep false in this lab until a dedicated userns validation pass is done.
+  enableUserNamespaces: false
   disableTls: true
   auth:
     allowUnauthenticatedUsers: true

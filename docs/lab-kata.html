@@ -97,6 +97,52 @@ The device is not writable: Permission denied</span></pre>
   </section>
 
   <section class="section">
+    <h2 class="section-title">官方文件交叉驗證</h2>
+    <table class="data-table">
+      <thead><tr><th>官方訊號</th><th>我們的實驗怎麼對上</th></tr></thead>
+      <tbody>
+        <tr><td>OpenShell Security Best Practices 明確寫出 supervisor 啟動順序仍包含 privileged bootstrap helpers 與 netns setup</td><td>這解釋了為什麼單純開 user namespaces 不是現成解法，因為它沒有取消 bootstrap 階段對高權限的依賴。</td></tr>
+        <tr><td>Gateway config 允許 <code>server.enableUserNamespaces=true</code></td><td>這是 defense-in-depth 開關，不是「讓 Kubernetes driver 變成無 privileged」的保證。</td></tr>
+        <tr><td>Gateway config 允許 <code>supervisor.sideloadMethod=init-container</code></td><td>我們已用最小矩陣證明 image volume 不是主因，所以切 sideload method 不會解決目前的 Kata 阻塞。</td></tr>
+        <tr><td>OpenShell 官方另有 <code>vm</code> compute driver</td><td>如果目標是要 VM 邊界，官方路徑其實是 VM driver，而不是把 Kubernetes sandbox 硬套進 Kata。</td></tr>
+      </tbody>
+    </table>
+    <p class="callout">這一節的重點是收斂方向：<strong>user namespaces 是加分項，不是 privileged 問題的替代解</strong>；如果要追 OpenShell 官方支持的 VM 邊界，下一條更合理的路是直接驗證 `compute_drivers = [\"vm\"]`。</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">為什麼我沒有直接改成 User Namespaces 測試</h2>
+    <p>原因很直接：目前官方文件自己就說明了 supervisor 啟動順序仍依賴 privileged bootstrap helpers 與 `setns`。這表示 user namespaces 最多只能降低 host 暴露面，不能直接消掉 OpenShell 目前在 Kubernetes driver 下的高權限啟動需求。</p>
+    <div class="terminal">
+      <div class="terminal-header"><span></span><span></span><span></span> 實驗決策</div>
+      <pre><span class="ok">保留現有 Kata 實驗證據</span>
+<span class="ok">不破壞目前可工作的 Azure / OpenShell / Kata runtime 狀態</span>
+<span class="deny">不把 user namespaces 誤寫成 privileged 替代方案</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">更合理的下一條路</h2>
+    <div class="spotlight-grid">
+      <div class="spotlight">
+        <span class="kicker">Path A</span>
+        <h3>追 OpenShell VM Driver</h3>
+        <p>官方本來就有 `vm` compute driver，文件寫明它提供 VM-backed sandbox。若目標是「OpenShell + VM 邊界」，這條路比 Kubernetes+Kata 更接近官方設計。</p>
+      </div>
+      <div class="spotlight">
+        <span class="kicker">Path B</span>
+        <h3>追無 privileged sandbox</h3>
+        <p>如果未來 OpenShell 的 Kubernetes driver 能去掉 privileged bootstrap helpers，Kata 才有機會變成真正可行的第三條正式路徑。</p>
+      </div>
+      <div class="spotlight">
+        <span class="kicker">Path C</span>
+        <h3>把 Kata 留在對照組</h3>
+        <p>現在最務實的定位，是把 Kata 保留成 runtime 對照組與 blocker 證據，不把它包裝成已可上線的 OpenShell 部署選項。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
     <h2 class="section-title">建議解讀</h2>
     <div class="spotlight-grid">
       <div class="spotlight">

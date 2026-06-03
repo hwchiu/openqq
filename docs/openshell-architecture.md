@@ -195,6 +195,13 @@ mount --make-shared /run/netns failed: Permission denied
 3. [Set Up OpenShell on Kubernetes](https://docs.nvidia.com/openshell/kubernetes/setup)
 4. [Customize Sandbox Policies](https://docs.nvidia.com/openshell/latest/sandboxes/policies.html)
 5. [First Sandbox Network Policy Tutorial](https://docs.nvidia.com/openshell/tutorials/first-network-policy)
+6. [Security Best Practices](https://docs.nvidia.com/openshell/security/best-practices)
+7. [Sandbox Compute Drivers](https://docs.nvidia.com/openshell/reference/sandbox-compute-drivers)
+
+這次補看的兩份文件讓兩件事更清楚：
+
+1. `server.enableUserNamespaces=true` 是 user namespace 防禦加成，不是用來移除 privileged bootstrap helpers
+2. 如果目標是 VM 邊界，OpenShell 官方其實已有 `vm` compute driver，不必先假設 Kubernetes + Kata 一定是最自然的整合路徑
 
 ## 推薦閱讀順序
 

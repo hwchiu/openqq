@@ -184,3 +184,28 @@
 - `agent-sandbox`：Kubernetes 承載
 - `OpenShell`：agent 行為治理
 - `gVisor`：runtime / kernel 邊界
+
+## 再補一個常見混淆: Kubernetes 路徑不等於 VM 路徑
+
+OpenShell 的 compute driver 不只有 Kubernetes。
+
+如果你看到我們在 repo 裡測：
+
+- `RuntimeClass: gvisor`
+- `RuntimeClass: kata`
+
+這代表的是：
+
+- OpenShell 走的是 **Kubernetes driver**
+- Kubernetes 再把 sandbox pod 交給不同 runtime 執行
+
+但 OpenShell 官方另外還有：
+
+- `vm` compute driver
+
+所以：
+
+- `OpenShell + agent-sandbox + RuntimeClass/kata` 是「Kubernetes 路徑中的 VM-ish runtime 實驗」
+- `OpenShell vm driver` 才是「OpenShell 官方原生 VM sandbox 路徑」
+
+這個差別很重要，因為它直接影響後續該優先優化哪一條路。

@@ -135,6 +135,22 @@ OpenShell sandbox `kata-proof` 已被 kata patcher 正確改寫成：
 2. 如果目標是 **更強 runtime 邊界**，`gVisor + OpenShell` 已有可操作結果，但要接受 filesystem policy 缺口
 3. `Kata + OpenShell` 現在不能被稱為完成方案，因為它被 `privileged` 相容性卡住
 
+## 官方文件交叉驗證後的判讀
+
+這一輪不是只靠黑箱實驗硬猜。我另外對照了 OpenShell 官方文件，得到三個更穩的判讀：
+
+1. 官方 security best practices 明確寫出 supervisor 啟動順序仍包含 `privileged supervisor bootstrap helpers`
+2. 同一份文件也提供 `server.enableUserNamespaces=true`，但把它定位成 defense-in-depth
+3. 官方 compute drivers 文件另外提供 `vm` driver
+
+把這三點放在一起看，結論是：
+
+- `enableUserNamespaces` 是 **額外降低 host 暴露面** 的選項
+- 它不是 **直接移除 privileged bootstrap 依賴** 的保證
+- 如果目標是要 OpenShell 官方支持的 VM 邊界，`vm` driver 比 Kubernetes + Kata 更接近原生設計
+
+所以目前不應把 user namespaces 誤解成 Kata 阻塞的直接解法。
+
 ## 下一步建議
 
 要讓 `Kata + OpenShell` 再往前，方向不應該是繼續改一般 policy YAML，而是：
@@ -142,3 +158,4 @@ OpenShell sandbox `kata-proof` 已被 kata patcher 正確改寫成：
 1. 釐清 OpenShell 是否能在這條 `k3s` 路徑下去掉 `privileged`
 2. 若不能，確認 Kata 對 `privileged` workload 的支援邊界與替代設定
 3. 若這條線仍不通，則 `Kata` 可保留為 runtime 對照組，但不應作為目前 OpenShell 主路徑
+4. 若目標改成「VM 邊界 + OpenShell 正式路徑」，應優先評估 OpenShell 官方 `vm` compute driver

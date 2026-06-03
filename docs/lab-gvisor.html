@@ -16,6 +16,7 @@
       <a href="index.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent-4);color:var(--accent-4);font-size:13px;font-weight:600;white-space:nowrap;">← 架構介紹</a>
       <a href="report.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent-4);color:var(--accent-4);font-size:13px;font-weight:600;white-space:nowrap;">Executive Report</a>
       <a href="lab.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent-2);color:var(--accent-2);font-size:13px;font-weight:600;white-space:nowrap;">runc 實驗</a>
+      <a href="lab-kata.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;border:1.5px solid #0f766e;color:#0f766e;font-size:13px;font-weight:600;white-space:nowrap;">Kata 實驗</a>
       <span class="brand"><span class="brand-mark"></span>OpenShell Lab</span>
     </div>
     <nav class="tab-nav" id="tabNav">
@@ -79,6 +80,19 @@
         <div class="layer-body"><strong>🛡️ gVisor / runsc</strong><br><span class="dim">攔截 Pod 內所有 syscall，在 user-space「虛擬核心」（sentry）轉譯後傳遞給 host kernel。Host kernel 不直接暴露給 Pod。</span></div>
       </div>
     </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">與 Kata 的差異</h2>
+    <table class="data-table">
+      <thead><tr><th>面向</th><th>gVisor</th><th>Kata</th></tr></thead>
+      <tbody>
+        <tr><td>OpenShell sandbox 是否能啟動</td><td><span class="tag green">能</span></td><td><span class="tag deny">不能</span></td></tr>
+        <tr><td>主要阻塞點</td><td>Landlock 在 runsc 下回 `ENOSYS`</td><td>`privileged` sandbox 在 Kata 下回 QMP permission denied</td></tr>
+        <tr><td>目前可驗證到的 OpenShell 功能</td><td>L7、binary allowlist、hot-reload</td><td>僅能驗證 runtime 與 sandbox blocker</td></tr>
+        <tr><td>定位</td><td>可用但有功能退化的隔離路徑</td><td>可用的 runtime 對照組，但還不是可部署路徑</td></tr>
+      </tbody>
+    </table>
   </section>
 
   <section class="section">
