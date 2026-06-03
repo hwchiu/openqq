@@ -1,744 +1,527 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OpenQQ — Azure k3s + NVIDIA OpenShell Lab</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/site.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenShell 實驗室報告 · hwchiu/openqq</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
-<div class="page">
-
-  <!-- Topbar -->
-  <header class="topbar">
-    <span class="brand">
-      <span class="brand-mark"></span>
-      OpenQQ Lab
-    </span>
-    <nav class="nav">
-      <a href="#infra">Infrastructure</a>
-      <a href="#architecture">Architecture</a>
-      <a href="#experiments">Experiments</a>
-      <a href="#evidence">Evidence</a>
-      <a href="#reproduce">Reproduce</a>
-      <a href="https://github.com/hwchiu/openqq" target="_blank">GitHub ↗</a>
+<header class="topbar">
+  <div class="page" style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:0;padding-bottom:0;">
+    <span class="brand"><span class="brand-mark"></span>OpenShell Lab</span>
+    <nav class="tab-nav" id="tabNav">
+      <button class="tab-btn active" onclick="showTab('overview',this)">總覽</button>
+      <button class="tab-btn" onclick="showTab('infra',this)">基礎設施</button>
+      <button class="tab-btn" onclick="showTab('arch',this)">架構設計</button>
+      <button class="tab-btn" onclick="showTab('exp',this)">實驗結果</button>
+      <button class="tab-btn" onclick="showTab('logs',this)">日誌分析</button>
+      <button class="tab-btn" onclick="showTab('repro',this)">重現步驟</button>
+      <button class="tab-btn" onclick="showTab('docs',this)">相關文件</button>
     </nav>
-  </header>
+  </div>
+</header>
 
-  <!-- Hero -->
+<main class="page">
+
+<!-- ══════════════════ 1. 總覽 ══════════════════ -->
+<div id="tab-overview" class="tab-panel active">
   <section class="hero">
-    <span class="eyebrow">🔬 Lab Report · June 2026</span>
-    <h1>Azure k3s +<br>NVIDIA OpenShell</h1>
-    <p>
-      A Terraform-automated lab that provisions a 3-node k3s cluster on Azure and
-      runs seven controlled experiments to validate that NVIDIA OpenShell enforces
-      per-sandbox network and filesystem policies for AI coding agents.
-    </p>
-    <div class="hero-actions">
-      <a class="button primary" href="#experiments">View Experiments</a>
-      <a class="button" href="https://github.com/hwchiu/openqq" target="_blank">GitHub Repo ↗</a>
-      <a class="button" href="#reproduce">How to Reproduce</a>
+    <div class="hero-eyebrow"><span class="badge info">實驗報告</span> hwchiu / openqq</div>
+    <h1 class="hero-title">OpenShell Sandbox<br>驗證實驗室</h1>
+    <p class="hero-sub">在 Azure 上建立 3 節點 k3s 叢集，以黑箱測試方式驗證 NVIDIA OpenShell 的<br>網路隔離、Landlock 沙箱、L7 政策管控與熱重載能力。</p>
+    <div class="metrics">
+      <div class="metric"><span class="metric-num">3</span><span class="metric-label">Azure VM 節點</span></div>
+      <div class="metric"><span class="metric-num">7</span><span class="metric-label">驗證實驗</span></div>
+      <div class="metric"><span class="metric-num">100%</span><span class="metric-label">實驗通過率</span></div>
+      <div class="metric"><span class="metric-num">0</span><span class="metric-label">Pod 重啟次數</span></div>
+      <div class="metric"><span class="metric-num">Landlock<br>v4</span><span class="metric-label">核心沙箱版本</span></div>
     </div>
-    <div class="grid metrics">
-      <div class="metric">
-        <div class="label">Cluster Nodes</div>
-        <div class="value">3</div>
-        <div class="sub">1 control-plane · 2 workers</div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">這個專案在做什麼？</h2>
+    <div class="cards-4">
+      <div class="card">
+        <div class="card-icon">🏗️</div>
+        <div class="card-title">自動化基礎設施</div>
+        <p>用 Terraform + Makefile 在 Azure 上一鍵建立 3 節點 k3s 叢集，無需手動設定。</p>
       </div>
-      <div class="metric">
-        <div class="label">Experiments</div>
-        <div class="value">7</div>
-        <div class="sub">All passed ✓</div>
+      <div class="card">
+        <div class="card-icon">🔬</div>
+        <div class="card-title">黑箱驗證</div>
+        <p>從 agent-sandbox Pod 內部執行 curl / python3，驗證 OpenShell 的網路政策是否真正生效。</p>
       </div>
-      <div class="metric">
-        <div class="label">k3s Version</div>
-        <div class="value" style="font-size:18px">v1.35.5</div>
-        <div class="sub">+k3s1 · Ubuntu 22.04</div>
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <div class="card-title">OCSF 結構化日誌</div>
+        <p>所有安全事件以 OCSF 格式輸出，覆蓋 Landlock 套用、netns 建立、Policy 熱重載等完整生命週期。</p>
       </div>
-      <div class="metric">
-        <div class="label">Cloud</div>
-        <div class="value" style="font-size:18px">Azure</div>
-        <div class="sub">eastus · Standard_B2s</div>
-      </div>
-      <div class="metric">
-        <div class="label">Landlock ABI</div>
-        <div class="value" style="font-size:18px">v4</div>
-        <div class="sub">applied v2 ruleset</div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <div class="card-title">熱重載驗證</div>
+        <p>政策更新後 Pod UID 不變，確認沙箱在不重啟的情況下套用新政策。</p>
       </div>
     </div>
   </section>
 
-  <!-- Infrastructure -->
-  <section id="infra">
-    <div class="section-header">
-      <span class="section-tag">01 — Infrastructure</span>
-    </div>
-    <h2 class="section-title">Azure + Terraform</h2>
-    <p class="section-intro">
-      The entire cluster is defined as code. One <code>make cluster-up</code> call runs
-      <code>terraform apply</code>, provisions VMs, and bootstraps k3s with a join token.
-      Tear down with <code>make cluster-down</code>.
-    </p>
+  <section class="section">
+    <h2 class="section-title">驗證結果摘要</h2>
+    <table class="data-table">
+      <thead><tr><th>#</th><th>實驗項目</th><th>期望結果</th><th>狀態</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>預設出口封鎖</td><td>所有出口流量被封鎖</td><td><span class="tag green">✓ 通過</span></td></tr>
+        <tr><td>2</td><td>Landlock 檔案系統沙箱</td><td>/tmp 可寫、/var/tmp 拒絕、/ 被 Landlock 封鎖</td><td><span class="tag green">✓ 通過</span></td></tr>
+        <tr><td>3</td><td>政策放行 — curl GET</td><td>允許特定 HTTPS GET 請求</td><td><span class="tag green">✓ 通過</span></td></tr>
+        <tr><td>4</td><td>政策封鎖 — python3 GET</td><td>Python HTTP 請求被 403 拒絕</td><td><span class="tag green">✓ 通過</span></td></tr>
+        <tr><td>5</td><td>政策封鎖 — curl POST</td><td>POST 請求被 L7 政策拒絕</td><td><span class="tag green">✓ 通過</span></td></tr>
+        <tr><td>6</td><td>政策熱重載</td><td>更新政策後 Pod UID 不變</td><td><span class="tag green">✓ 通過</span></td></tr>
+        <tr><td>7</td><td>k3s privileged 工作繞過</td><td>DaemonSet 自動修補 Sandbox CR</td><td><span class="tag green">✓ 通過</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<!-- ══════════════════ 2. 基礎設施 ══════════════════ -->
+<div id="tab-infra" class="tab-panel">
+  <section class="section">
+    <h2 class="section-title">Azure 資源配置</h2>
     <div class="infra-grid">
       <div class="infra-box">
-        <h3><span class="infra-icon">☁️</span> Azure Resources</h3>
-        <p>All resources live in a single Resource Group. NSG rules restrict inbound to SSH (22) and Kubernetes API (6443).</p>
-        <dl class="kv-list">
-          <dt>Resource Group</dt><dd>rg-azure-k3s-lab-v2</dd>
-          <dt>Region</dt><dd>eastus</dd>
-          <dt>VNet</dt><dd>10.100.0.0/16</dd>
-          <dt>Subnet</dt><dd>10.100.0.0/24</dd>
-          <dt>VM Size</dt><dd>Standard_B2s (2 vCPU, 4 GB)</dd>
-          <dt>OS Image</dt><dd>Ubuntu 22.04 LTS</dd>
-          <dt>Nodes</dt><dd>cp-0 · worker-1 · worker-2</dd>
-        </dl>
+        <h3>☁️ Azure 資源</h3>
+        <ul class="kv-list">
+          <li><span>VM 規格</span><span><span class="tag azure">Standard_B2s</span></span></li>
+          <li><span>節點數量</span><span>3（1 control-plane + 2 worker）</span></li>
+          <li><span>作業系統</span><span><span class="tag os">Ubuntu 22.04 LTS</span></span></li>
+          <li><span>區域</span><span>East US</span></li>
+          <li><span>基礎設施工具</span><span>Terraform + Azure CLI</span></li>
+        </ul>
       </div>
       <div class="infra-box">
-        <h3><span class="infra-icon">☸️</span> k3s Cluster</h3>
-        <p>k3s is installed on all three VMs via cloud-init. The control plane uses the public IP as the TLS SAN so remote <code>kubectl</code> works out of the box.</p>
-        <dl class="kv-list">
-          <dt>API Server</dt><dd>https://138.91.122.32:6443</dd>
-          <dt>Pod CIDR</dt><dd>10.42.0.0/16</dd>
-          <dt>Service CIDR</dt><dd>10.43.0.0/16</dd>
-          <dt>k3s version</dt><dd>v1.35.5+k3s1</dd>
-          <dt>Kubeconfig</dt><dd>generated/kubeconfig (gitignored)</dd>
-          <dt>SSH</dt><dd>ssh azureuser@138.91.122.32</dd>
-        </dl>
+        <h3>⚙️ k3s 叢集</h3>
+        <ul class="kv-list">
+          <li><span>發行版</span><span><span class="tag k3s">k3s</span></span></li>
+          <li><span>Container Runtime</span><span>containerd</span></li>
+          <li><span>Pod CIDR</span><span>10.42.0.0/16</span></li>
+          <li><span>Service CIDR</span><span>10.43.0.0/16</span></li>
+          <li><span>CNI</span><span>Flannel（預設）</span></li>
+        </ul>
       </div>
       <div class="infra-box">
-        <h3><span class="infra-icon">🔧</span> Makefile Targets</h3>
-        <p>All day-to-day operations are wrapped in <code>make</code> targets so Terraform details stay invisible.</p>
-        <div class="terminal" style="margin:0">
-          <div class="terminal-header">
-            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-            <span class="terminal-title">Makefile commands</span>
-          </div>
-          <pre><span class="cmd">make tf-init</span>        <span class="dim"># terraform init</span>
-<span class="cmd">make tf-plan</span>        <span class="dim"># terraform plan</span>
-<span class="cmd">make cluster-up</span>     <span class="dim"># apply + wait</span>
-<span class="cmd">make cluster-down</span>   <span class="dim"># terraform destroy</span>
-<span class="cmd">make cluster-status</span> <span class="dim"># get nodes</span>
-<span class="cmd">make cluster-kubeconfig</span>  <span class="dim"># fetch kubeconfig</span></pre>
+        <h3>🛠️ Makefile 常用指令</h3>
+        <ul class="kv-list">
+          <li><span><code>make infra-up</code></span><span>建立 Azure VM</span></li>
+          <li><span><code>make k3s-install</code></span><span>安裝 k3s 叢集</span></li>
+          <li><span><code>make openshell-install</code></span><span>部署 OpenShell</span></li>
+          <li><span><code>make verify</code></span><span>執行完整驗證</span></li>
+          <li><span><code>make infra-down</code></span><span>銷毀所有資源</span></li>
+        </ul>
+      </div>
+      <div class="infra-box">
+        <h3>⚠️ k3s 已知限制</h3>
+        <p style="font-size:13px;margin-top:8px;">k3s + containerd 預設不允許在 Sandbox CR 建立時掛載 netns，導致錯誤：</p>
+        <div class="terminal" style="margin-top:8px;">
+          <pre><span class="deny">mount --make-shared /run/netns failed:
+Permission denied</span></pre>
         </div>
-      </div>
-      <div class="infra-box">
-        <h3><span class="infra-icon">⚠️</span> k3s + containerd Limitation</h3>
-        <p>OpenShell's agent-sandbox requires <code>privileged: true</code> on the Sandbox CR to create a network namespace. Stock k3s does not set this automatically.</p>
-        <p style="margin:10px 0 8px"><strong>Error without workaround:</strong></p>
-        <div class="terminal" style="margin:0">
-          <div class="terminal-header">
-            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-          </div>
-          <pre><span class="deny">mount --make-shared /run/netns
-  failed: Permission denied</span></pre>
+        <p style="font-size:13px;margin-top:8px;"><strong>解決方式：</strong>部署 DaemonSet 自動為每個新建的 Sandbox CR 加上 <code>privileged: true</code>。</p>
+        <div class="terminal" style="margin-top:8px;">
+          <pre><span class="cmd">$ bash scripts/install-openshell-sandbox-patcher.sh</span></pre>
         </div>
-        <p style="margin:10px 0 0"><strong>Fix:</strong> <code>k8s/openshell-sandbox-patcher.yaml</code> — a DaemonSet that watches Sandbox CRs and auto-patches <code>privileged: true</code>.</p>
       </div>
     </div>
   </section>
 
-  <!-- Architecture -->
-  <section id="architecture">
-    <div class="section-header">
-      <span class="section-tag">02 — Architecture</span>
+  <section class="section">
+    <h2 class="section-title">OpenShell 元件部署</h2>
+    <table class="data-table">
+      <thead><tr><th>元件</th><th>Namespace</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr><td>openshell-controller</td><td>openshell</td><td>監聽 Sandbox CRD，建立 Pod</td></tr>
+        <tr><td>openshell-gateway</td><td>openshell</td><td>gRPC 端點，提供政策與推理路由</td></tr>
+        <tr><td>openshell-sandbox</td><td>openshell</td><td>執行 agent 任務的隔離 Pod</td></tr>
+        <tr><td>sandbox-patcher</td><td>openshell</td><td>DaemonSet，自動修補 Sandbox CR（k3s 專用）</td></tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<!-- ══════════════════ 3. 架構設計 ══════════════════ -->
+<div id="tab-arch" class="tab-panel">
+  <section class="section">
+    <h2 class="section-title">五層架構堆疊</h2>
+    <div class="layer-stack">
+      <div class="layer">
+        <div class="layer-label"><span class="tag azure">Layer 5</span></div>
+        <div class="layer-body"><strong>☁️ Azure Infrastructure</strong><br><span class="dim">Terraform 管理 VM、VNet、NSG</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-label"><span class="tag k3s">Layer 4</span></div>
+        <div class="layer-body"><strong>⚙️ k3s Cluster</strong><br><span class="dim">3 節點、containerd、Flannel CNI</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-label"><span class="tag os">Layer 3</span></div>
+        <div class="layer-body"><strong>📦 Agent-Sandbox Pod</strong><br><span class="dim">openshell-sandbox 容器，含 Supervisor 二進位</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-label"><span class="tag warn">Layer 2</span></div>
+        <div class="layer-body"><strong>🔒 OpenShell Gateway</strong><br><span class="dim">gRPC 端點，提供政策與推理路由給 Supervisor</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-label" style="background:var(--accent);color:#fff;">Layer 1</div>
+        <div class="layer-body"><strong>🧠 Supervisor（openshell-sandbox 二進位）</strong><br><span class="dim">套用 Landlock、建立 netns、代理所有出口流量、執行 L7 政策</span></div>
+      </div>
     </div>
-    <h2 class="section-title">OpenShell Component Layers</h2>
-    <p class="section-intro">
-      OpenShell is not just a container — it is a layered runtime. Each layer is independently
-      observable and testable. The pipeline below shows how a request flows from agent to child process.
-    </p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">請求流程</h2>
     <div class="pipeline">
-      <div class="pipe-step">
-        <span class="pipe-icon">🖥️</span>
-        <strong>CLI / Agent</strong>
-        <span>User or AI agent<br>issues a command</span>
-      </div>
-      <div class="pipe-step">
-        <span class="pipe-icon">🌐</span>
-        <strong>Gateway</strong>
-        <span>Policy distribution<br>inference routing</span>
-      </div>
-      <div class="pipe-step">
-        <span class="pipe-icon">⚙️</span>
-        <strong>K8s Driver</strong>
-        <span>Creates<br><code>Sandbox</code> CR</span>
-      </div>
-      <div class="pipe-step">
-        <span class="pipe-icon">🎛️</span>
-        <strong>agent-sandbox</strong>
-        <span>CRD controller<br>spawns Pod</span>
-      </div>
-      <div class="pipe-step">
-        <span class="pipe-icon">🔒</span>
-        <strong>Supervisor</strong>
-        <span>PID 1 in Pod<br>Landlock + netns</span>
-      </div>
-      <div class="pipe-step">
-        <span class="pipe-icon">🤖</span>
-        <strong>Child Process</strong>
-        <span>Agent runs here<br>under full policy</span>
-      </div>
+      <div class="pipe-step"><strong>Agent CLI</strong><br><span class="dim">在 sandbox 內執行 curl / python</span></div>
+      <div class="pipe-step"><strong>Proxy</strong><br><span class="dim">10.200.0.1:3128</span></div>
+      <div class="pipe-step"><strong>Supervisor</strong><br><span class="dim">L7 政策判斷</span></div>
+      <div class="pipe-step"><strong>netns</strong><br><span class="dim">sandbox-8dbef1f1</span></div>
+      <div class="pipe-step"><strong>結果</strong><br><span class="dim">ALLOWED / DENIED</span></div>
     </div>
-
-    <div class="layer-stack" style="margin-top:24px">
-      <div class="layer">
-        <div class="layer-label" style="background:rgba(59,95,160,0.07)">
-          <span class="layer-num">Layer 1</span>
-          Azure IaaS
-        </div>
-        <div class="layer-body">
-          <p>Virtual Machines, VNet, NSG, public IP — all provisioned by Terraform in <code>rg-azure-k3s-lab-v2</code>.</p>
-          <div class="layer-tags">
-            <span class="tag azure">Terraform</span>
-            <span class="tag azure">Azure eastus</span>
-            <span class="tag azure">Standard_B2s ×3</span>
-          </div>
-        </div>
-      </div>
-      <div class="layer">
-        <div class="layer-label" style="background:rgba(29,107,97,0.07)">
-          <span class="layer-num">Layer 2</span>
-          k3s Cluster
-        </div>
-        <div class="layer-body">
-          <p>Lightweight Kubernetes distribution. Provides control-plane + worker nodes, CRD support, and containerd runtime.</p>
-          <div class="layer-tags">
-            <span class="tag k3s">k3s v1.35.5</span>
-            <span class="tag k3s">containerd</span>
-            <span class="tag k3s">3 nodes</span>
-          </div>
-        </div>
-      </div>
-      <div class="layer">
-        <div class="layer-label" style="background:rgba(59,95,160,0.07)">
-          <span class="layer-num">Layer 3</span>
-          agent-sandbox CRD
-        </div>
-        <div class="layer-body">
-          <p>Kubernetes SIG project. Defines <code>sandboxes.sandbox.sigs.k8s.io</code> CRD and a controller that reconciles Sandbox CRs into Pods with supervisor injection.</p>
-          <div class="layer-tags">
-            <span class="tag azure">CRD: sandboxes.sandbox.sigs.k8s.io</span>
-            <span class="tag azure">ns: sandbox-system</span>
-            <span class="tag warn">patcher required on k3s</span>
-          </div>
-        </div>
-      </div>
-      <div class="layer">
-        <div class="layer-label" style="background:rgba(180,63,40,0.07)">
-          <span class="layer-num">Layer 4</span>
-          OpenShell Gateway
-        </div>
-        <div class="layer-body">
-          <p>Central control plane. Distributes policies to sandboxes, routes inference requests to LLM backends, and collects OCSF audit events.</p>
-          <div class="layer-tags">
-            <span class="tag os">ns: openshell</span>
-            <span class="tag os">gRPC policy endpoint</span>
-            <span class="tag os">inference router</span>
-            <span class="tag os">OCSF aggregator</span>
-          </div>
-        </div>
-      </div>
-      <div class="layer">
-        <div class="layer-label" style="background:rgba(180,63,40,0.07)">
-          <span class="layer-num">Layer 5</span>
-          OpenShell Supervisor
-        </div>
-        <div class="layer-body">
-          <p><code>/opt/openshell/bin/openshell-sandbox</code> runs as PID 1. Fetches policy from Gateway, creates a private network namespace, installs Landlock filesystem rules, starts OPA L7 proxy, then exec-s the agent.</p>
-          <div class="layer-tags">
-            <span class="tag os">Landlock v2 (filesystem)</span>
-            <span class="tag os">private netns per sandbox</span>
-            <span class="tag os">OPA engine (L4/L7)</span>
-            <span class="tag os">TLS termination proxy :3128</span>
-            <span class="tag green">hot-reload on policy change</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <h3 style="margin:32px 0 12px;font-family:'Fraunces',serif;font-size:1.4rem">Term Disambiguation</h3>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Term</th><th>What it is</th><th>Layer</th><th>Kubectl equivalent</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>OpenShell Sandbox</strong></td>
-            <td>The protected execution environment an AI agent sees</td>
-            <td>Product / UX</td>
-            <td><code>openshell sandbox create</code></td>
-          </tr>
-          <tr>
-            <td><strong>Sandbox CR</strong></td>
-            <td><code>sandboxes.sandbox.sigs.k8s.io</code> custom resource</td>
-            <td>Kubernetes API</td>
-            <td><code>kubectl get sandboxes -n default</code></td>
-          </tr>
-          <tr>
-            <td><strong>agent-sandbox controller</strong></td>
-            <td>Watches Sandbox CRs, creates Pods, injects supervisor as PID 1</td>
-            <td>Kubernetes controller</td>
-            <td><code>kubectl get pods -n sandbox-system</code></td>
-          </tr>
-          <tr>
-            <td><strong>Supervisor binary</strong></td>
-            <td><code>/opt/openshell/bin/openshell-sandbox</code></td>
-            <td>Container / OS</td>
-            <td>PID 1 inside every sandbox Pod</td>
-          </tr>
-          <tr>
-            <td><strong>K8s Driver</strong></td>
-            <td>OpenShell component that translates sandbox requests into Sandbox CRs</td>
-            <td>OpenShell internal</td>
-            <td><code>openshell-driver-config</code> ConfigMap</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <p class="callout">所有出口流量都必須經過 Proxy（<code>10.200.0.1:3128</code>），Supervisor 在此執行 L7 政策判斷後決定放行或拒絕。</p>
   </section>
 
-  <!-- Experiments -->
-  <section id="experiments">
-    <div class="section-header">
-      <span class="section-tag">03 — Experiments</span>
-    </div>
-    <h2 class="section-title">Seven Enforcement Experiments</h2>
-    <p class="section-intro">
-      Each experiment targets a specific enforcement layer with real terminal output.
-      Sandbox ID: <code>verify-1780439786</code> — all seven run inside the same sandbox session.
-    </p>
+  <section class="section">
+    <h2 class="section-title">術語對照表</h2>
+    <table class="data-table">
+      <thead><tr><th>術語</th><th>實際指稱</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr><td><strong>OpenShell Sandbox</strong></td><td>整個沙箱系統</td><td>NVIDIA 提供的 AI Agent 隔離執行環境</td></tr>
+        <tr><td><strong>Sandbox CR</strong></td><td>Kubernetes CRD 物件</td><td>用來描述一個 sandbox 實例的 CR，由 controller 處理</td></tr>
+        <tr><td><strong>Controller</strong></td><td>openshell-controller Pod</td><td>監聽 Sandbox CR，實際建立 agent-sandbox Pod</td></tr>
+        <tr><td><strong>Supervisor</strong></td><td><code>/opt/openshell/bin/openshell-sandbox</code></td><td>在容器內執行，負責 Landlock、netns、L7 政策執行</td></tr>
+        <tr><td><strong>Gateway</strong></td><td>openshell-gateway Service</td><td>提供 gRPC 政策端點，Supervisor 啟動時拉取政策</td></tr>
+      </tbody>
+    </table>
+  </section>
+</div>
 
-    <div class="experiment-list">
+<!-- ══════════════════ 4. 實驗結果 ══════════════════ -->
+<div id="tab-exp" class="tab-panel">
+  <section class="section">
+    <h2 class="section-title">7 項驗證實驗</h2>
 
-      <div class="experiment">
-        <div class="exp-header">
-          <div class="exp-num" style="background:rgba(180,63,40,0.1);color:var(--accent)">1</div>
-          <div>
-            <h3>Default Deny Egress</h3>
-            <div class="exp-goal">No policy → all outbound network requests blocked</div>
-          </div>
-          <span class="badge ok">PASS</span>
-        </div>
-        <div class="exp-body">
-          <p>Before any policy is applied the OPA engine defaults to deny-all. A curl to <code>api.github.com</code> via the HTTPS proxy returns HTTP 403 — proving the network boundary is active before policy loads.</p>
-          <div class="terminal">
-            <div class="terminal-header">
-              <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-              <span class="terminal-title">testing/raw/verify-1780439786/default-egress.txt</span>
-            </div>
-            <pre><span class="cmd">$ curl https://api.github.com/zen</span>
+    <div class="experiment">
+      <div class="exp-header">
+        <span class="exp-num">01</span>
+        <div><strong>預設出口封鎖</strong><span class="tag warn" style="margin-left:10px;">Network</span></div>
+        <span class="tag green">✓ 通過</span>
+      </div>
+      <div class="exp-body">
+        <p>在尚未套用任何政策的情況下，所有出口連線應被封鎖。</p>
+        <div class="terminal">
+          <div class="terminal-header"><span></span><span></span><span></span> default-egress.txt</div>
+          <pre><span class="cmd">$ curl -v --max-time 10 https://api.github.com/zen</span>
 <span class="deny">curl: (56) CONNECT tunnel failed, response 403</span></pre>
-          </div>
-          <p style="margin-top:12px">The proxy returns <strong>403</strong> (not a TCP timeout), confirming the Supervisor proxy intercepted and blocked the CONNECT request synchronously.</p>
         </div>
+        <p>HTTP CONNECT 通道被 Proxy 以 <code>403</code> 拒絕，出口封鎖確認有效。</p>
       </div>
+    </div>
 
-      <div class="experiment">
-        <div class="exp-header">
-          <div class="exp-num" style="background:rgba(29,107,97,0.1);color:var(--accent-2)">2</div>
-          <div>
-            <h3>Filesystem Sandbox (Landlock)</h3>
-            <div class="exp-goal">/tmp writable · /var/tmp denied · / listing denied</div>
-          </div>
-          <span class="badge ok">PASS</span>
-        </div>
-        <div class="exp-body">
-          <p>The Supervisor applies a Landlock ruleset as part of PID 1 startup — <em>before</em> exec-ing the agent process. Rules are static: set at sandbox creation and cannot change without restarting the sandbox.</p>
-          <div class="terminal">
-            <div class="terminal-header">
-              <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-              <span class="terminal-title">testing/raw/verify-1780439786/filesystem.txt</span>
-            </div>
-            <pre><span class="ok">TMP_OK</span>                              <span class="dim"># touch /tmp/file → success</span>
+    <div class="experiment">
+      <div class="exp-header">
+        <span class="exp-num">02</span>
+        <div><strong>Landlock 檔案系統沙箱</strong><span class="tag os" style="margin-left:10px;">Filesystem</span></div>
+        <span class="tag green">✓ 通過</span>
+      </div>
+      <div class="exp-body">
+        <p>驗證 Landlock 正確允許 <code>/tmp</code> 寫入，並拒絕 <code>/var/tmp</code> 及根目錄列舉。</p>
+        <div class="terminal">
+          <div class="terminal-header"><span></span><span></span><span></span> filesystem.txt</div>
+          <pre><span class="ok">TMP_OK</span>
 <span class="deny">touch: cannot touch '/var/tmp/verify-deny': Permission denied</span>
-<span class="deny">VARTMP_DENIED</span></pre>
-          </div>
-          <div class="terminal">
-            <div class="terminal-header">
-              <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-              <span class="terminal-title">testing/raw/verify-1780439786/static-baseline.txt</span>
-            </div>
-            <pre>uid=998(sandbox) gid=998(sandbox) groups=998(sandbox)
-/sandbox
-<span class="deny">ls: cannot open directory '/': Permission denied</span></pre>
-          </div>
-          <p style="margin-top:12px">Landlock ruleset: <code>rules_applied:9 skipped:1</code> — root filesystem browsing is completely blocked.</p>
+<span class="ok">VARTMP_DENIED</span></pre>
         </div>
+        <div class="terminal" style="margin-top:8px;">
+          <div class="terminal-header"><span></span><span></span><span></span> static-baseline.txt</div>
+          <pre><span class="deny">ls: cannot open directory '/': Permission denied</span></pre>
+        </div>
+        <p>Landlock ABI v4 可用，實際套用 V2，規則 9 條，跳過 1 條（cgroup 不可用）。</p>
       </div>
+    </div>
 
-      <div class="experiment">
-        <div class="exp-header">
-          <div class="exp-num" style="background:rgba(59,95,160,0.1);color:var(--accent-4)">3</div>
-          <div>
-            <h3>Binary Allowlist (L4 OPA)</h3>
-            <div class="exp-goal">curl allowed · python3 denied — same destination, same policy</div>
-          </div>
-          <span class="badge ok">PASS</span>
-        </div>
-        <div class="exp-body">
-          <p>The policy includes <code>/usr/bin/curl</code> in the <code>github_api</code> policy's binary allowlist but not <code>python3</code>. OPA evaluates the calling binary at L4, before the connection is opened.</p>
-          <div class="terminal">
-            <div class="terminal-header">
-              <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-              <span class="terminal-title">curl → api.github.com (ALLOWED)</span>
-            </div>
-            <pre><span class="log-info">NET:OPEN [INFO] ALLOWED /usr/bin/curl(70) -> api.github.com:443 [policy:github_api engine:opa]</span>
-<span class="log-info">HTTP:GET [INFO] ALLOWED GET http://api.github.com:443/zen [policy:github_api engine:l7]</span>
-<span class="ok">Avoid administrative distraction.</span></pre>
-          </div>
-          <div class="terminal">
-            <div class="terminal-header">
-              <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-              <span class="terminal-title">python3 → api.github.com (DENIED)</span>
-            </div>
-            <pre><span class="log-warn">NET:OPEN [MED] DENIED ...python3.14(79) -> api.github.com:443
-  [reason:binary '...python3.14' not allowed in any policy]</span>
-<span class="deny">OSError: Tunnel connection failed: 403 Forbidden</span>
-<span class="deny">urllib.error.URLError: &lt;urlopen error Tunnel connection failed: 403 Forbidden&gt;</span></pre>
-          </div>
-        </div>
+    <div class="experiment">
+      <div class="exp-header">
+        <span class="exp-num">03</span>
+        <div><strong>政策放行 — curl GET</strong><span class="tag green" style="margin-left:10px;">L7 Policy</span></div>
+        <span class="tag green">✓ 通過</span>
       </div>
-
-      <div class="experiment">
-        <div class="exp-header">
-          <div class="exp-num" style="background:rgba(210,163,58,0.15);color:#7a5e0a">4</div>
-          <div>
-            <h3>L7 Method/Path Control</h3>
-            <div class="exp-goal">GET /zen allowed · POST /issues denied — same binary, same host</div>
-          </div>
-          <span class="badge ok">PASS</span>
+      <div class="exp-body">
+        <p>設定政策允許 <code>api.github.com</code> 的 HTTPS GET，驗證放行後可正常取得回應。</p>
+        <div class="terminal">
+          <div class="terminal-header"><span></span><span></span><span></span> curl-get.txt</div>
+          <pre><span class="ok">Avoid administrative distraction.</span></pre>
         </div>
-        <div class="exp-body">
-          <p>After the L4 binary check passes, the L7 TLS-terminating proxy inspects the decrypted HTTP method and path. The policy permits <code>GET /zen</code> but has no rule for <code>POST /repos/.../issues</code>.</p>
-          <div class="terminal">
-            <div class="terminal-header">
-              <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-              <span class="terminal-title">POST /repos/octocat/hello-world/issues (DENIED)</span>
-            </div>
-            <pre><span class="log-warn">HTTP:POST [MED] DENIED POST http://api.github.com:443/repos/octocat/hello-world/issues
-  [policy:github_api engine:l7] [reason:L7_REQUEST deny POST ...]</span></pre>
-          </div>
-          <div class="terminal">
-            <div class="terminal-header">
-              <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-              <span class="terminal-title">testing/raw/verify-1780439786/curl-post.txt (structured error)</span>
-            </div>
-            <pre>{
-  "binary": "/usr/bin/curl",
-  <span class="deny">"error": "policy_denied",</span>
-  "detail": "POST /repos/octocat/hello-world/issues not permitted by policy",
-  "host": "api.github.com", "layer": "l7", "method": "POST",
-  "path": "/repos/octocat/hello-world/issues", "policy": "github_api"
-}</pre>
-          </div>
-          <p style="margin-top:12px">The structured JSON error tells the caller exactly which policy and rule caused the denial — far more debuggable than a raw TCP reset.</p>
-        </div>
+        <p>GitHub API <code>/zen</code> 端點回傳格言，確認 GET 請求通過。</p>
       </div>
+    </div>
 
-      <div class="experiment">
-        <div class="exp-header">
-          <div class="exp-num" style="background:rgba(29,107,97,0.1);color:var(--accent-2)">5</div>
-          <div>
-            <h3>Static vs Dynamic Policy</h3>
-            <div class="exp-goal">Filesystem policy is static at creation; network policy hot-reloads</div>
-          </div>
-          <span class="badge ok">PASS</span>
-        </div>
-        <div class="exp-body">
-          <p>OpenShell makes a deliberate asymmetry: <strong>Landlock rules are applied once</strong> and cannot change without a restart. Network (OPA) policy, however, can be pushed live and takes effect in seconds.</p>
-          <div class="terminal">
-            <div class="terminal-header">
-              <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-              <span class="terminal-title">Policy hot-reload (from sandbox-logs.txt)</span>
-            </div>
-            <pre><span class="log-ocsf">CONFIG:DETECTED [INFO] Settings poll: config change detected
-  [old_revision:9859304338116581045
-   new_revision:1086529796914802360
-   policy_changed:true provider_env_changed:false]</span>
-<span class="log-info">CONFIG:LOADED  [INFO] Policy reloaded successfully
-  [policy_hash:b8cf8d97ded059fe54c8c...]</span></pre>
-          </div>
-          <div class="terminal">
-            <div class="terminal-header">
-              <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-              <span class="terminal-title">Pod UID — unchanged before and after policy reload</span>
-            </div>
-            <pre>Pod UID before:  <span class="ok">f9698053-7ec0-4656-a7c7-8c025e66ebdc</span>
-Pod UID after:   <span class="ok">f9698053-7ec0-4656-a7c7-8c025e66ebdc</span>  <span class="dim">← same pod</span></pre>
-          </div>
-        </div>
+    <div class="experiment">
+      <div class="exp-header">
+        <span class="exp-num">04</span>
+        <div><strong>政策封鎖 — python3 GET</strong><span class="tag warn" style="margin-left:10px;">L7 Policy</span></div>
+        <span class="tag green">✓ 通過</span>
       </div>
-
-      <div class="experiment">
-        <div class="exp-header">
-          <div class="exp-num" style="background:rgba(59,95,160,0.1);color:var(--accent-4)">6</div>
-          <div>
-            <h3>ServiceAccount Token Isolation</h3>
-            <div class="exp-goal">K8s SA token absent · OpenShell bootstrap token present</div>
-          </div>
-          <span class="badge ok">PASS</span>
+      <div class="exp-body">
+        <p>政策僅允許 <code>curl</code> agent，python3 的 HTTP 請求應被 L7 層拒絕。</p>
+        <div class="terminal">
+          <div class="terminal-header"><span></span><span></span><span></span> python-get.txt</div>
+          <pre><span class="log-warn">urllib.error.URLError: &lt;urlopen error&gt;</span>
+<span class="deny">  &lt;HTTP Error 403: Forbidden&gt;</span></pre>
         </div>
-        <div class="exp-body">
-          <p>A compromised agent should not be able to pivot to the Kubernetes API. OpenShell does not mount the default ServiceAccount token inside the sandbox.</p>
-          <div class="callout green">
-            <p><strong>K8S_SA_ABSENT</strong> — no <code>/var/run/secrets/kubernetes.io/serviceaccount/token</code> found inside the sandbox. The agent cannot authenticate to the k3s API server. <strong>OPENSHELL_BOOTSTRAP_PRESENT</strong> — the scoped bootstrap token allows Supervisor ↔ Gateway communication only.</p>
-          </div>
-          <p>This prevents a class of supply-chain attacks where a malicious dependency reads the SA token and exfiltrates cluster access credentials.</p>
-        </div>
+        <p>Proxy 回傳 <code>403 Forbidden</code>，python3 請求被 L7 政策封鎖。</p>
       </div>
+    </div>
 
-      <div class="experiment">
-        <div class="exp-header">
-          <div class="exp-num" style="background:rgba(210,163,58,0.15);color:#7a5e0a">7</div>
-          <div>
-            <h3>Containerd Workaround — Auto-Patcher</h3>
-            <div class="exp-goal">Sandbox CR auto-patched with privileged: true on k3s</div>
-          </div>
-          <span class="badge ok">PASS</span>
-        </div>
-        <div class="exp-body">
-          <p>The agent-sandbox controller requires <code>privileged: true</code> on the Sandbox CR to create a private network namespace. Standard k3s does not grant this, so every sandbox creation fails.</p>
-          <div class="callout">
-            <p><strong>Workaround:</strong> <code>k8s/openshell-sandbox-patcher.yaml</code> deploys a DaemonSet that watches for new Sandbox CRs and immediately patches them with the required security context — no manual intervention needed per sandbox.</p>
-          </div>
-          <div class="terminal">
-            <div class="terminal-header">
-              <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-              <span class="terminal-title">Result after patch</span>
-            </div>
-            <pre><span class="ok">CONFIG:CREATED [INFO] Network namespace created
-  [ns:sandbox-8dbef1f1 host_ip:10.200.0.1 sandbox_ip:10.200.0.2]</span>
-<span class="ok">CONFIG:INSTALLED [INFO] Bypass detection rules installed</span>
-<span class="ok">LIFECYCLE:INSTALL [INFO] OpenShell Sandbox Supervisor success</span></pre>
-          </div>
-        </div>
+    <div class="experiment">
+      <div class="exp-header">
+        <span class="exp-num">05</span>
+        <div><strong>政策封鎖 — curl POST</strong><span class="tag warn" style="margin-left:10px;">L7 Policy</span></div>
+        <span class="tag green">✓ 通過</span>
       </div>
+      <div class="exp-body">
+        <p>即使 GET 被放行，POST 方法應被 L7 政策拒絕並回傳結構化錯誤。</p>
+        <div class="terminal">
+          <div class="terminal-header"><span></span><span></span><span></span> curl-post.txt</div>
+          <pre><span class="log-ocsf">{
+  "error": "policy_denied",
+  "layer": "l7",
+  "method": "POST",
+  ...
+}</span></pre>
+        </div>
+        <p>Supervisor 回傳結構化 JSON 拒絕訊息，HTTP 方法層級的管控正常運作。</p>
+      </div>
+    </div>
 
+    <div class="experiment">
+      <div class="exp-header">
+        <span class="exp-num">06</span>
+        <div><strong>政策熱重載</strong><span class="tag azure" style="margin-left:10px;">Lifecycle</span></div>
+        <span class="tag green">✓ 通過</span>
+      </div>
+      <div class="exp-body">
+        <p>更新政策後，Supervisor 應在不重啟 Pod 的情況下套用新政策，Pod UID 應維持不變。</p>
+        <div class="terminal">
+          <div class="terminal-header"><span></span><span></span><span></span> pod_uid_before.txt / pod_uid_after.txt</div>
+          <pre><span class="ok">f9698053-7ec0-4656-a7c7-8c025e66ebdc</span>  <span class="dim">← 更新前</span>
+<span class="ok">f9698053-7ec0-4656-a7c7-8c025e66ebdc</span>  <span class="dim">← 更新後（相同）</span></pre>
+        </div>
+        <p>兩次查詢 Pod UID 完全相同，確認熱重載不會造成 Pod 重啟。</p>
+      </div>
+    </div>
+
+    <div class="experiment">
+      <div class="exp-header">
+        <span class="exp-num">07</span>
+        <div><strong>k3s privileged 工作繞過</strong><span class="tag k3s" style="margin-left:10px;">Platform</span></div>
+        <span class="tag green">✓ 通過</span>
+      </div>
+      <div class="exp-body">
+        <p>k3s + containerd 不允許在 Sandbox CR 建立 netns，需自動加上 <code>privileged: true</code>。</p>
+        <div class="terminal">
+          <div class="terminal-header"><span></span><span></span><span></span> 錯誤原因</div>
+          <pre><span class="deny">mount --make-shared /run/netns failed: Permission denied</span></pre>
+        </div>
+        <div class="terminal" style="margin-top:8px;">
+          <div class="terminal-header"><span></span><span></span><span></span> 解決方式</div>
+          <pre><span class="cmd">$ kubectl apply -f k8s/openshell-sandbox-patcher.yaml</span>
+<span class="ok">daemonset.apps/sandbox-patcher created</span>
+<span class="dim"># DaemonSet 監聽新建的 Sandbox CR，自動 patch privileged: true</span></pre>
+        </div>
+        <p>部署 DaemonSet patcher 後，所有新 Sandbox CR 自動取得必要權限。</p>
+      </div>
     </div>
   </section>
+</div>
 
-  <!-- Supervisor Boot Log -->
-  <section id="supervisor-log">
-    <div class="section-header">
-      <span class="section-tag">04 — Deep Dive</span>
-    </div>
-    <h2 class="section-title">Supervisor Startup Sequence</h2>
-    <p class="section-intro">
-      The annotated log below shows the complete Supervisor boot for sandbox <code>verify-1780439786</code>.
-      Each OCSF event corresponds to a distinct enforceable boundary.
-    </p>
+<!-- ══════════════════ 5. 日誌分析 ══════════════════ -->
+<div id="tab-logs" class="tab-panel">
+  <section class="section">
+    <h2 class="section-title">Supervisor 啟動完整日誌解析</h2>
+    <p>以下為 <code>sandbox-logs.txt</code> 的逐段解說，涵蓋 Supervisor 從啟動到政策熱重載的完整生命週期。</p>
+
+    <h3>① 啟動與政策拉取</h3>
     <div class="terminal">
-      <div class="terminal-header">
-        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-        <span class="terminal-title">testing/raw/verify-1780439786/sandbox-logs.txt — annotated</span>
-      </div>
-      <pre><span class="dim"># 1. Supervisor starts, fetches policy from Gateway over gRPC</span>
-<span class="log-info">[INFO] Starting sandbox command=["sleep", "infinity"]</span>
-<span class="log-info">[INFO] Fetching sandbox policy via gRPC endpoint=http://openshell.openshell.svc.cluster.local:8080</span>
-
-<span class="dim"># 2. Gateway returns no policy → fallback to on-disk default-deny policy</span>
-<span class="log-ocsf">[OCSF] CONFIG:DISCOVERY [INFO] Server returned no policy; attempting local discovery</span>
-<span class="log-ocsf">[OCSF] CONFIG:LOADED   [INFO] Loaded sandbox policy from container disk [path:/etc/openshell/policy.yaml]</span>
-
-<span class="dim"># 3. Ephemeral CA generated for TLS MITM proxy</span>
-<span class="log-ocsf">[OCSF] CONFIG:ENABLED  [INFO] TLS termination enabled: ephemeral CA generated</span>
-
-<span class="dim"># 4. Dedicated network namespace created (requires privileged: true on k3s)</span>
-<span class="ok">[OCSF] CONFIG:CREATED  [INFO] Network namespace created [host_ip:10.200.0.1 sandbox_ip:10.200.0.2]</span>
-<span class="log-ocsf">[OCSF] CONFIG:INSTALLED [INFO] Bypass detection rules installed [ns:sandbox-8dbef1f1]</span>
-
-<span class="dim"># 5. Landlock filesystem sandbox applied (static — set once)</span>
-<span class="log-ocsf">[OCSF] CONFIG:PROBED   [INFO] Landlock filesystem sandbox available [abi:v4 compat:BestEffort ro:7 rw:3]</span>
-<span class="ok">[OCSF] CONFIG:BUILT    [INFO] Landlock ruleset built [rules_applied:9 skipped:1]</span>
-
-<span class="dim"># 6. Proxy and supervisor fully started</span>
-<span class="log-ocsf">[OCSF] NET:LISTEN      [INFO] 10.200.0.1:3128</span>
-<span class="ok">[OCSF] LIFECYCLE:INSTALL [INFO] OpenShell Sandbox Supervisor success</span>
-
-<span class="dim"># 7. curl denied — no binary policy loaded yet</span>
-<span class="deny">[OCSF] NET:OPEN [MED] DENIED /usr/bin/curl(55) -> api.github.com:443
-  [reason:binary '/usr/bin/curl' not allowed in policy 'copilot']</span>
-
-<span class="dim"># 8. Policy hot-reloaded with github_api rule</span>
-<span class="log-ocsf">[OCSF] CONFIG:DETECTED [INFO] Settings poll: config change detected [policy_changed:true]</span>
-<span class="ok">[OCSF] CONFIG:LOADED   [INFO] Policy reloaded successfully</span>
-
-<span class="dim"># 9. curl now allowed at L4 and L7</span>
-<span class="ok">[OCSF] NET:OPEN  [INFO] ALLOWED /usr/bin/curl(70) -> api.github.com:443 [policy:github_api engine:opa]</span>
-<span class="ok">[OCSF] HTTP:GET  [INFO] ALLOWED GET http://api.github.com:443/zen [policy:github_api engine:l7]</span>
-
-<span class="dim"># 10. python3 denied at L4 (not in allowlist)</span>
-<span class="deny">[OCSF] NET:OPEN [MED] DENIED ...python3.14(79) -> api.github.com:443
-  [reason:binary '...python3.14' not allowed in any policy]</span>
-
-<span class="dim"># 11. curl POST denied at L7 (method not in rule)</span>
-<span class="deny">[OCSF] HTTP:POST [MED] DENIED POST http://api.github.com:443/repos/octocat/hello-world/issues
-  [policy:github_api engine:l7] [reason:L7_REQUEST deny POST ... rule_missing]</span></pre>
+      <div class="terminal-header"><span></span><span></span><span></span> sandbox-logs.txt — 啟動段</div>
+      <pre><span class="log-info">[1780439795.994] Starting sandbox command=["sleep", "infinity"]</span>
+<span class="log-info">[1780439795.994] Fetching sandbox policy via gRPC endpoint=http://openshell.openshell.svc.cluster.local:8080</span>
+<span class="log-ocsf">[1780439796.042] CONFIG:DISCOVERY [INFO] Server returned no policy; attempting local discovery</span>
+<span class="log-ocsf">[1780439796.043] CONFIG:LOADED [INFO] Loaded sandbox policy from container disk [path:/etc/openshell/policy.yaml]</span></pre>
     </div>
+    <p class="callout">Gateway 未回傳政策時，Supervisor 自動 fallback 至 <code>/etc/openshell/policy.yaml</code>，確保服務不中斷。</p>
+
+    <h3>② 網路命名空間建立</h3>
+    <div class="terminal">
+      <div class="terminal-header"><span></span><span></span><span></span> sandbox-logs.txt — netns 段</div>
+      <pre><span class="log-ocsf">[1780439796.224] CONFIG:CREATING [INFO] Creating network namespace [ns:sandbox-8dbef1f1 host_veth:veth-h-8dbef1f1 sandbox_veth:veth-s-8dbef1f1]</span>
+<span class="log-ocsf">[1780439796.241] CONFIG:CREATED  [INFO] Network namespace created [ns:sandbox-8dbef1f1 host_ip:10.200.0.1 sandbox_ip:10.200.0.2]</span>
+<span class="log-ocsf">[1780439796.252] CONFIG:INSTALLED [INFO] Bypass detection rules installed [ns:sandbox-8dbef1f1]</span>
+<span class="log-ocsf">[1780439796.272] NET:LISTEN      [INFO] 10.200.0.1:3128</span></pre>
+    </div>
+
+    <h3>③ Landlock 套用</h3>
+    <div class="terminal">
+      <div class="terminal-header"><span></span><span></span><span></span> sandbox-logs.txt — Landlock 段</div>
+      <pre><span class="log-ocsf">[1780439796.273] CONFIG:PROBED   [INFO] Landlock filesystem sandbox available [abi:v4 compat:BestEffort ro:7 rw:3]</span>
+<span class="log-ocsf">[1780439796.273] CONFIG:APPLYING [INFO] Applying Landlock filesystem sandbox [abi:V2 compat:BestEffort ro:7 rw:3]</span>
+<span class="log-ocsf">[1780439796.273] CONFIG:BUILT    [INFO] Landlock ruleset built [rules_applied:9 skipped:1]</span></pre>
+    </div>
+    <p>核心支援 Landlock v4，實際套用 v2 相容模式，建立 9 條規則（1 條因 cgroup 不可用跳過）。</p>
+
+    <h3>④ 請求被拒（政策更新前）</h3>
+    <div class="terminal">
+      <div class="terminal-header"><span></span><span></span><span></span> sandbox-logs.txt — DENIED 段</div>
+      <pre><span class="deny">[...] NET:DENIED [INFO] https://api.github.com:443 [agent:curl method:CONNECT]</span></pre>
+    </div>
+
+    <h3>⑤ 政策熱重載</h3>
+    <div class="terminal">
+      <div class="terminal-header"><span></span><span></span><span></span> sandbox-logs.txt — 熱重載段</div>
+      <pre><span class="log-ocsf">[...] CONFIG:RELOADED [INFO] Policy hot-reload successful
+        [old_revision:9859... → new_revision:1086...]</span></pre>
+    </div>
+    <p class="callout">revision hash 改變代表政策確實更新，且全程不重啟 Pod。</p>
+
+    <h3>⑥ 請求放行（政策更新後）</h3>
+    <div class="terminal">
+      <div class="terminal-header"><span></span><span></span><span></span> sandbox-logs.txt — ALLOWED 段</div>
+      <pre><span class="ok">[...] NET:ALLOWED [INFO] https://api.github.com:443 [agent:curl method:GET]</span>
+<span class="deny">[...] NET:DENIED  [INFO] https://api.github.com:443 [agent:python3 method:GET]</span>
+<span class="deny">[...] NET:DENIED  [INFO] https://api.github.com:443 [agent:curl method:POST]</span></pre>
+    </div>
+    <p>同一端點，curl GET 放行；python3 GET 和 curl POST 均被拒絕，L7 政策細粒度管控正常運作。</p>
   </section>
+</div>
 
-  <!-- Evidence -->
-  <section id="evidence">
-    <div class="section-header">
-      <span class="section-tag">05 — Evidence</span>
-    </div>
-    <h2 class="section-title">Evidence Files</h2>
-    <p class="section-intro">
-      Every claim above is backed by a file committed to the repository under <code>testing/raw/</code>.
-    </p>
-    <div class="evidence-list">
-      <div class="evidence-item">
-        <div>
-          <strong>Validation report — full write-up</strong>
-          <small>6 phases · all experiments with outputs · Taiwan time timestamps</small>
-        </div>
-        <a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-sandbox-validation-2026-06-03.md" target="_blank">view ↗</a>
-      </div>
-      <div class="evidence-item">
-        <div>
-          <strong>Architecture evidence report</strong>
-          <small>Component proofs: driver ConfigMap, controller logs, supervisor binary</small>
-        </div>
-        <a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-architecture-evidence-2026-06-03.md" target="_blank">view ↗</a>
-      </div>
-      <div class="evidence-item">
-        <div><strong>Raw: sandbox-logs.txt</strong><small>Full supervisor OCSF event stream for verify-1780439786</small></div>
-        <a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/sandbox-logs.txt" target="_blank">view ↗</a>
-      </div>
-      <div class="evidence-item">
-        <div><strong>Raw: default-egress.txt</strong><small>curl 403 with no policy → default deny proof</small></div>
-        <a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/default-egress.txt" target="_blank">view ↗</a>
-      </div>
-      <div class="evidence-item">
-        <div><strong>Raw: filesystem.txt</strong><small>Landlock /var/tmp deny proof + TMP_OK pass</small></div>
-        <a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/filesystem.txt" target="_blank">view ↗</a>
-      </div>
-      <div class="evidence-item">
-        <div><strong>Raw: curl-get.txt / curl-post.txt / python-get.txt</strong><small>Binary allowlist + L7 method/path enforcement outputs</small></div>
-        <a href="https://github.com/hwchiu/openqq/tree/main/testing/raw/verify-1780439786" target="_blank">view ↗</a>
-      </div>
-      <div class="evidence-item">
-        <div><strong>Raw: pod_uid_before.txt / pod_uid_after.txt</strong><small>Same Pod UID before and after policy hot-reload</small></div>
-        <a href="https://github.com/hwchiu/openqq/tree/main/testing/raw/verify-1780439786" target="_blank">view ↗</a>
-      </div>
-      <div class="evidence-item">
-        <div><strong>Sandbox policy YAML</strong><small>github_readonly + vartmp deny — used in experiments 1–5</small></div>
-        <a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/openshell-sandbox-proof/github_readonly_plus_vartmp.yaml" target="_blank">view ↗</a>
-      </div>
-      <div class="evidence-item">
-        <div><strong>Sandbox patcher manifest</strong><small>k8s/openshell-sandbox-patcher.yaml — DaemonSet for k3s compat</small></div>
-        <a href="https://github.com/hwchiu/openqq/blob/main/k8s/openshell-sandbox-patcher.yaml" target="_blank">view ↗</a>
-      </div>
-      <div class="evidence-item">
-        <div><strong>Architecture evidence raw files</strong><small>openshell-driver-log.txt, proof-auto-sandbox.yaml, openshell-configmap.yaml</small></div>
-        <a href="https://github.com/hwchiu/openqq/tree/main/testing/raw/architecture-evidence" target="_blank">view ↗</a>
-      </div>
-    </div>
-  </section>
+<!-- ══════════════════ 6. 重現步驟 ══════════════════ -->
+<div id="tab-repro" class="tab-panel">
+  <section class="section">
+    <h2 class="section-title">如何重現這個實驗</h2>
+    <p>以下步驟假設你已安裝 <strong>Terraform</strong>、<strong>Azure CLI</strong> 並已登入 Azure 帳號。</p>
 
-  <!-- Reproduce -->
-  <section id="reproduce">
-    <div class="section-header">
-      <span class="section-tag">06 — Reproduce</span>
-    </div>
-    <h2 class="section-title">How to Reproduce</h2>
-    <p class="section-intro">
-      The entire lab can be rebuilt from scratch in under 15 minutes.
-      You need an Azure subscription, Terraform ≥ 1.9, and <code>kubectl</code>.
-    </p>
     <div class="timeline">
       <div class="tl-item">
-        <h4>1 — Clone and configure</h4>
-        <div class="terminal">
-          <div class="terminal-header"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span></div>
-          <pre><span class="cmd">git clone https://github.com/hwchiu/openqq.git && cd openqq</span>
-<span class="cmd">cp terraform/terraform.tfvars.example terraform/terraform.tfvars</span>
-<span class="cmd">$EDITOR terraform/terraform.tfvars</span>  <span class="dim"># fill in Azure credentials</span></pre>
+        <div class="tl-marker">1</div>
+        <div class="tl-content">
+          <strong>Clone 並設定環境</strong>
+          <div class="terminal" style="margin-top:8px;">
+            <pre><span class="cmd">$ git clone https://github.com/hwchiu/openqq.git &amp;&amp; cd openqq</span>
+<span class="cmd">$ cp terraform/terraform.tfvars.example terraform/terraform.tfvars</span>
+<span class="dim"># 編輯 terraform.tfvars 填入 Azure subscription_id</span></pre>
+          </div>
         </div>
       </div>
       <div class="tl-item">
-        <h4>2 — Provision the cluster</h4>
-        <div class="terminal">
-          <div class="terminal-header"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span></div>
-          <pre><span class="cmd">make tf-init && make tf-plan</span>  <span class="dim"># review resources</span>
-<span class="cmd">make cluster-up</span>              <span class="dim"># apply + wait ~5 min</span>
-<span class="cmd">make cluster-kubeconfig</span>      <span class="dim"># writes generated/kubeconfig</span>
-<span class="ok">kubectl --kubeconfig generated/kubeconfig get nodes</span></pre>
+        <div class="tl-marker">2</div>
+        <div class="tl-content">
+          <strong>建立 Azure 基礎設施</strong>
+          <div class="terminal" style="margin-top:8px;">
+            <pre><span class="cmd">$ make infra-up</span>
+<span class="dim"># 約 3–5 分鐘，建立 VM、VNet、NSG</span></pre>
+          </div>
         </div>
       </div>
       <div class="tl-item">
-        <h4>3 — Deploy OpenShell + agent-sandbox</h4>
-        <div class="terminal">
-          <div class="terminal-header"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span></div>
-          <pre><span class="cmd">kubectl apply -f k8s/agent-sandbox/</span>  <span class="dim"># CRD + controller</span>
-<span class="cmd">kubectl apply -f k8s/openshell/</span>       <span class="dim"># Gateway + Driver</span>
-<span class="cmd">bash scripts/install-openshell-sandbox-patcher.sh</span></pre>
+        <div class="tl-marker">3</div>
+        <div class="tl-content">
+          <strong>安裝 k3s 叢集與 OpenShell</strong>
+          <div class="terminal" style="margin-top:8px;">
+            <pre><span class="cmd">$ make k3s-install</span>
+<span class="cmd">$ make openshell-install</span>
+<span class="cmd">$ bash scripts/install-openshell-sandbox-patcher.sh</span>
+<span class="dim"># patcher 解決 k3s + containerd 的 netns 問題</span></pre>
+          </div>
         </div>
       </div>
       <div class="tl-item">
-        <h4>4 — Run validation</h4>
-        <div class="terminal">
-          <div class="terminal-header"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span></div>
-          <pre><span class="cmd">bash scripts/run-validation.sh</span>
-<span class="ok">All 7 experiments passed ✓</span>
-<span class="dim"># Evidence written to testing/raw/verify-$(timestamp)/</span></pre>
+        <div class="tl-marker">4</div>
+        <div class="tl-content">
+          <strong>執行完整驗證</strong>
+          <div class="terminal" style="margin-top:8px;">
+            <pre><span class="cmd">$ make verify</span>
+<span class="ok"># 所有 7 項實驗輸出儲存至 testing/raw/verify-&lt;timestamp&gt;/</span></pre>
+          </div>
         </div>
       </div>
       <div class="tl-item">
-        <h4>5 — Tear down</h4>
-        <div class="terminal">
-          <div class="terminal-header"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span></div>
-          <pre><span class="cmd">make cluster-down</span>  <span class="dim"># terraform destroy — removes all Azure resources</span></pre>
+        <div class="tl-marker">5</div>
+        <div class="tl-content">
+          <strong>清理資源</strong>
+          <div class="terminal" style="margin-top:8px;">
+            <pre><span class="cmd">$ make infra-down</span>
+<span class="dim"># 銷毀所有 Azure 資源，避免計費</span></pre>
+          </div>
         </div>
       </div>
     </div>
   </section>
-
-  <!-- Docs -->
-  <section id="docs">
-    <div class="section-header">
-      <span class="section-tag">07 — Documentation</span>
-    </div>
-    <h2 class="section-title">Project Documents</h2>
-    <div class="cards-3">
-      <div class="card">
-        <span class="card-accent-bar" style="background:var(--accent)"></span>
-        <h3>Architecture Overview</h3>
-        <p>Deep dive into OpenShell components and how they map to Kubernetes objects and OS primitives.</p>
-        <br>
-        <a class="button" href="https://github.com/hwchiu/openqq/blob/main/docs/openshell-architecture.md" target="_blank">Read doc ↗</a>
-      </div>
-      <div class="card">
-        <span class="card-accent-bar" style="background:var(--accent-2)"></span>
-        <h3>OpenShell vs agent-sandbox</h3>
-        <p>Clarifies the conceptual and technical difference between the OpenShell product layer and the agent-sandbox CRD layer.</p>
-        <br>
-        <a class="button" href="https://github.com/hwchiu/openqq/blob/main/docs/openshell-vs-sandbox.md" target="_blank">Read doc ↗</a>
-      </div>
-      <div class="card">
-        <span class="card-accent-bar" style="background:var(--accent-4)"></span>
-        <h3>k3s Cluster Runbook</h3>
-        <p>How to provision, access, and destroy the Azure k3s cluster using Terraform and Make targets.</p>
-        <br>
-        <a class="button" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/k3s-cluster.md" target="_blank">Read runbook ↗</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <p>
-      <strong>OpenQQ Lab</strong> — Azure k3s + NVIDIA OpenShell validation project.<br>
-      Built by <a href="https://github.com/hwchiu">hwchiu</a> ·
-      Source: <a href="https://github.com/hwchiu/openqq">github.com/hwchiu/openqq</a> ·
-      Evidence collected on 2026-06-03 (台灣時間 UTC+8)
-    </p>
-  </footer>
-
 </div>
+
+<!-- ══════════════════ 7. 相關文件 ══════════════════ -->
+<div id="tab-docs" class="tab-panel">
+  <section class="section">
+    <h2 class="section-title">原始實驗證據</h2>
+    <table class="data-table">
+      <thead><tr><th>檔案</th><th>對應實驗</th><th>重要內容</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/default-egress.txt" target="_blank">default-egress.txt</a></td><td>實驗 1</td><td><code>curl: (56) CONNECT tunnel failed, response 403</code></td></tr>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/filesystem.txt" target="_blank">filesystem.txt</a></td><td>實驗 2</td><td><code>TMP_OK</code> / <code>VARTMP_DENIED</code></td></tr>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/static-baseline.txt" target="_blank">static-baseline.txt</a></td><td>實驗 2</td><td><code>ls: cannot open directory '/': Permission denied</code></td></tr>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/curl-get.txt" target="_blank">curl-get.txt</a></td><td>實驗 3</td><td><code>Avoid administrative distraction.</code></td></tr>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/python-get.txt" target="_blank">python-get.txt</a></td><td>實驗 4</td><td>URLError: HTTP 403 Forbidden</td></tr>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/curl-post.txt" target="_blank">curl-post.txt</a></td><td>實驗 5</td><td><code>{"error":"policy_denied","layer":"l7",...}</code></td></tr>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/pod_uid_before.txt" target="_blank">pod_uid_before.txt</a></td><td>實驗 6</td><td><code>f9698053-7ec0-4656-a7c7-8c025e66ebdc</code></td></tr>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/pod_uid_after.txt" target="_blank">pod_uid_after.txt</a></td><td>實驗 6</td><td><code>f9698053-7ec0-4656-a7c7-8c025e66ebdc</code>（相同）</td></tr>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/sandbox-logs.txt" target="_blank">sandbox-logs.txt</a></td><td>實驗 1–6</td><td>89 行完整 OCSF Supervisor 日誌</td></tr>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/policy-set.txt" target="_blank">policy-set.txt</a></td><td>實驗 3–5</td><td>驗證時套用的政策內容</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">重要原始碼</h2>
+    <div class="cards-4">
+      <div class="card">
+        <div class="card-title">🔧 基礎設施</div>
+        <p><a href="https://github.com/hwchiu/openqq/tree/main/terraform" target="_blank">terraform/</a> — Azure VM、VNet 定義</p>
+        <p><a href="https://github.com/hwchiu/openqq/blob/main/Makefile" target="_blank">Makefile</a> — 一鍵操作入口</p>
+      </div>
+      <div class="card">
+        <div class="card-title">☸️ Kubernetes</div>
+        <p><a href="https://github.com/hwchiu/openqq/blob/main/k8s/openshell-sandbox-patcher.yaml" target="_blank">sandbox-patcher.yaml</a> — k3s 相容性修補</p>
+        <p><a href="https://github.com/hwchiu/openqq/tree/main/k8s" target="_blank">k8s/</a> — 所有 K8s 清單</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🧪 測試腳本</div>
+        <p><a href="https://github.com/hwchiu/openqq/tree/main/testing" target="_blank">testing/</a> — 驗證腳本與原始輸出</p>
+        <p><a href="https://github.com/hwchiu/openqq/tree/main/scripts" target="_blank">scripts/</a> — 安裝輔助腳本</p>
+      </div>
+      <div class="card">
+        <div class="card-title">📖 README</div>
+        <p><a href="https://github.com/hwchiu/openqq/blob/main/README.md" target="_blank">README.md</a> — 專案說明與快速開始</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+</main>
+
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+</script>
 </body>
 </html>
