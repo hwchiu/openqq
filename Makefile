@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: preflight repo-tree cluster-up cluster-kubeconfig cluster-status cluster-down tf-init tf-plan tf-apply tf-destroy openshell-install openshell-patcher openshell-verify openshell-endpoint gvisor-install gvisor-verify openshell-patcher-gvisor
+.PHONY: preflight repo-tree cluster-up cluster-kubeconfig cluster-status cluster-down tf-init tf-plan tf-apply tf-destroy openshell-install openshell-patcher openshell-verify openshell-endpoint gvisor-install gvisor-verify openshell-patcher-gvisor kata-prereq kata-install kata-verify openshell-patcher-kata
 
 preflight:
 	./scripts/check-azure-connectivity.sh
@@ -52,3 +52,15 @@ gvisor-verify:
 
 openshell-patcher-gvisor:
 	./scripts/install-openshell-sandbox-patcher-gvisor.sh
+
+kata-prereq:
+	./scripts/check-kata-prereqs.sh
+
+kata-install:
+	./scripts/install-kata.sh
+
+kata-verify:
+	./scripts/verify-kata-runtime.sh
+
+openshell-patcher-kata:
+	./scripts/install-openshell-sandbox-patcher-kata.sh

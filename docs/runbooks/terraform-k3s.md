@@ -43,5 +43,11 @@ Use `terraform/terraform.tfvars` to select the node runtime:
 
 1. `container_runtime = "containerd"`
 2. `container_runtime = "crio"`
+3. `container_runtime = "gvisor"`
+4. `container_runtime = "kata"`
 
 `crio` mode installs the external CRI-O service before K3s starts and then points K3s at the CRI socket.
+
+`gvisor` mode keeps K3s on embedded containerd and installs `runsc`, then exposes it through `RuntimeClass/gvisor`.
+
+`kata` mode keeps K3s on embedded containerd, installs the official Kata release, and exposes it through `RuntimeClass/kata`. This mode requires an Azure VM size that supports nested virtualization; the lab uses `Standard_D4s_v3` because `eastus` capacity on `D4s_v5` was not stable enough during rebuild.

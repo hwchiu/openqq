@@ -36,6 +36,21 @@ write_files:
         apt-get install -y runsc
       }
 
+      install_kata() {
+        local version='3.31.0'
+        local arch='amd64'
+        local asset="kata-static-$${version}-$${arch}.tar.zst"
+        local url="https://github.com/kata-containers/kata-containers/releases/download/$${version}/$${asset}"
+        [[ -e /dev/kvm ]] || { echo "/dev/kvm is required for Kata Containers"; exit 1; }
+        apt-get update -qq
+        apt-get install -y curl zstd tar
+        curl -fsSL "$url" -o "/tmp/$${asset}"
+        tar --zstd -xf "/tmp/$${asset}" -C /
+        ln -sfn /opt/kata/bin/containerd-shim-kata-v2 /usr/local/bin/containerd-shim-kata-v2
+        ln -sfn /opt/kata/bin/kata-runtime /usr/local/bin/kata-runtime
+        ln -sfn /opt/kata/bin/kata-ctl /usr/local/bin/kata-ctl
+      }
+
       configure_gvisor_containerd() {
         local tmpl="/var/lib/rancher/k3s/agent/etc/containerd/config-v3.toml.tmpl"
         mkdir -p "$(dirname "$tmpl")"
@@ -44,6 +59,18 @@ write_files:
           '' \
           "[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.'runsc']" \
           '  runtime_type = "io.containerd.runsc.v1"' \
+          > "$tmpl"
+        rm -f /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
+      }
+
+      configure_kata_containerd() {
+        local tmpl="/var/lib/rancher/k3s/agent/etc/containerd/config-v3.toml.tmpl"
+        mkdir -p "$(dirname "$tmpl")"
+        printf '%s\n' \
+          '{{ template "base" . }}' \
+          '' \
+          "[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.'kata']" \
+          '  runtime_type = "io.containerd.kata.v2"' \
           > "$tmpl"
         rm -f /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
       }
@@ -62,12 +89,20 @@ write_files:
         install_gvisor
       fi
 
+      if [[ '${container_runtime}' == 'kata' ]]; then
+        install_kata
+      fi
+
       if [[ '${container_runtime}' == 'crio' ]]; then
         curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_START=true INSTALL_K3S_VERSION='${k3s_version}' K3S_URL='https://${server_private}:6443' K3S_TOKEN='${k3s_token}' sh -s - \
           "$${runtime_args[@]}"
       elif [[ '${container_runtime}' == 'gvisor' ]]; then
         curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_START=true INSTALL_K3S_VERSION='${k3s_version}' K3S_URL='https://${server_private}:6443' K3S_TOKEN='${k3s_token}' sh -s -
         configure_gvisor_containerd
+        systemctl start k3s-agent
+      elif [[ '${container_runtime}' == 'kata' ]]; then
+        curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_START=true INSTALL_K3S_VERSION='${k3s_version}' K3S_URL='https://${server_private}:6443' K3S_TOKEN='${k3s_token}' sh -s -
+        configure_kata_containerd
         systemctl start k3s-agent
       else
         curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION='${k3s_version}' K3S_URL='https://${server_private}:6443' K3S_TOKEN='${k3s_token}' sh -s - \

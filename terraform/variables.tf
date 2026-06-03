@@ -72,12 +72,12 @@ variable "k3s_version" {
 
 variable "container_runtime" {
   type        = string
-  description = "Node container runtime for K3s. Supported values: containerd, crio, gvisor."
+  description = "Node container runtime profile for K3s. Supported values: containerd, crio, gvisor, kata."
   default     = "containerd"
 
   validation {
-    condition     = contains(["containerd", "crio", "gvisor"], var.container_runtime)
-    error_message = "container_runtime must be one of 'containerd', 'crio', or 'gvisor'."
+    condition     = contains(["containerd", "crio", "gvisor", "kata"], var.container_runtime)
+    error_message = "container_runtime must be one of 'containerd', 'crio', 'gvisor', or 'kata'."
   }
 }
 

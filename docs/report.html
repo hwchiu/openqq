@@ -19,6 +19,7 @@
     <nav class="tab-nav">
       <a href="lab.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;background:var(--accent-2);color:#fff;font-size:13px;font-weight:600;white-space:nowrap;">runc 實驗</a>
       <a href="lab-gvisor.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;background:var(--accent-3);color:#fff;font-size:13px;font-weight:600;white-space:nowrap;">gVisor 實驗</a>
+      <a href="lab-kata.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;background:#0f766e;color:#fff;font-size:13px;font-weight:600;white-space:nowrap;">Kata 實驗</a>
     </nav>
   </div>
 </header>
@@ -29,9 +30,9 @@
     <h1 class="hero-title">OpenShell on Azure k3s<br>整合效益評估</h1>
     <p class="hero-sub">這份摘要不是逐條實驗紀錄，而是把目前所有實測結果收斂成設計選項、風險、效益與建議路徑，方便做平台決策。</p>
     <div class="metrics">
-      <div class="metric"><span class="metric-num">2</span><span class="metric-label">已驗證 Runtime</span></div>
+      <div class="metric"><span class="metric-num">3</span><span class="metric-label">已驗證 Runtime</span></div>
       <div class="metric"><span class="metric-num">3</span><span class="metric-label">核心保護面</span></div>
-      <div class="metric"><span class="metric-num">1</span><span class="metric-label">已確認相容性缺口</span></div>
+      <div class="metric"><span class="metric-num">2</span><span class="metric-label">已確認相容性缺口</span></div>
       <div class="metric"><span class="metric-num">Now</span><span class="metric-label">可行決策版本</span></div>
     </div>
   </section>
@@ -41,7 +42,7 @@
     <div class="decision-grid">
       <div class="decision-card">
         <h3>推薦路徑</h3>
-        <p>如果目標是讓 OpenShell 功能完整落地，現在最穩定的選項仍是 <strong>runc + OpenShell</strong>。如果目標是提高 runtime / kernel 邊界，<strong>gVisor + OpenShell</strong> 已可運作，但目前只能保留 network / L7 / hot-reload，不能保留 OpenShell 的 filesystem policy。</p>
+        <p>如果目標是讓 OpenShell 功能完整落地，現在最穩定的選項仍是 <strong>runc + OpenShell</strong>。如果目標是提高 runtime / kernel 邊界，<strong>gVisor + OpenShell</strong> 已可運作，但目前只能保留 network / L7 / hot-reload，不能保留 OpenShell 的 filesystem policy。<strong>Kata + OpenShell</strong> 則已確認 runtime 可用，但 sandbox 被 `privileged` 相容性阻塞。</p>
       </div>
       <div class="decision-card">
         <h3>不該怎麼解讀</h3>
@@ -53,14 +54,14 @@
   <section class="section">
     <h2 class="section-title">能力對照</h2>
     <table class="data-table">
-      <thead><tr><th>能力</th><th>runc + OpenShell</th><th>gVisor + OpenShell</th><th>說明</th></tr></thead>
+      <thead><tr><th>能力</th><th>runc + OpenShell</th><th>gVisor + OpenShell</th><th>Kata + OpenShell</th><th>說明</th></tr></thead>
       <tbody>
-        <tr><td>預設 deny egress</td><td><span class="tag green">成立</span></td><td><span class="tag green">成立</span></td><td>兩條路徑都由 Supervisor 的 proxy / netns 控制</td></tr>
-        <tr><td>binary allowlist</td><td><span class="tag green">成立</span></td><td><span class="tag green">成立</span></td><td>`curl` 可用，`python3` 仍可被拒絕</td></tr>
-        <tr><td>L7 method/path policy</td><td><span class="tag green">成立</span></td><td><span class="tag green">成立</span></td><td>`GET` 可放行，`POST` 可拒絕</td></tr>
-        <tr><td>policy hot-reload</td><td><span class="tag green">成立</span></td><td><span class="tag green">成立</span></td><td>Pod UID 不變</td></tr>
-        <tr><td>filesystem policy</td><td><span class="tag green">成立</span></td><td><span class="tag warn">失效</span></td><td>gVisor 組出現 `Landlock Filesystem Sandbox Unavailable`</td></tr>
-        <tr><td>runtime / kernel 邊界</td><td><span class="tag warn">較弱</span></td><td><span class="tag green">較強</span></td><td>gVisor 透過 `runsc` 攔截 syscall</td></tr>
+        <tr><td>預設 deny egress</td><td><span class="tag green">成立</span></td><td><span class="tag green">成立</span></td><td><span class="tag deny">未達驗證點</span></td><td>Kata 因 sandbox 起不來，尚未進入網路政策驗證</td></tr>
+        <tr><td>binary allowlist</td><td><span class="tag green">成立</span></td><td><span class="tag green">成立</span></td><td><span class="tag deny">未達驗證點</span></td><td>`curl` / `python3` 對照目前只有前兩條線完成</td></tr>
+        <tr><td>L7 method/path policy</td><td><span class="tag green">成立</span></td><td><span class="tag green">成立</span></td><td><span class="tag deny">未達驗證點</span></td><td>Kata 目前卡在 sandbox 啟動</td></tr>
+        <tr><td>policy hot-reload</td><td><span class="tag green">成立</span></td><td><span class="tag green">成立</span></td><td><span class="tag deny">未達驗證點</span></td><td>尚未進入可設 policy 的 Ready 狀態</td></tr>
+        <tr><td>filesystem policy</td><td><span class="tag green">成立</span></td><td><span class="tag warn">失效</span></td><td><span class="tag deny">未達驗證點</span></td><td>Kata 尚未進入 supervisor 執行階段</td></tr>
+        <tr><td>runtime / kernel 邊界</td><td><span class="tag warn">較弱</span></td><td><span class="tag green">較強</span></td><td><span class="tag green">最強</span></td><td>Kata 以 VM 邊界隔離，但目前與 OpenShell sandbox 權限模型衝突</td></tr>
       </tbody>
     </table>
   </section>
@@ -102,8 +103,8 @@
       </div>
       <div class="spotlight">
         <span class="kicker">Option C</span>
-        <h3>下一個驗證目標</h3>
-        <p>評估 `Kata Containers + OpenShell`。如果 Kata 能保留 OpenShell 的 filesystem policy，同時提供更強的 VM 邊界，它會是第三條很有價值的路徑。</p>
+        <h3>第三條線的現況</h3>
+        <p>`Kata Containers + OpenShell` 已不是待評估狀態，而是已完成第一輪相容性定位：runtime 可用，但 OpenShell sandbox 被 `privileged` 相容性阻塞。</p>
       </div>
     </div>
   </section>
@@ -116,8 +117,10 @@
         <tr><td><a href="index.html">首頁</a></td><td>快速理解整體架構與雙軌結果</td></tr>
         <tr><td><a href="lab.html">runc 實驗</a></td><td>看功能完整的基準組</td></tr>
         <tr><td><a href="lab-gvisor.html">gVisor 實驗</a></td><td>看 runtime 切換後保留與退化的能力</td></tr>
+        <tr><td><a href="lab-kata.html">Kata 實驗</a></td><td>看 VM 邊界路徑與 privileged 阻塞點</td></tr>
         <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-gvisor-validation-2026-06-03.md" target="_blank">gVisor 驗證報告</a></td><td>看所有 raw evidence 的整理版</td></tr>
         <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/landlock-gvisor-root-cause-2026-06-03.md" target="_blank">Landlock 根因報告</a></td><td>看為什麼 gVisor 會失去 filesystem policy</td></tr>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-kata-validation-2026-06-03.md" target="_blank">Kata 驗證報告</a></td><td>看為什麼 OpenShell sandbox 目前卡在 privileged 相容性</td></tr>
       </tbody>
     </table>
   </section>

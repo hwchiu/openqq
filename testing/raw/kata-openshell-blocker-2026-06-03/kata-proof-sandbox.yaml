@@ -1,0 +1,108 @@
+apiVersion: agents.x-k8s.io/v1alpha1
+kind: Sandbox
+metadata:
+  annotations:
+    agents.x-k8s.io/pod-name: kata-proof
+  creationTimestamp: "2026-06-03T16:12:05Z"
+  generation: 3
+  labels:
+    openshell.ai/managed-by: openshell
+    openshell.ai/sandbox-id: 661297a0-ff5c-4b1d-a2cd-fc1f905e4fbc
+  name: kata-proof
+  namespace: openshell
+  resourceVersion: "1827"
+  uid: 2b53eb26-c5bf-49b6-ac93-180345d9f4a3
+spec:
+  podTemplate:
+    metadata:
+      annotations:
+        openshell.io/sandbox-id: 661297a0-ff5c-4b1d-a2cd-fc1f905e4fbc
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - command:
+        - /opt/openshell/bin/openshell-sandbox
+        env:
+        - name: OPENSHELL_SANDBOX_ID
+          value: 661297a0-ff5c-4b1d-a2cd-fc1f905e4fbc
+        - name: OPENSHELL_SANDBOX
+          value: kata-proof
+        - name: OPENSHELL_ENDPOINT
+          value: http://openshell.openshell.svc.cluster.local:8080
+        - name: OPENSHELL_SANDBOX_COMMAND
+          value: sleep infinity
+        - name: OPENSHELL_SSH_SOCKET_PATH
+          value: /run/openshell/ssh.sock
+        - name: OPENSHELL_K8S_SA_TOKEN_FILE
+          value: /var/run/secrets/openshell/token
+        image: ghcr.io/nvidia/openshell-community/sandboxes/base:latest
+        name: agent
+        securityContext:
+          capabilities:
+            add:
+            - SYS_ADMIN
+            - NET_ADMIN
+            - SYS_PTRACE
+            - SYSLOG
+          privileged: true
+          runAsUser: 0
+        volumeMounts:
+        - mountPath: /var/run/secrets/openshell
+          name: openshell-sa-token
+          readOnly: true
+        - mountPath: /opt/openshell/bin
+          name: openshell-supervisor-bin
+          readOnly: true
+        - mountPath: /sandbox
+          name: workspace
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - if [ ! -f /workspace-pvc/.workspace-initialized ]; then if [ -d /sandbox
+          ]; then tar -C /sandbox -cf - . | tar -C /workspace-pvc -xpf -; fi && touch
+          /workspace-pvc/.workspace-initialized; fi
+        image: ghcr.io/nvidia/openshell-community/sandboxes/base:latest
+        name: workspace-init
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - mountPath: /workspace-pvc
+          name: workspace
+      runtimeClassName: kata
+      serviceAccountName: openshell-sandbox
+      volumes:
+      - name: openshell-sa-token
+        projected:
+          defaultMode: 256
+          sources:
+          - serviceAccountToken:
+              audience: openshell-gateway
+              expirationSeconds: 3600
+              path: token
+      - image:
+          reference: ghcr.io/nvidia/openshell/supervisor:0.0.53
+        name: openshell-supervisor-bin
+  replicas: 1
+  shutdownPolicy: Retain
+  volumeClaimTemplates:
+  - metadata:
+      name: workspace
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
+status:
+  conditions:
+  - lastTransitionTime: "2026-06-03T16:12:05Z"
+    message: Pod is Running but not Ready
+    observedGeneration: 3
+    reason: DependenciesNotReady
+    status: "False"
+    type: Ready
+  podIPs:
+  - 10.42.2.14
+  replicas: 1
+  selector: agents.x-k8s.io/sandbox-name-hash=047c1e19

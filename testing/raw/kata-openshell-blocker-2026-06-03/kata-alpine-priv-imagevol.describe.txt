@@ -1,0 +1,64 @@
+Name:                kata-alpine-priv-imagevol
+Namespace:           default
+Priority:            0
+Runtime Class Name:  kata
+Service Account:     default
+Node:                worker-1/10.100.0.5
+Start Time:          Thu, 04 Jun 2026 00:10:38 +0800
+Labels:              <none>
+Annotations:         <none>
+Status:              Failed
+IP:                  10.42.1.9
+IPs:
+  IP:  10.42.1.9
+Containers:
+  probe:
+    Container ID:  containerd://e7e15a6752946f37921b97c457eceb3612750b19c5794e829485fe993845a2b0
+    Image:         alpine:3.22
+    Image ID:      docker.io/library/alpine@sha256:310c62b5e7ca5b08167e4384c68db0fd2905dd9c7493756d356e893909057601
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      /bin/sh
+      -lc
+      ls -l /mnt && echo ALPINE_PRIV_IMAGEVOL_OK
+    State:          Terminated
+      Reason:       StartError
+      Message:      failed to create containerd task: failed to create shim task: QMP command failed: The device is not writable: Permission denied
+      Exit Code:    128
+      Started:      Thu, 01 Jan 1970 08:00:00 +0800
+      Finished:     Thu, 04 Jun 2026 00:10:41 +0800
+    Ready:          False
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /mnt from supervisor (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-hk6wb (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   False 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  supervisor:
+  <unknown>
+  kube-api-access-hk6wb:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age   From               Message
+  ----     ------     ----  ----               -------
+  Normal   Scheduled  63s   default-scheduler  Successfully assigned default/kata-alpine-priv-imagevol to worker-1
+  Normal   Pulled     61s   kubelet            Container image "ghcr.io/nvidia/openshell/supervisor:0.0.53" already present on machine and can be accessed by the pod
+  Normal   Pulled     61s   kubelet            Container image "alpine:3.22" already present on machine and can be accessed by the pod
+  Normal   Created    61s   kubelet            Container created
+  Warning  Failed     60s   kubelet            Error: failed to create containerd task: failed to create shim task: QMP command failed: The device is not writable: Permission denied

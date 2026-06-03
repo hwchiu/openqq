@@ -1,0 +1,40 @@
+6m46s       Normal    ScalingReplicaSet       deployment/openshell-sandbox-patcher-kata             Scaled up replica set openshell-sandbox-patcher-kata-c8b6677f5 from 0 to 1
+6m46s       Normal    SuccessfulCreate        replicaset/openshell-sandbox-patcher-kata-c8b6677f5   Created pod: openshell-sandbox-patcher-kata-c8b6677f5-dwqjd
+6m45s       Normal    Pulling                 pod/openshell-sandbox-patcher-kata-c8b6677f5-dwqjd    Pulling image "bitnami/kubectl:latest"
+6m42s       Normal    Started                 pod/openshell-sandbox-patcher-kata-c8b6677f5-dwqjd    Container started
+6m42s       Normal    Created                 pod/openshell-sandbox-patcher-kata-c8b6677f5-dwqjd    Container created
+6m42s       Normal    Pulled                  pod/openshell-sandbox-patcher-kata-c8b6677f5-dwqjd    Successfully pulled image "bitnami/kubectl:latest" in 3.523s (3.523s including waiting). Image size: 80284780 bytes.
+6m30s       Normal    Provisioning            persistentvolumeclaim/workspace-verify-1780502766     External provisioner is provisioning volume for claim "openshell/workspace-verify-1780502766"
+6m30s       Normal    WaitForFirstConsumer    persistentvolumeclaim/workspace-verify-1780502766     waiting for first consumer to be created before binding
+6m24s       Normal    ExternalProvisioning    persistentvolumeclaim/workspace-verify-1780502766     Waiting for a volume to be created either by the external provisioner 'rancher.io/local-path' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.
+6m21s       Normal    ProvisioningSucceeded   persistentvolumeclaim/workspace-verify-1780502766     Successfully provisioned volume pvc-b0d7a97f-03c5-4e4b-9c0e-f84ce68074bc
+6m18s       Normal    Pulling                 pod/verify-1780502766                                 Pulling image "ghcr.io/nvidia/openshell/supervisor:0.0.53"
+6m17s       Normal    Pulled                  pod/verify-1780502766                                 Successfully pulled image "ghcr.io/nvidia/openshell/supervisor:0.0.53" in 1.671s (1.671s including waiting). Image size: 6585163 bytes.
+6m17s       Normal    Pulling                 pod/verify-1780502766                                 Pulling image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest"
+5m12s       Normal    Created                 pod/verify-1780502766                                 Container created
+5m12s       Normal    Pulled                  pod/verify-1780502766                                 Successfully pulled image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest" in 1m4.716s (1m4.716s including waiting). Image size: 1399654114 bytes.
+5m12s       Normal    Started                 pod/verify-1780502766                                 Container started
+4m58s       Normal    Pulled                  pod/verify-1780502766                                 Successfully pulled image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest" in 773ms (773ms including waiting). Image size: 1399654114 bytes.
+4m56s       Normal    Pulled                  pod/verify-1780502766                                 Successfully pulled image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest" in 376ms (376ms including waiting). Image size: 1399654114 bytes.
+4m41s       Normal    Pulled                  pod/verify-1780502766                                 Successfully pulled image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest" in 397ms (397ms including waiting). Image size: 1399654114 bytes.
+4m41s       Normal    Created                 pod/verify-1780502766                                 Container created
+4m18s       Normal    Pulled                  pod/verify-1780502766                                 Successfully pulled image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest" in 392ms (392ms including waiting). Image size: 1399654114 bytes.
+4m18s       Normal    Pulled                  pod/verify-1780502766                                 Container image "ghcr.io/nvidia/openshell/supervisor:0.0.53" already present on machine and can be accessed by the pod
+4m18s       Normal    Pulling                 pod/verify-1780502766                                 Pulling image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest"
+112s        Warning   BackOff                 pod/verify-1780502766                                 Back-off restarting failed container agent in pod verify-1780502766_openshell(7415e8a2-2c76-4a13-8304-0ddc63aef5e4)
+112s        Warning   Failed                  pod/verify-1780502766                                 Error: failed to create containerd task: failed to create shim task: QMP command failed: The device is not writable: Permission denied
+32s         Normal    WaitForFirstConsumer    persistentvolumeclaim/workspace-kata-proof            waiting for first consumer to be created before binding
+32s         Normal    Provisioning            persistentvolumeclaim/workspace-kata-proof            External provisioner is provisioning volume for claim "openshell/workspace-kata-proof"
+32s         Normal    ExternalProvisioning    persistentvolumeclaim/workspace-kata-proof            Waiting for a volume to be created either by the external provisioner 'rancher.io/local-path' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.
+28s         Normal    ProvisioningSucceeded   persistentvolumeclaim/workspace-kata-proof            Successfully provisioned volume pvc-f1bda9ca-cbb7-4bfc-b0eb-e5c649e88cb0
+24s         Normal    Pulling                 pod/kata-proof                                        Pulling image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest"
+23s         Normal    Started                 pod/kata-proof                                        Container started
+23s         Normal    Created                 pod/kata-proof                                        Container created
+23s         Normal    Pulled                  pod/kata-proof                                        Successfully pulled image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest" in 1.101s (1.101s including waiting). Image size: 1399654114 bytes.
+14s         Normal    Pulled                  pod/kata-proof                                        Successfully pulled image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest" in 480ms (480ms including waiting). Image size: 1399654114 bytes.
+13s         Normal    Created                 pod/kata-proof                                        Container created
+13s         Warning   Failed                  pod/kata-proof                                        Error: failed to create containerd task: failed to create shim task: QMP command failed: The device is not writable: Permission denied
+13s         Normal    Pulled                  pod/kata-proof                                        Successfully pulled image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest" in 380ms (380ms including waiting). Image size: 1399654114 bytes.
+13s         Warning   BackOff                 pod/kata-proof                                        Back-off restarting failed container agent in pod kata-proof_openshell(cf0ed2df-5dc8-4621-8d93-ab4627ec1b71)
+1s          Normal    Pulled                  pod/kata-proof                                        Container image "ghcr.io/nvidia/openshell/supervisor:0.0.53" already present on machine and can be accessed by the pod
+1s          Normal    Pulling                 pod/kata-proof                                        Pulling image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest"

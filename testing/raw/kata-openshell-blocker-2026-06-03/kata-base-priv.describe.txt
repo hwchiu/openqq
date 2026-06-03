@@ -1,0 +1,61 @@
+Name:                kata-base-priv
+Namespace:           default
+Priority:            0
+Runtime Class Name:  kata
+Service Account:     default
+Node:                worker-2/10.100.0.6
+Start Time:          Thu, 04 Jun 2026 00:10:37 +0800
+Labels:              <none>
+Annotations:         <none>
+Status:              Failed
+IP:                  10.42.2.11
+IPs:
+  IP:  10.42.2.11
+Containers:
+  probe:
+    Container ID:  containerd://6e565c0c793ee5dedc6c9560cabcdfd33658ffe79d50b0d1abd924026f0855f6
+    Image:         ghcr.io/nvidia/openshell-community/sandboxes/base:latest
+    Image ID:      ghcr.io/nvidia/openshell-community/sandboxes/base@sha256:aeef1c63f00e2913ea002ccb3aaf925f338b5c5d70e63576f0d95c16a138044e
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      /bin/sh
+      -lc
+      echo BASE_PRIV_OK
+    State:          Terminated
+      Reason:       StartError
+      Message:      failed to create containerd task: failed to create shim task: QMP command failed: The device is not writable: Permission denied
+      Exit Code:    128
+      Started:      Thu, 01 Jan 1970 08:00:00 +0800
+      Finished:     Thu, 04 Jun 2026 00:10:41 +0800
+    Ready:          False
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-lkglw (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   False 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-lkglw:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age   From               Message
+  ----     ------     ----  ----               -------
+  Normal   Scheduled  60s   default-scheduler  Successfully assigned default/kata-base-priv to worker-2
+  Normal   Pulling    58s   kubelet            Pulling image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest"
+  Normal   Pulled     58s   kubelet            Successfully pulled image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest" in 587ms (587ms including waiting). Image size: 1399654114 bytes.
+  Normal   Created    57s   kubelet            Container created
+  Warning  Failed     57s   kubelet            Error: failed to create containerd task: failed to create shim task: QMP command failed: The device is not writable: Permission denied

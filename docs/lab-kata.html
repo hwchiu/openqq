@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenShell × Kata 實驗報告 · hwchiu/openqq</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="page" style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:0;padding-bottom:0;">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <a href="index.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent-4);color:var(--accent-4);font-size:13px;font-weight:600;white-space:nowrap;">← Home</a>
+      <a href="report.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent-4);color:var(--accent-4);font-size:13px;font-weight:600;white-space:nowrap;">Executive Report</a>
+      <a href="lab.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent-2);color:var(--accent-2);font-size:13px;font-weight:600;white-space:nowrap;">runc 實驗</a>
+      <a href="lab-gvisor.html" style="text-decoration:none;padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent-3);color:var(--accent-3);font-size:13px;font-weight:600;white-space:nowrap;">gVisor 實驗</a>
+      <span class="brand"><span class="brand-mark"></span>OpenShell Lab</span>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <section class="hero" style="padding-bottom:24px;">
+    <div class="hero-eyebrow"><span class="badge info">第三條 Runtime 線</span> Kata Containers + OpenShell</div>
+    <h1 class="hero-title" style="font-size:clamp(24px,4vw,36px);">OpenShell + Kata<br>相容性報告</h1>
+    <p class="hero-sub">這條線不是失敗於「Kata 沒跑起來」，而是失敗於 <strong>OpenShell 目前需要的 privileged sandbox</strong> 與 Kata 的相容性。<br>因此這頁的重點不是功能展示，而是阻塞點定位。</p>
+    <div class="metrics">
+      <div class="metric"><span class="metric-num">/dev/kvm</span><span class="metric-label">三台節點已驗證</span></div>
+      <div class="metric"><span class="metric-num">kata</span><span class="metric-label">RuntimeClass 通過</span></div>
+      <div class="metric"><span class="metric-num">OpenShell</span><span class="metric-label">Control plane 正常</span></div>
+      <div class="metric"><span class="metric-num">Blocked</span><span class="metric-label">Sandbox on Kata</span></div>
+    </div>
+  </section>
+
+  <div class="status-strip">
+    <strong>目前真實狀態</strong>
+    <p>Azure 叢集已切換到 <code>k3s + containerd + RuntimeClass kata</code>，且 `kata-verify` probe 已成功回報 Kata guest kernel。阻塞點是 OpenShell sandbox 在被 patch 成 <code>privileged: true</code> 與 <code>runtimeClassName: kata</code> 後，Kata 會回 <code>QMP command failed: The device is not writable: Permission denied</code>。</p>
+  </div>
+
+  <section class="section">
+    <h2 class="section-title">先講結論</h2>
+    <table class="data-table">
+      <thead><tr><th>項目</th><th>狀態</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr><td>Azure VM 規格</td><td><span class="tag green">成功</span></td><td>`Standard_D4s_v3` 三台節點都可見 <code>/dev/kvm</code></td></tr>
+        <tr><td>Kata runtime</td><td><span class="tag green">成功</span></td><td><code>kata-runtime 3.31.0</code> 與 <code>RuntimeClass/kata</code> 都已驗證</td></tr>
+        <tr><td>OpenShell gateway / agent-sandbox</td><td><span class="tag green">成功</span></td><td>control plane 正常，sandbox CR 可建立</td></tr>
+        <tr><td>OpenShell sandbox on Kata</td><td><span class="tag deny">阻塞</span></td><td>被 Kata 對 `privileged` pod 的 QMP 錯誤卡住</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">實驗矩陣</h2>
+    <table class="data-table">
+      <thead><tr><th>測試</th><th>runtimeClass</th><th>privileged</th><th>image volume</th><th>結果</th></tr></thead>
+      <tbody>
+        <tr><td><code>kata-base-no-priv</code></td><td>kata</td><td>否</td><td>否</td><td><span class="tag green">成功</span></td></tr>
+        <tr><td><code>kata-base-priv</code></td><td>kata</td><td>是</td><td>否</td><td><span class="tag deny">失敗</span></td></tr>
+        <tr><td><code>kata-image-volume-probe</code></td><td>kata</td><td>否</td><td>是</td><td><span class="tag green">成功</span></td></tr>
+        <tr><td><code>kata-alpine-priv-imagevol</code></td><td>kata</td><td>是</td><td>是</td><td><span class="tag deny">失敗</span></td></tr>
+        <tr><td><code>kata-proof</code>（OpenShell sandbox）</td><td>kata</td><td>是</td><td>是</td><td><span class="tag deny">失敗</span></td></tr>
+      </tbody>
+    </table>
+    <p class="callout">這個矩陣已把問題縮小到單一結論：<strong>當 pod 需要 `privileged: true` 時，Kata 在目前這條路徑下就會失敗</strong>。不是 image volume 單獨有問題，也不是 OpenShell base image 單獨有問題。</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">關鍵錯誤</h2>
+    <div class="terminal">
+      <div class="terminal-header"><span></span><span></span><span></span> Kata StartError</div>
+      <pre><span class="deny">failed to create containerd task:
+failed to create shim task:
+QMP command failed:
+The device is not writable: Permission denied</span></pre>
+    </div>
+    <p>這個錯誤同時出現在：</p>
+    <ul>
+      <li>最小化的 `kata-base-priv` 測試</li>
+      <li>`kata-alpine-priv-imagevol` 測試</li>
+      <li>真實的 OpenShell sandbox `kata-proof`</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">為什麼這對 OpenShell 很重要</h2>
+    <p>在這個 lab 的 `k3s` 路徑下，OpenShell sandbox 並不是一個普通的 unprivileged pod。它仍然需要：</p>
+    <ul>
+      <li><code>privileged: true</code></li>
+      <li><code>SYS_ADMIN</code>、<code>NET_ADMIN</code> 等額外 capability</li>
+      <li>Supervisor 建立 netns 與 proxy 的能力</li>
+    </ul>
+    <p>因此，雖然 Kata runtime 可跑、OpenShell control plane 也可跑，但只要 sandbox 這一層仍依賴 `privileged`，目前就無法把 OpenShell 真正落到 Kata 上。</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">建議解讀</h2>
+    <div class="spotlight-grid">
+      <div class="spotlight">
+        <span class="kicker">What Works</span>
+        <h3>Kata 可當 runtime 對照組</h3>
+        <p>Kata 這條線已經足夠拿來跟 runc / gVisor 比較 runtime 行為與 VM 邊界，不需要再懷疑 Azure 規格或 containerd 整合。</p>
+      </div>
+      <div class="spotlight">
+        <span class="kicker">What Blocks</span>
+        <h3>OpenShell sandbox 目前被 privileged 卡住</h3>
+        <p>阻塞點不在 Helm、不在 patcher、不在 RuntimeClass，而在 OpenShell sandbox 的權限需求與 Kata 的相容性。</p>
+      </div>
+      <div class="spotlight">
+        <span class="kicker">Next Step</span>
+        <h3>要追的是權限模型，不是一般 policy</h3>
+        <p>若要讓 Kata 成為正式選項，下一步應釐清 OpenShell 是否能移除 `privileged` 依賴，或改用另一條支援路徑。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">證據入口</h2>
+    <table class="data-table">
+      <thead><tr><th>檔案</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-kata-validation-2026-06-03.md" target="_blank">Kata 驗證報告</a></td><td>完整文字版結論</td></tr>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/kata-openshell-blocker-2026-06-03/kata-proof-pod-describe.txt" target="_blank">kata-proof pod describe</a></td><td>OpenShell sandbox 的直接失敗證據</td></tr>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/kata-openshell-blocker-2026-06-03/kata-base-priv.describe.txt" target="_blank">kata-base-priv</a></td><td>證明 privileged 本身就足以觸發 Kata 失敗</td></tr>
+        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/kata-openshell-blocker-2026-06-03/kata-image-volume-probe.log" target="_blank">kata-image-volume-probe</a></td><td>證明 image volume 本身不是問題</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+</body>
+</html>

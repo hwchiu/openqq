@@ -1,0 +1,102 @@
+Name:                kata-proof
+Namespace:           openshell
+Priority:            0
+Runtime Class Name:  kata
+Service Account:     openshell-sandbox
+Node:                worker-2/10.100.0.6
+Start Time:          Thu, 04 Jun 2026 00:12:10 +0800
+Labels:              agents.x-k8s.io/sandbox-name-hash=047c1e19
+Annotations:         agents.x-k8s.io/propagated-annotations: openshell.io/sandbox-id
+                     openshell.io/sandbox-id: 661297a0-ff5c-4b1d-a2cd-fc1f905e4fbc
+Status:              Running
+IP:                  10.42.2.14
+IPs:
+  IP:           10.42.2.14
+Controlled By:  Sandbox/kata-proof
+Init Containers:
+  workspace-init:
+    Container ID:  containerd://a7d0193de004bb49dced0cff6763155923607c29bd87076cd7a34835f70ef40d
+    Image:         ghcr.io/nvidia/openshell-community/sandboxes/base:latest
+    Image ID:      ghcr.io/nvidia/openshell-community/sandboxes/base@sha256:aeef1c63f00e2913ea002ccb3aaf925f338b5c5d70e63576f0d95c16a138044e
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      sh
+      -c
+      if [ ! -f /workspace-pvc/.workspace-initialized ]; then if [ -d /sandbox ]; then tar -C /sandbox -cf - . | tar -C /workspace-pvc -xpf -; fi && touch /workspace-pvc/.workspace-initialized; fi
+    State:          Terminated
+      Reason:       Completed
+      Exit Code:    0
+      Started:      Thu, 04 Jun 2026 00:12:14 +0800
+      Finished:     Thu, 04 Jun 2026 00:12:20 +0800
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /workspace-pvc from workspace (rw)
+Containers:
+  agent:
+    Container ID:  containerd://f5a5d23325385ba8e952c89d6ae309445f5d6a398cfe01849a8a11b9152f3bc3
+    Image:         ghcr.io/nvidia/openshell-community/sandboxes/base:latest
+    Image ID:      ghcr.io/nvidia/openshell-community/sandboxes/base@sha256:aeef1c63f00e2913ea002ccb3aaf925f338b5c5d70e63576f0d95c16a138044e
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      /opt/openshell/bin/openshell-sandbox
+    State:          Waiting
+      Reason:       RunContainerError
+    Last State:     Terminated
+      Reason:       StartError
+      Message:      failed to create containerd task: failed to create shim task: QMP command failed: The device is not writable: Permission denied
+      Exit Code:    128
+      Started:      Thu, 01 Jan 1970 08:00:00 +0800
+      Finished:     Thu, 04 Jun 2026 00:12:24 +0800
+    Ready:          False
+    Restart Count:  1
+    Environment:
+      OPENSHELL_SANDBOX_ID:         661297a0-ff5c-4b1d-a2cd-fc1f905e4fbc
+      OPENSHELL_SANDBOX:            kata-proof
+      OPENSHELL_ENDPOINT:           http://openshell.openshell.svc.cluster.local:8080
+      OPENSHELL_SANDBOX_COMMAND:    sleep infinity
+      OPENSHELL_SSH_SOCKET_PATH:    /run/openshell/ssh.sock
+      OPENSHELL_K8S_SA_TOKEN_FILE:  /var/run/secrets/openshell/token
+    Mounts:
+      /opt/openshell/bin from openshell-supervisor-bin (ro)
+      /sandbox from workspace (rw)
+      /var/run/secrets/openshell from openshell-sa-token (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  openshell-sa-token:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3600
+  openshell-supervisor-bin:
+  <unknown>
+  workspace:
+    Type:        PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:   workspace-kata-proof
+    ReadOnly:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                 node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age                From               Message
+  ----     ------     ----               ----               -------
+  Normal   Scheduled  25s                default-scheduler  Successfully assigned openshell/kata-proof to worker-2
+  Normal   Pulling    23s                kubelet            Pulling image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest"
+  Normal   Pulled     22s                kubelet            Successfully pulled image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest" in 1.101s (1.101s including waiting). Image size: 1399654114 bytes.
+  Normal   Created    22s                kubelet            Container created
+  Normal   Started    22s                kubelet            Container started
+  Normal   Pulled     13s                kubelet            Successfully pulled image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest" in 480ms (480ms including waiting). Image size: 1399654114 bytes.
+  Normal   Created    12s (x2 over 13s)  kubelet            Container created
+  Warning  Failed     12s (x2 over 13s)  kubelet            Error: failed to create containerd task: failed to create shim task: QMP command failed: The device is not writable: Permission denied
+  Normal   Pulled     12s                kubelet            Successfully pulled image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest" in 380ms (380ms including waiting). Image size: 1399654114 bytes.
+  Warning  BackOff    12s                kubelet            Back-off restarting failed container agent in pod kata-proof_openshell(cf0ed2df-5dc8-4621-8d93-ab4627ec1b71)
+  Normal   Pulled     0s (x7 over 23s)   kubelet            Container image "ghcr.io/nvidia/openshell/supervisor:0.0.53" already present on machine and can be accessed by the pod
+  Normal   Pulling    0s (x3 over 14s)   kubelet            Pulling image "ghcr.io/nvidia/openshell-community/sandboxes/base:latest"
