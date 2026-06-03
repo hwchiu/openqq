@@ -169,3 +169,18 @@
 - 為什麼 policy 更新了但某些效果沒變
 
 通常要看 OpenShell gateway / policy / supervisor。
+
+## 補一個常見誤解: 換成 gVisor 不等於 OpenShell 全面升級
+
+這次在 `k3s + gVisor` 上的驗證很值得特別寫下來：
+
+1. `OpenShell` 的 L7 與 binary 級治理仍然有效
+2. `agent-sandbox` 仍然只是在承載 workload
+3. `gVisor` 提供的是更底層的 syscall / kernel 邊界
+4. 但 `OpenShell filesystem_policy` 在目前這個組合下退化，沒有像 runc 組那樣透過 Landlock 生效
+
+所以這三者不是互相取代，而是三個不同層次：
+
+- `agent-sandbox`：Kubernetes 承載
+- `OpenShell`：agent 行為治理
+- `gVisor`：runtime / kernel 邊界

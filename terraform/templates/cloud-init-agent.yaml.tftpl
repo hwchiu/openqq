@@ -30,22 +30,22 @@ write_files:
       install_gvisor() {
         curl -fsSL https://gvisor.dev/archive.key \
           | gpg --batch --yes --dearmor -o /usr/share/keyrings/gvisor-archive-keyring.gpg
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/gvisor-archive-keyring.gpg] \
-https://storage.googleapis.com/gvisor/releases release main" \
-          | tee /etc/apt/sources.list.d/gvisor.list > /dev/null
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/gvisor-archive-keyring.gpg] https://storage.googleapis.com/gvisor/releases release main" \
+          > /etc/apt/sources.list.d/gvisor.list
         apt-get update -qq
         apt-get install -y runsc
       }
 
       configure_gvisor_containerd() {
-        local tmpl="/var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl"
+        local tmpl="/var/lib/rancher/k3s/agent/etc/containerd/config-v3.toml.tmpl"
         mkdir -p "$(dirname "$tmpl")"
-        k3s containerd config default > "$tmpl"
-        cat >> "$tmpl" << 'TOML'
-
-[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
-  runtime_type = "io.containerd.runsc.v1"
-TOML
+        printf '%s\n' \
+          '{{ template "base" . }}' \
+          '' \
+          "[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.'runsc']" \
+          '  runtime_type = "io.containerd.runsc.v1"' \
+          > "$tmpl"
+        rm -f /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
       }
 
       until curl -k --max-time 5 "https://${server_private}:6443/cacerts" >/dev/null; do

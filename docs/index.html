@@ -30,15 +30,20 @@
   <section class="hero">
     <div class="hero-eyebrow"><span class="badge info">實驗報告</span> hwchiu / openqq</div>
     <h1 class="hero-title">OpenShell Sandbox<br>驗證實驗室</h1>
-    <p class="hero-sub">在 Azure 上建立 3 節點 k3s 叢集，以黑箱測試方式驗證 NVIDIA OpenShell 的<br>網路隔離、Landlock 沙箱、L7 政策管控與熱重載能力。</p>
+    <p class="hero-sub">在 Azure 上建立 3 節點 k3s 叢集，維護 <strong>runc 基準組</strong> 與 <strong>gVisor 強隔離組</strong>，<br>用同一組黑箱測試驗證 NVIDIA OpenShell 的行為治理，以及 runtime 切換後哪些能力保留、哪些能力退化。</p>
     <div class="metrics">
       <div class="metric"><span class="metric-num">3</span><span class="metric-label">Azure VM 節點</span></div>
-      <div class="metric"><span class="metric-num">7</span><span class="metric-label">驗證實驗</span></div>
-      <div class="metric"><span class="metric-num">100%</span><span class="metric-label">實驗通過率</span></div>
-      <div class="metric"><span class="metric-num">0</span><span class="metric-label">Pod 重啟次數</span></div>
-      <div class="metric"><span class="metric-num">Landlock<br>v4</span><span class="metric-label">核心沙箱版本</span></div>
+      <div class="metric"><span class="metric-num">2</span><span class="metric-label">Runtime 實驗軌</span></div>
+      <div class="metric"><span class="metric-num">runsc</span><span class="metric-label">gVisor Probe 已通過</span></div>
+      <div class="metric"><span class="metric-num">L7</span><span class="metric-label">gVisor 上仍可執行</span></div>
+      <div class="metric"><span class="metric-num">Landlock<br>Degraded</span><span class="metric-label">gVisor 上未生效</span></div>
     </div>
   </section>
+
+  <div class="status-strip">
+    <strong>目前真實狀態</strong>
+    <p>Azure 測試環境已切換成 <code>k3s + containerd + RuntimeClass gvisor</code>。OpenShell 與 agent-sandbox 已重裝完成，gVisor probe Pod 成功回報 <code>4.19.0-gvisor</code>。OpenShell 的預設 deny egress、binary allowlist、L7 method/path 控制、policy hot-reload 在 gVisor 上仍成立；但 <code>testing/raw/verify-1780497002/filesystem.txt</code> 與 <code>sandbox-logs.txt</code> 也明確證明這組合下 <strong>Landlock Filesystem Sandbox Unavailable</strong>，所以 gVisor 組不是單純「更安全」，而是「底層隔離更強，但 OpenShell 的 filesystem enforcement 退化」。</p>
+  </div>
 
   <section class="section">
     <h2 class="section-title">這個專案在做什麼？</h2>
@@ -56,7 +61,7 @@
       <div class="card">
         <div class="card-icon">📋</div>
         <div class="card-title">OCSF 結構化日誌</div>
-        <p>所有安全事件以 OCSF 格式輸出，覆蓋 Landlock 套用、netns 建立、Policy 熱重載等完整生命週期。</p>
+        <p>所有安全事件以 OCSF 格式輸出，覆蓋 netns 建立、Policy 熱重載、L7 allow/deny 與 Landlock fallback。</p>
       </div>
       <div class="card">
         <div class="card-icon">⚡</div>
@@ -67,22 +72,38 @@
   </section>
 
   <section class="section">
-    <h2 class="section-title">驗證結果摘要</h2>
+    <h2 class="section-title">雙軌驗證結果摘要</h2>
     <table class="data-table">
-      <thead><tr><th>#</th><th>實驗項目</th><th>期望結果</th><th>狀態</th></tr></thead>
+      <thead><tr><th>#</th><th>實驗項目</th><th>runc 基準組</th><th>gVisor 組</th><th>結論</th></tr></thead>
       <tbody>
-        <tr><td>1</td><td>預設出口封鎖</td><td>所有出口流量被封鎖</td><td><span class="tag green">✓ 通過</span></td></tr>
-        <tr><td>2</td><td>Landlock 檔案系統沙箱</td><td>/tmp 可寫、/var/tmp 拒絕、/ 被 Landlock 封鎖</td><td><span class="tag green">✓ 通過</span></td></tr>
-        <tr><td>3</td><td>政策放行 — curl GET</td><td>允許特定 HTTPS GET 請求</td><td><span class="tag green">✓ 通過</span></td></tr>
-        <tr><td>4</td><td>政策封鎖 — python3 GET</td><td>Python HTTP 請求被 403 拒絕</td><td><span class="tag green">✓ 通過</span></td></tr>
-        <tr><td>5</td><td>政策封鎖 — curl POST</td><td>POST 請求被 L7 政策拒絕</td><td><span class="tag green">✓ 通過</span></td></tr>
-        <tr><td>6</td><td>政策熱重載</td><td>更新政策後 Pod UID 不變</td><td><span class="tag green">✓ 通過</span></td></tr>
-        <tr><td>7</td><td>k3s privileged 工作繞過</td><td>DaemonSet 自動修補 Sandbox CR</td><td><span class="tag green">✓ 通過</span></td></tr>
+        <tr><td>1</td><td>預設出口封鎖</td><td><span class="tag green">✓ 403 封鎖</span></td><td><span class="tag green">✓ 403 封鎖</span></td><td>Supervisor 網路治理不依賴 runc</td></tr>
+        <tr><td>2</td><td>Filesystem / Landlock</td><td><span class="tag green">✓ /var/tmp 拒絕</span></td><td><span class="tag warn">退化</span> <code>/var/tmp</code> 可寫，log 顯示 unavailable</td><td>gVisor 下 OpenShell filesystem enforcement 失效</td></tr>
+        <tr><td>3</td><td>政策放行 — curl GET</td><td><span class="tag green">✓</span></td><td><span class="tag green">✓</span></td><td>L7 allow 仍可運作</td></tr>
+        <tr><td>4</td><td>政策封鎖 — python3 GET</td><td><span class="tag green">✓</span></td><td><span class="tag green">✓</span></td><td>binary allowlist 仍可運作</td></tr>
+        <tr><td>5</td><td>政策封鎖 — curl POST</td><td><span class="tag green">✓</span></td><td><span class="tag green">✓</span></td><td>L7 method/path deny 仍可運作</td></tr>
+        <tr><td>6</td><td>政策熱重載</td><td><span class="tag green">✓ UID 不變</span></td><td><span class="tag green">✓ UID 不變</span></td><td>control plane hot-reload 不受 runtime 切換影響</td></tr>
+        <tr><td>7</td><td>k3s workaround</td><td><span class="tag green">✓ privileged patcher</span></td><td><span class="tag green">✓ privileged + runtimeClass patcher</span></td><td>gVisor 需要額外 patcher 條件</td></tr>
       </tbody>
     </table>
-    <div style="margin-top:28px;text-align:center;padding:22px 20px;background:linear-gradient(135deg,rgba(29,107,97,0.05),rgba(59,95,160,0.05));border-radius:12px;border:1px solid rgba(29,107,97,0.2);">
-      <p style="margin:0 0 12px;font-size:14px;color:var(--muted);">了解架構概念後，查看 OpenShell + runc 的實際運作細節、7 項驗證實驗與維運注意事項</p>
-      <a href="lab.html" style="display:inline-block;background:var(--accent-2);color:#fff;padding:10px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">查看實驗報告 →</a>
+    <div class="spotlight-grid" style="margin-top:24px;">
+      <div class="spotlight">
+        <span class="kicker">Baseline</span>
+        <h3>runc 報告</h3>
+        <p>OpenShell 在標準 k3s/containerd 上的完整驗證基準。Landlock、L7、policy hot-reload 均成立。</p>
+        <p class="evidence-note"><a href="lab.html">查看 runc 實驗 →</a></p>
+      </div>
+      <div class="spotlight">
+        <span class="kicker">Isolation</span>
+        <h3>gVisor 報告</h3>
+        <p>runsc probe 與 OpenShell-on-gVisor 已實測。重點不是「全部更強」，而是釐清哪些安全層留存、哪些安全層退化。</p>
+        <p class="evidence-note"><a href="lab-gvisor.html">查看 gVisor 實驗 →</a></p>
+      </div>
+      <div class="spotlight">
+        <span class="kicker">Raw Evidence</span>
+        <h3>正式報告</h3>
+        <p>gVisor 驗證結果已整理成 Markdown 報告，包含命令輸出、Sandbox 日誌、以及為什麼 Landlock 退化的證據。</p>
+        <p class="evidence-note"><a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-gvisor-validation-2026-06-03.md" target="_blank">開啟報告 →</a></p>
+      </div>
     </div>
   </section>
 </div>
@@ -106,7 +127,7 @@
         <h3>⚙️ k3s 叢集</h3>
         <ul class="kv-list">
           <li><span>發行版</span><span><span class="tag k3s">k3s</span></span></li>
-          <li><span>Container Runtime</span><span>containerd</span></li>
+          <li><span>Container Runtime</span><span>containerd + RuntimeClass <code>gvisor</code></span></li>
           <li><span>Pod CIDR</span><span>10.42.0.0/16</span></li>
           <li><span>Service CIDR</span><span>10.43.0.0/16</span></li>
           <li><span>CNI</span><span>Flannel（預設）</span></li>
@@ -118,7 +139,7 @@
           <li><span><code>make infra-up</code></span><span>建立 Azure VM</span></li>
           <li><span><code>make k3s-install</code></span><span>安裝 k3s 叢集</span></li>
           <li><span><code>make openshell-install</code></span><span>部署 OpenShell</span></li>
-          <li><span><code>make verify</code></span><span>執行完整驗證</span></li>
+          <li><span><code>make gvisor-verify</code></span><span>驗證 gVisor RuntimeClass</span></li>
           <li><span><code>make infra-down</code></span><span>銷毀所有資源</span></li>
         </ul>
       </div>
@@ -459,8 +480,8 @@ spec:
         <tr>
           <td><strong>gVisor</strong></td>
           <td>防 syscall 攻擊（user-space kernel）</td>
-          <td>gVisor 的 network stack 與 OpenShell 的 netns proxy 可能衝突</td>
-          <td><span class="tag warn">未測試</span></td>
+          <td>與 OpenShell 可共存，但目前只驗證到 L7 / policy 層；filesystem policy 退化</td>
+          <td><span class="tag warn">已驗證，有限制</span></td>
         </tr>
       </tbody>
     </table>

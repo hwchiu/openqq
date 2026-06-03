@@ -152,6 +152,21 @@ Supervisor 是每個 sandbox 內最重要的 runtime enforcement 元件。
 9. sandbox 預設不自動掛載 Kubernetes service account token
 10. 但會有 OpenShell bootstrap token 供 supervisor 向 gateway 換 sandbox JWT
 
+## gVisor 路徑的新增結論
+
+在 `k3s + containerd + RuntimeClass gvisor` 這條路徑上，我們又驗證到一個重要差異：
+
+1. OpenShell 的 network policy、binary allowlist、L7 method/path 控制與 policy hot-reload 仍然成立
+2. `agent-sandbox` 承載與 Kubernetes driver 路徑也仍然成立
+3. 但 `filesystem_policy` 在目前這組合下沒有成立
+4. 直接證據是 sandbox log 反覆出現 `Landlock Filesystem Sandbox Unavailable`
+5. 對應行為是 `filesystem.txt` 出現 `VARTMP_OK`，而不是 runc 組的 `VARTMP_DENIED`
+
+所以目前應該把 gVisor 視為：
+
+- 增加 runtime 邊界
+- 但不保證 OpenShell 所有 enforcement 都能原封不動保留下來
+
 ## 一個很重要的現實限制
 
 目前這個 `k3s + containerd` 路徑下，OpenShell sandbox 並不是原生就能正常運作。

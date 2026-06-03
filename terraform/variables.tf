@@ -76,8 +76,8 @@ variable "container_runtime" {
   default     = "containerd"
 
   validation {
-    condition     = contains(["containerd", "crio"], var.container_runtime)
-    error_message = "container_runtime must be either 'containerd' or 'crio'."
+    condition     = contains(["containerd", "crio", "gvisor"], var.container_runtime)
+    error_message = "container_runtime must be one of 'containerd', 'crio', or 'gvisor'."
   }
 }
 

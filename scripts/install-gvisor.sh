@@ -34,23 +34,40 @@ fi
 
 runsc --version
 
-# --- 2. Add gVisor runtime to k3s containerd config template ---
-CONFIG_TMPL="/var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl"
-if [[ ! -f "$CONFIG_TMPL" ]]; then
-  mkdir -p "$(dirname "$CONFIG_TMPL")"
-  k3s containerd config default > "$CONFIG_TMPL"
-fi
-
-if ! grep -q 'runsc' "$CONFIG_TMPL"; then
-  cat >> "$CONFIG_TMPL" << 'TOML'
+# --- 2. Detect container runtime (CRI-O vs k3s containerd) and configure accordingly ---
+if systemctl is-enabled --quiet crio 2>/dev/null; then
+  echo "Detected CRI-O — configuring /etc/crio/crio.conf.d/10-runsc.conf"
+  mkdir -p /etc/crio/crio.conf.d
+  CONMON_PATH="$(command -v conmon 2>/dev/null || echo /usr/libexec/crio/conmon)"
+  cat > /etc/crio/crio.conf.d/10-runsc.conf << CRIOCFG
+[crio.runtime.runtimes.runsc]
+  runtime_path = ""
+  runtime_type = "oci"
+  runtime_root = "/run/runsc"
+  privileged_without_host_devices = false
+  monitor_path = "${CONMON_PATH}"
+CRIOCFG
+  systemctl restart crio
+  sleep 3
+  # Restart k3s-agent so kubelet re-registers node with updated runtime info
+  systemctl restart k3s-agent
+else
+  echo "Detected k3s containerd — configuring config.toml.tmpl"
+  CONFIG_TMPL="/var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl"
+  if [[ ! -f "$CONFIG_TMPL" ]]; then
+    mkdir -p "$(dirname "$CONFIG_TMPL")"
+    k3s containerd config default > "$CONFIG_TMPL"
+  fi
+  if ! grep -q 'runsc' "$CONFIG_TMPL"; then
+    cat >> "$CONFIG_TMPL" << 'TOML'
 
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
   runtime_type = "io.containerd.runsc.v1"
 TOML
+  fi
+  systemctl restart k3s-agent
 fi
 
-# --- 3. Restart k3s-agent so containerd picks up the new runtime ---
-systemctl restart k3s-agent
 echo "gVisor installation complete on $(hostname)"
 REMOTE
 )

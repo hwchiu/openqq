@@ -35,14 +35,19 @@
   <section class="hero" style="padding-bottom:24px;">
     <div class="hero-eyebrow"><span class="badge info">本實驗組合</span> Sandbox CRD + gVisor (runsc) + OpenShell</div>
     <h1 class="hero-title" style="font-size:clamp(24px,4vw,36px);">OpenShell + gVisor<br>實驗報告</h1>
-    <p class="hero-sub">在同一套 3 節點 k3s 叢集上，以 <strong>gVisor (runsc)</strong> 替換 runc 作為 OCI Runtime，<br>執行與 runc 組相同的 7 項黑箱驗證，觀察行為差異。</p>
+    <p class="hero-sub">在同一套 3 節點 k3s 叢集上，以 <strong>gVisor (runsc)</strong> 取代預設 runtime，<br>重跑 OpenShell 驗證，分辨哪一層安全能力來自 runtime，哪一層來自 OpenShell supervisor。</p>
     <div class="metrics">
-      <div class="metric"><span class="metric-num">gVisor</span><span class="metric-label">OCI Runtime (runsc)</span></div>
-      <div class="metric"><span class="metric-num">Sandbox<br>CRD</span><span class="metric-label">工作負載管理</span></div>
-      <div class="metric"><span class="metric-num">OpenShell</span><span class="metric-label">行為管控層</span></div>
-      <div class="metric"><span class="metric-num">7</span><span class="metric-label">驗證實驗（待執行）</span></div>
+      <div class="metric"><span class="metric-num">runsc</span><span class="metric-label">Probe 通過</span></div>
+      <div class="metric"><span class="metric-num">OpenShell</span><span class="metric-label">Sandbox Ready</span></div>
+      <div class="metric"><span class="metric-num">L7</span><span class="metric-label">4/4 關鍵測試通過</span></div>
+      <div class="metric"><span class="metric-num">Landlock</span><span class="metric-label">Unavailable</span></div>
     </div>
   </section>
+
+  <div class="status-strip">
+    <strong>實測摘要</strong>
+    <p>這一組 Azure 叢集目前是 <code>k3s + containerd + RuntimeClass gvisor</code>。gVisor probe pod 顯示 <code>4.19.0-gvisor</code>，證明 runsc 真正在執行。OpenShell sandbox 在 patcher 補上 <code>privileged: true</code> 與 <code>runtimeClassName: gvisor</code> 後可正常建立；預設 deny egress、curl GET 放行、python3 GET 拒絕、curl POST 拒絕、policy hot-reload 全部成立。但同一份證據也顯示 <code>Landlock Filesystem Sandbox Unavailable</code>，對應到 <code>/var/tmp</code> 可寫與 <code>ls /</code> 不再被拒絕。</p>
+  </div>
 
   <section class="section">
     <h2 class="section-title">gVisor 在堆疊中的位置</h2>
@@ -121,9 +126,9 @@
       <tbody>
         <tr><td><strong>syscall 處理</strong></td><td>直接傳遞到 host Linux kernel</td><td>由 runsc Sentry 攔截、在 user-space 轉譯</td></tr>
         <tr><td><strong>kernel 暴露面</strong></td><td>完整 host kernel（cgroups + namespaces 隔離）</td><td>Sentry 虛擬核心隔離，host kernel 僅暴露有限接口</td></tr>
-        <tr><td><strong>Landlock（OpenShell）</strong></td><td>由 host kernel 執行 Landlock LSM</td><td>由 Sentry 虛擬核心執行（行為待驗證）</td></tr>
+        <tr><td><strong>Landlock（OpenShell）</strong></td><td>由 host kernel 執行，基準組已通過</td><td><span class="tag warn">退化</span> supervisor log 明確回報 unavailable，filesystem 控制未生效</td></tr>
         <tr><td><strong>netns 建立</strong></td><td>需要 <code>privileged: true</code> workaround（k3s 限制）</td><td>同樣需要；gVisor 不改變 Supervisor 的 capability 需求</td></tr>
-        <tr><td><strong>cgroup pids.max</strong></td><td>k3s 環境下不可用</td><td>同樣預期不可用（k3s 限制，非 gVisor 問題）</td></tr>
+        <tr><td><strong>cgroup pids.max</strong></td><td>k3s 環境下不可用</td><td>同樣不可用，log 仍顯示 runtime cgroup pids.max unavailable</td></tr>
         <tr><td><strong>容器啟動速度</strong></td><td>快（直接 exec）</td><td>稍慢（需初始化 Sentry + Gofer）</td></tr>
         <tr><td><strong>syscall 相容性</strong></td><td>完整 Linux ABI</td><td>Sentry 實作子集，少數 syscall 可能行為不同</td></tr>
         <tr><td><strong>privileged 容器</strong></td><td>授予 host 完整特權</td><td>Sentry 內執行，host 層面特權效果受限（核心實驗假設）</td></tr>
@@ -200,7 +205,7 @@ fi</span></pre>
         <tr>
           <td><strong>privileged: true 的意義</strong></td>
           <td>Pod 直接擁有 host 特權，可操作 host 資源</td>
-          <td>Sentry 內的虛擬核心允許特權操作，但<strong>不直接暴露 host</strong>（⚠️ 待驗證）</td>
+          <td>Sentry 內的虛擬核心允許 sandbox 啟動所需特權操作；本輪至少已證明可建立 netns 與啟動 proxy，但未直接證明 host 面特權邊界</td>
         </tr>
         <tr>
           <td><strong>netns 建立（Supervisor）</strong></td>
@@ -210,7 +215,7 @@ fi</span></pre>
         <tr>
           <td><strong>SYS_ADMIN / NET_ADMIN</strong></td>
           <td>直接作用在 host cgroup / netns</td>
-          <td>作用在 Sentry 虛擬核心；部分操作行為可能不同（⚠️ 待驗證）</td>
+          <td>作用在 Sentry 虛擬核心；至少已足夠讓 Supervisor 完成 netns 建立，但 Landlock 路徑沒有成功</td>
         </tr>
         <tr>
           <td><strong>Pod Security Admission</strong></td>
@@ -219,26 +224,26 @@ fi</span></pre>
         </tr>
       </tbody>
     </table>
-    <p class="callout">⚠️ <strong>核心假設</strong>：gVisor 下的 privileged 容器是否仍能讓 Supervisor 正常建立 netns、執行 Landlock，是本實驗的關鍵驗證點。</p>
+    <p class="callout">本輪實測結果很明確：gVisor 下的 privileged sandbox 足以讓 Supervisor 建立 netns、開啟 proxy、執行 L7 policy，但不足以讓 Landlock filesystem sandbox 成立。</p>
   </section>
 
   <section class="section">
     <h2 class="section-title">3. 網路模型：Supervisor netns 路徑不變</h2>
     <p>OpenShell Supervisor 的網路隔離靠 Pod 內 veth + netns（而非 CNI NetworkPolicy），這個機制與 runc 或 gVisor 無關。流量路徑相同：</p>
     <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> 預期 Supervisor 日誌（與 runc 相同結構）</div>
+      <div class="terminal-header"><span></span><span></span><span></span> gVisor 組實際 Supervisor 日誌</div>
       <pre><span class="log-ocsf">CONFIG:CREATING  Creating network namespace [ns:sandbox-xxxxxxxx host_veth:veth-h-xxxxxxxx sandbox_veth:veth-s-xxxxxxxx]
 CONFIG:CREATED   Network namespace created [ns:sandbox-xxxxxxxx host_ip:10.200.0.1 sandbox_ip:10.200.0.2]
-CONFIG:INSTALLED Bypass detection rules installed [ns:sandbox-xxxxxxxx]
-NET:LISTEN       10.200.0.1:3128</span>   <span class="dim"># ← 相同 CONNECT proxy 結構</span></pre>
+CONFIG:DEGRADED  Failed to install bypass log rules (non-fatal) ...
+NET:LISTEN       10.200.0.1:3128</span>   <span class="dim"># ← proxy 成立，但 nft bypass log 規則退化</span></pre>
     </div>
     <table class="data-table" style="margin-top:12px;">
       <thead><tr><th>面向</th><th>runc</th><th>gVisor</th></tr></thead>
       <tbody>
-        <tr><td>CONNECT Proxy 位置</td><td>10.200.0.1:3128</td><td>預期相同（待確認）</td></tr>
-        <tr><td>L7 HTTP 政策管控</td><td>✓</td><td>預期 ✓（Supervisor 在 gVisor 內同樣管控）</td></tr>
+        <tr><td>CONNECT Proxy 位置</td><td>10.200.0.1:3128</td><td>相同，已由 log 與 default-egress 測試證明</td></tr>
+        <tr><td>L7 HTTP 政策管控</td><td>✓</td><td>✓，curl GET / python deny / POST deny 都已重跑通過</td></tr>
         <tr><td>NetworkPolicy 效果</td><td>CNI 層管控，與 Supervisor 無關</td><td>相同</td></tr>
-        <tr><td>bypass 偵測規則</td><td>iptables 規則阻止繞過 Proxy</td><td>iptables 在 Sentry 內執行，行為待驗證 ⚠️</td></tr>
+        <tr><td>bypass 偵測規則</td><td>iptables 規則阻止繞過 Proxy</td><td><span class="tag warn">退化</span> log 顯示 <code>Protocol not supported</code>，fallback 為 reject-only</td></tr>
       </tbody>
     </table>
   </section>
@@ -247,13 +252,13 @@ NET:LISTEN       10.200.0.1:3128</span>   <span class="dim"># ← 相同 CONNECT
     <h2 class="section-title">4. Landlock：在 gVisor Sentry 內執行</h2>
     <p>runc 下 Landlock 由 host Linux kernel 直接執行（本 lab 已確認 ABI v4）。gVisor 下，Landlock 呼叫由 Sentry 的虛擬核心處理。</p>
     <table class="data-table">
-      <thead><tr><th>項目</th><th>runc（已確認）</th><th>gVisor（預期）</th></tr></thead>
+      <thead><tr><th>項目</th><th>runc（已確認）</th><th>gVisor（實測）</th></tr></thead>
       <tbody>
-        <tr><td>Landlock ABI 版本</td><td>v4（host kernel 5.19+）</td><td>依 Sentry 實作，可能不同 ⚠️ 待確認</td></tr>
-        <tr><td>/tmp 寫入允許</td><td>✓ TMP_OK</td><td>⏳ 待執行</td></tr>
-        <tr><td>/var/tmp 拒絕</td><td>✓ VARTMP_DENIED</td><td>⏳ 待執行</td></tr>
-        <tr><td>根目錄列舉拒絕</td><td>✓ Permission denied</td><td>⏳ 待執行</td></tr>
-        <tr><td>cgroup pids.max</td><td>不可用（k3s 限制）</td><td>預期同樣不可用</td></tr>
+        <tr><td>Landlock ABI 版本</td><td>v4（host kernel 5.19+）</td><td><span class="tag warn">不可用</span> log 未回報 ABI，直接顯示 unavailable</td></tr>
+        <tr><td>/tmp 寫入允許</td><td>✓ TMP_OK</td><td>✓ TMP_OK</td></tr>
+        <tr><td>/var/tmp 拒絕</td><td>✓ VARTMP_DENIED</td><td><span class="tag warn">失敗</span> `VARTMP_OK`</td></tr>
+        <tr><td>根目錄列舉拒絕</td><td>✓ Permission denied</td><td><span class="tag warn">失敗</span> 可列出 `/`</td></tr>
+        <tr><td>cgroup pids.max</td><td>不可用（k3s 限制）</td><td>同樣不可用，與 runtime 切換無關</td></tr>
       </tbody>
     </table>
   </section>
@@ -341,182 +346,96 @@ NET:LISTEN       10.200.0.1:3128</span>   <span class="dim"># ← 相同 CONNECT
   <section class="section">
     <h2 class="section-title">7 項驗證實驗</h2>
     <p class="callout" style="margin-bottom:24px;">
-      ⏳ <strong>本組實驗尚未執行。</strong> 執行前請確認：<code>make gvisor-install</code> → <code>make gvisor-verify</code> → <code>make openshell-patcher-gvisor</code>。<br>
-      結果填入後請更新此頁並對比 <a href="lab.html">runc 實驗結果</a>。
+      <strong>已完成：</strong><code>k3s + containerd + RuntimeClass gvisor</code> 已在 Azure 上通過 probe 與 OpenShell runtime 驗證。<br>
+      <strong>結論：</strong>OpenShell 的 <code>network_policies</code>、binary allowlist、L7 method/path 與 policy hot-reload 在 gVisor 上成立；<code>filesystem_policy</code> 則沒有成立，對應 log 為 <code>Landlock Filesystem Sandbox Unavailable</code>。
     </p>
 
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">01</span>
-        <div><strong>預設出口封鎖</strong><span class="tag warn" style="margin-left:10px;">Network</span></div>
-        <span class="tag" style="background:#e0d7cc;color:#645b51;">⏳ 待執行</span>
+    <table class="data-table">
+      <thead><tr><th>#</th><th>測試</th><th>證據檔案</th><th>gVisor 實測結果</th><th>判讀</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>預設出口封鎖</td>
+          <td><code>default-egress.txt</code></td>
+          <td><code>curl: (56) CONNECT tunnel failed, response 403</code></td>
+          <td><span class="tag green">✓</span> 預設 deny egress 仍生效</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Filesystem / Landlock</td>
+          <td><code>filesystem.txt</code>、<code>static-baseline.txt</code>、<code>sandbox-logs.txt</code></td>
+          <td><code>TMP_OK</code>、<code>VARTMP_OK</code>、可列出 <code>/</code>，log 顯示 <code>Landlock Filesystem Sandbox Unavailable</code></td>
+          <td><span class="tag warn">退化</span> OpenShell filesystem sandbox 在 gVisor 下未成立</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>政策放行 - curl GET</td>
+          <td><code>curl-get.txt</code></td>
+          <td><code>Favor focus over features.</code></td>
+          <td><span class="tag green">✓</span> curl 對 GitHub GET 放行</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>政策封鎖 - python3 GET</td>
+          <td><code>python-get.txt</code></td>
+          <td><code>URLError: Tunnel connection failed: 403 Forbidden</code></td>
+          <td><span class="tag green">✓</span> binary allowlist 仍可區分 python 與 curl</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>政策封鎖 - curl POST</td>
+          <td><code>curl-post.txt</code></td>
+          <td><code>{"error":"policy_denied","layer":"l7",...}</code></td>
+          <td><span class="tag green">✓</span> L7 method/path deny 仍可運作</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>政策熱重載</td>
+          <td><code>pod_uid_before.txt</code>、<code>pod_uid_after.txt</code></td>
+          <td>兩者皆為 <code>fbf7b80c-f6f2-4930-a1d3-edbcbad9eb71</code></td>
+          <td><span class="tag green">✓</span> policy 生效時 Pod 未重建</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>gVisor patcher</td>
+          <td>Sandbox CR YAML / patcher deployment</td>
+          <td>Sandbox spec 具備 <code>runtimeClassName: gvisor</code> 與 <code>privileged: true</code></td>
+          <td><span class="tag green">✓</span> k3s workaround 在 gVisor 路徑可用</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="spotlight-grid" style="margin-top:24px;">
+      <div class="spotlight">
+        <span class="kicker">What Holds</span>
+        <h3>OpenShell 行為治理</h3>
+        <p>gVisor 不影響 OpenShell 的 control plane 與 supervisor L7 決策。從 default deny、curl GET、python deny、POST deny 到 hot-reload，全部保留。</p>
       </div>
-      <div class="exp-body">
-        <p>在尚未套用任何政策的情況下，所有出口連線應被封鎖。gVisor 環境下 Supervisor CONNECT proxy 是否正常攔截，是本項的關鍵問題。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> 預期指令（待執行）</div>
-          <pre><span class="cmd">$ curl -v --max-time 10 https://api.github.com/zen</span>
-<span class="dim"># 預期：curl: (56) CONNECT tunnel failed, response 403（與 runc 相同）
-# 或：gVisor syscall 差異導致不同行為（待觀察）</span></pre>
-        </div>
-        <table class="data-table" style="margin-top:8px;">
-          <thead><tr><th>runc 結果</th><th>gVisor 預期</th><th>gVisor 實際</th></tr></thead>
-          <tbody>
-            <tr><td><span class="tag green">✓ 403 封鎖</span></td><td>相同封鎖</td><td><span class="tag" style="background:#e0d7cc;color:#645b51;">⏳</span></td></tr>
-          </tbody>
-        </table>
+      <div class="spotlight">
+        <span class="kicker">What Breaks</span>
+        <h3>Filesystem Policy</h3>
+        <p>同一套 policy 在 runc 組會擋住 <code>/var/tmp</code> 與根目錄列舉；在 gVisor 組則失效。這不是 YAML 寫錯，而是 runtime compatibility 差異。</p>
+      </div>
+      <div class="spotlight">
+        <span class="kicker">What It Means</span>
+        <h3>不要把 gVisor 當成單向升級</h3>
+        <p>gVisor 增加 kernel 邊界，但不保證 OpenShell 既有的所有 enforcement 都能無痛帶過來。這份報告的價值就在於把差異講清楚。</p>
       </div>
     </div>
 
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">02</span>
-        <div><strong>Landlock 檔案系統沙箱</strong><span class="tag os" style="margin-left:10px;">Filesystem</span></div>
-        <span class="tag" style="background:#e0d7cc;color:#645b51;">⏳ 待執行</span>
-      </div>
-      <div class="exp-body">
-        <p>驗證 Landlock 在 gVisor Sentry 環境下的行為是否與 host kernel 一致。gVisor 的 Landlock 實作版本可能不同，是本實驗最具不確定性的項目。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> 預期指令（待執行）</div>
-          <pre><span class="dim"># 驗證 /tmp 寫入、/var/tmp 拒絕、根目錄列舉拒絕</span>
-<span class="cmd">$ touch /tmp/verify-ok && echo "TMP_OK"</span>
-<span class="cmd">$ touch /var/tmp/verify-deny 2>&1</span>
-<span class="cmd">$ ls / 2>&1</span></pre>
-        </div>
-        <table class="data-table" style="margin-top:8px;">
-          <thead><tr><th>項目</th><th>runc 結果</th><th>gVisor 預期</th><th>gVisor 實際</th></tr></thead>
-          <tbody>
-            <tr><td>/tmp 寫入</td><td><span class="tag green">✓ TMP_OK</span></td><td>TMP_OK</td><td><span class="tag" style="background:#e0d7cc;color:#645b51;">⏳</span></td></tr>
-            <tr><td>/var/tmp 拒絕</td><td><span class="tag green">✓ Permission denied</span></td><td>Permission denied</td><td><span class="tag" style="background:#e0d7cc;color:#645b51;">⏳</span></td></tr>
-            <tr><td>根目錄列舉拒絕</td><td><span class="tag green">✓ Permission denied</span></td><td>Permission denied</td><td><span class="tag" style="background:#e0d7cc;color:#645b51;">⏳</span></td></tr>
-            <tr><td>Landlock ABI 版本</td><td>v4（用 v2）</td><td>Sentry 實作（未知）</td><td><span class="tag" style="background:#e0d7cc;color:#645b51;">⏳</span></td></tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="terminal" style="margin-top:20px;">
+      <div class="terminal-header"><span></span><span></span><span></span> testing/raw/verify-1780497002/filesystem.txt</div>
+      <pre><span class="ok">TMP_OK</span>
+<span class="warn">VARTMP_OK</span></pre>
     </div>
 
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">03</span>
-        <div><strong>政策放行 — curl GET</strong><span class="tag green" style="margin-left:10px;">L7 Policy</span></div>
-        <span class="tag" style="background:#e0d7cc;color:#645b51;">⏳ 待執行</span>
-      </div>
-      <div class="exp-body">
-        <p>設定政策允許 <code>api.github.com</code> 的 HTTPS GET，驗證 gVisor 環境下 L7 政策放行是否正常。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> 預期指令（待執行）</div>
-          <pre><span class="cmd">$ openshell policy apply --allow "api.github.com" --method GET --agent curl</span>
-<span class="cmd">$ curl https://api.github.com/zen</span>
-<span class="dim"># 預期：GitHub 格言回應（如 runc 結果）</span></pre>
-        </div>
-        <table class="data-table" style="margin-top:8px;">
-          <thead><tr><th>runc 結果</th><th>gVisor 預期</th><th>gVisor 實際</th></tr></thead>
-          <tbody>
-            <tr><td><span class="tag green">✓ 格言回應</span></td><td>格言回應</td><td><span class="tag" style="background:#e0d7cc;color:#645b51;">⏳</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">04</span>
-        <div><strong>政策封鎖 — python3 GET</strong><span class="tag warn" style="margin-left:10px;">L7 Policy</span></div>
-        <span class="tag" style="background:#e0d7cc;color:#645b51;">⏳ 待執行</span>
-      </div>
-      <div class="exp-body">
-        <p>政策僅允許 <code>curl</code> agent，python3 的 HTTP 請求應被 L7 層拒絕。gVisor 下 Supervisor 的 agent 識別機制是否仍有效是驗證重點。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> 預期指令（待執行）</div>
-          <pre><span class="cmd">$ python3 -c "import urllib.request; urllib.request.urlopen('https://api.github.com/zen')"</span>
-<span class="dim"># 預期：urllib.error.URLError: HTTP Error 403 Forbidden</span></pre>
-        </div>
-        <table class="data-table" style="margin-top:8px;">
-          <thead><tr><th>runc 結果</th><th>gVisor 預期</th><th>gVisor 實際</th></tr></thead>
-          <tbody>
-            <tr><td><span class="tag green">✓ 403 封鎖</span></td><td>403 封鎖</td><td><span class="tag" style="background:#e0d7cc;color:#645b51;">⏳</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">05</span>
-        <div><strong>政策封鎖 — curl POST</strong><span class="tag warn" style="margin-left:10px;">L7 Policy</span></div>
-        <span class="tag" style="background:#e0d7cc;color:#645b51;">⏳ 待執行</span>
-      </div>
-      <div class="exp-body">
-        <p>即使 GET 被放行，POST 方法應被 L7 政策拒絕。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> 預期指令（待執行）</div>
-          <pre><span class="cmd">$ curl -X POST https://api.github.com/zen -d '{}'</span>
-<span class="dim"># 預期：{"error":"policy_denied","layer":"l7","method":"POST",...}</span></pre>
-        </div>
-        <table class="data-table" style="margin-top:8px;">
-          <thead><tr><th>runc 結果</th><th>gVisor 預期</th><th>gVisor 實際</th></tr></thead>
-          <tbody>
-            <tr><td><span class="tag green">✓ policy_denied JSON</span></td><td>policy_denied JSON</td><td><span class="tag" style="background:#e0d7cc;color:#645b51;">⏳</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">06</span>
-        <div><strong>政策熱重載</strong><span class="tag azure" style="margin-left:10px;">Lifecycle</span></div>
-        <span class="tag" style="background:#e0d7cc;color:#645b51;">⏳ 待執行</span>
-      </div>
-      <div class="exp-body">
-        <p>更新政策後，Supervisor 應在不重啟 Pod 的情況下套用新政策。gVisor 下的 gRPC 連線與 inotify/timer 機制是否受 Sentry 影響，是本項驗證重點。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> 預期指令（待執行）</div>
-          <pre><span class="cmd">$ kubectl get pod &lt;sandbox&gt; -o jsonpath='{.metadata.uid}'</span>  <span class="dim"># 記錄 UID</span>
-<span class="cmd">$ openshell policy apply ...</span>
-<span class="cmd">$ kubectl get pod &lt;sandbox&gt; -o jsonpath='{.metadata.uid}'</span>  <span class="dim"># 應相同</span></pre>
-        </div>
-        <table class="data-table" style="margin-top:8px;">
-          <thead><tr><th>runc 結果</th><th>gVisor 預期</th><th>gVisor 實際</th></tr></thead>
-          <tbody>
-            <tr><td><span class="tag green">✓ UID 不變</span></td><td>UID 不變</td><td><span class="tag" style="background:#e0d7cc;color:#645b51;">⏳</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">07</span>
-        <div><strong>k3s + gVisor privileged 工作繞過</strong><span class="tag k3s" style="margin-left:10px;">Platform</span></div>
-        <span class="tag" style="background:#e0d7cc;color:#645b51;">⏳ 待執行</span>
-      </div>
-      <div class="exp-body">
-        <p>在 gVisor 環境下，Supervisor 同樣需要 <code>privileged: true</code> 才能建立 netns。本實驗驗證 gVisor patcher 是否能正確 patch 兩個條件（privileged + runtimeClassName），讓 Sandbox 在 gVisor 下正常啟動。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> 驗證 patcher 是否正確 patch 兩個條件</div>
-          <pre><span class="cmd">$ kubectl apply -f k8s/openshell-sandbox-patcher-gvisor.yaml</span>
-<span class="dim"># 建立 sandbox 後，觀察：
-# 1. securityContext.privileged == true
-# 2. spec.runtimeClassName == "gvisor"
-# 3. Supervisor CONFIG:CREATED log 出現</span></pre>
-        </div>
-        <div class="terminal" style="margin-top:8px;">
-          <div class="terminal-header"><span></span><span></span><span></span> 可能遭遇的錯誤（gVisor 特有）</div>
-          <pre><span class="log-deny">failed to create sandbox: failed to run "runsc" ...</span>
-<span class="dim">→ 節點尚未安裝 runsc，或 containerd config.toml.tmpl 未正確 patch
-→ 解決：重新執行 make gvisor-install</span>
-
-<span class="log-warn">runtime cgroup pids.max is unavailable (No such file or directory)</span>
-<span class="dim">→ 預期（k3s 限制，與 runc 相同）</span></pre>
-        </div>
-        <table class="data-table" style="margin-top:8px;">
-          <thead><tr><th>runc 結果</th><th>gVisor 預期</th><th>gVisor 實際</th></tr></thead>
-          <tbody>
-            <tr><td><span class="tag green">✓ patcher 正常，Sandbox 啟動</span></td><td>兩條件均 patch 成功，Sandbox 啟動</td><td><span class="tag" style="background:#e0d7cc;color:#645b51;">⏳</span></td></tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="terminal">
+      <div class="terminal-header"><span></span><span></span><span></span> testing/raw/verify-1780497002/sandbox-logs.txt（節錄）</div>
+      <pre><span class="log-ocsf">[... ] CONFIG:CREATED [INFO] Network namespace created [ns:sandbox-43e485fc host_ip:10.200.0.1 sandbox_ip:10.200.0.2]</span>
+<span class="log-ocsf">[... ] NET:LISTEN [INFO] 10.200.0.1:3128</span>
+<span class="deny">[... ] FINDING:UNKNOWN [HIGH] "Landlock Filesystem Sandbox Unavailable"</span>
+<span class="ok">[... ] HTTP:GET [INFO] ALLOWED GET http://api.github.com:443/zen [policy:github_api engine:l7]</span>
+<span class="deny">[... ] HTTP:POST [MED] DENIED POST http://api.github.com:443/repos/octocat/hello-world/issues [policy:github_api engine:l7]</span></pre>
     </div>
   </section>
 </div>
@@ -524,69 +443,64 @@ NET:LISTEN       10.200.0.1:3128</span>   <span class="dim"># ← 相同 CONNECT
 <!-- ══════════════════ 4. 日誌分析 ══════════════════ -->
 <div id="tab-logs" class="tab-panel">
   <section class="section">
-    <h2 class="section-title">gVisor 環境下的 Supervisor 日誌預期解析</h2>
-    <p class="callout">⏳ 本節在實驗執行後填入實際日誌。以下為基於 runc 實驗的<strong>預期</strong>結構與 gVisor 差異標注。</p>
+    <h2 class="section-title">gVisor 環境下的 Supervisor 日誌解析</h2>
+    <p class="callout">本節不再寫預期，而是直接對照 <code>testing/raw/verify-1780497002/sandbox-logs.txt</code> 的實際內容。</p>
 
-    <h3>① 啟動與政策拉取（預期與 runc 相同）</h3>
+    <h3>① 啟動與政策拉取</h3>
     <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> 預期 Supervisor 啟動日誌結構</div>
+      <div class="terminal-header"><span></span><span></span><span></span> 啟動片段</div>
       <pre><span class="log-info">[...] Starting sandbox command=["sleep", "infinity"]</span>
 <span class="log-info">[...] Fetching sandbox policy via gRPC endpoint=http://openshell.openshell.svc.cluster.local:8080</span>
 <span class="log-ocsf">[...] CONFIG:DISCOVERY [INFO] Server returned no policy; attempting local discovery</span>
 <span class="log-ocsf">[...] CONFIG:LOADED [INFO] Loaded sandbox policy from container disk [path:/etc/openshell/policy.yaml]</span>
-<span class="dim">                         ↑ gRPC 路徑不受 gVisor 影響（Supervisor 仍在 Pod 內直接呼叫）</span></pre>
+<span class="dim">→ control plane 路徑與 runc 組相同，gRPC settings / policy delivery 正常</span></pre>
     </div>
 
-    <h3>② 網路命名空間建立（gVisor 核心驗證點）</h3>
+    <h3>② 網路命名空間建立</h3>
     <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> 待觀察：netns 建立是否成功</div>
-      <pre><span class="dim"># 成功情況（與 runc 相同）：</span>
-<span class="log-ocsf">[...] CONFIG:CREATING [INFO] Creating network namespace [ns:sandbox-xxxxxxxx ...]</span>
-<span class="log-ocsf">[...] CONFIG:CREATED  [INFO] Network namespace created [...]</span>
-<span class="log-ocsf">[...] NET:LISTEN      [INFO] 10.200.0.1:3128</span>
-
-<span class="dim"># 失敗情況（gVisor Sentry 不支援 netns 建立）：</span>
-<span class="log-deny">[...] CONFIG:FAILED   [ERROR] Network namespace creation failed ...</span>
-<span class="dim">→ 若出現此錯誤，表示 gVisor 的 SYS_ADMIN 支援不足，實驗需重新評估</span></pre>
+      <div class="terminal-header"><span></span><span></span><span></span> netns 與 proxy 初始化</div>
+      <pre><span class="log-ocsf">[...] CONFIG:CREATING [INFO] Creating network namespace [ns:sandbox-43e485fc ...]</span>
+<span class="log-ocsf">[...] CONFIG:CREATED [INFO] Network namespace created [ns:sandbox-43e485fc host_ip:10.200.0.1 sandbox_ip:10.200.0.2]</span>
+<span class="log-ocsf">[...] NET:LISTEN [INFO] 10.200.0.1:3128</span>
+<span class="dim">→ 代表 gVisor 路徑下，OpenShell 自己的 proxy / netns enforcement 仍可建立</span></pre>
     </div>
 
-    <h3>③ Landlock 套用（Sentry 版本未知）</h3>
+    <h3>③ Landlock 退化點</h3>
     <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> 待觀察：Sentry 回報的 Landlock ABI 版本</div>
-      <pre><span class="dim"># runc 結果：</span>
-<span class="log-ocsf">[...] CONFIG:PROBED   [INFO] Landlock filesystem sandbox available [abi:v4 compat:BestEffort ro:7 rw:3]</span>
-<span class="log-ocsf">[...] CONFIG:APPLYING [INFO] Applying Landlock filesystem sandbox [abi:V2 compat:BestEffort ro:7 rw:3]</span>
-
-<span class="dim"># gVisor 可能情況（待觀察）：</span>
-<span class="dim"># a) 相同 abi:v4 — Sentry 完整實作 Landlock v4</span>
-<span class="dim"># b) 低版本（abi:v1/v2）— Sentry 部分實作</span>
-<span class="dim"># c) 不可用 — Sentry 未實作 Landlock，Supervisor fallback 行為待確認</span></pre>
+      <div class="terminal-header"><span></span><span></span><span></span> 實際退化訊號</div>
+      <pre><span class="deny">[...] FINDING:UNKNOWN [HIGH] "Landlock Filesystem Sandbox Unavailable"</span>
+<span class="deny">[...] FINDING:UNKNOWN [HIGH] "Landlock Filesystem Sandbox Unavailable"</span>
+<span class="dim">→ 與 runc 組不同，這裡沒有 CONFIG:PROBED / CONFIG:APPLYING 的可用訊號</span>
+<span class="dim">→ 對照 filesystem.txt 的 VARTMP_OK，可直接判定 filesystem policy 未套上</span></pre>
     </div>
 
-    <h3>④ 政策放行/拒絕（預期結構相同）</h3>
+    <h3>④ 政策放行 / 拒絕</h3>
     <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> 預期 ALLOWED / DENIED 事件</div>
-      <pre><span class="ok">[...] NET:ALLOWED [INFO] https://api.github.com:443 [agent:curl method:GET]</span>
-<span class="deny">[...] NET:DENIED  [INFO] https://api.github.com:443 [agent:python3 method:GET]</span>
-<span class="deny">[...] NET:DENIED  [INFO] https://api.github.com:443 [agent:curl method:POST]</span>
-<span class="dim">                ↑ L7 政策由 Supervisor 在 gVisor 內執行，與底層 runtime 無關</span></pre>
+      <div class="terminal-header"><span></span><span></span><span></span> ALLOW / DENY 事件</div>
+      <pre><span class="deny">[...] NET:OPEN [MED] DENIED /usr/bin/curl(...) -> api.github.com:443 [policy:- engine:opa]</span>
+<span class="log-ocsf">[...] CONFIG:LOADED [INFO] Policy reloaded successfully [policy_hash:b8cf8d97ded0...]</span>
+<span class="ok">[...] NET:OPEN [INFO] ALLOWED /usr/bin/curl(...) -> api.github.com:443 [policy:github_api engine:opa]</span>
+<span class="ok">[...] HTTP:GET [INFO] ALLOWED GET http://api.github.com:443/zen [policy:github_api engine:l7]</span>
+<span class="deny">[...] NET:OPEN [MED] DENIED /sandbox/.uv/python/.../python3.14(...) -> api.github.com:443</span>
+<span class="deny">[...] HTTP:POST [MED] DENIED POST http://api.github.com:443/repos/octocat/hello-world/issues [policy:github_api engine:l7]</span></pre>
     </div>
 
-    <h3>⑤ 政策熱重載（預期結構相同）</h3>
+    <h3>⑤ 熱重載與控制面一致性</h3>
     <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> 預期熱重載日誌</div>
-      <pre><span class="log-ocsf">[...] CONFIG:RELOADED [INFO] Policy hot-reload successful
-        [old_revision:xxxxxxxx → new_revision:yyyyyyyy]</span>
-<span class="dim">→ gVisor 下 timer/gRPC 機制是否正常觸發熱重載，是本實驗觀察重點</span></pre>
+      <div class="terminal-header"><span></span><span></span><span></span> 實際熱重載證據</div>
+      <pre><span class="log-ocsf">[...] CONFIG:DETECTED [INFO] Settings poll: config change detected [old_revision:... new_revision:... policy_changed:true]</span>
+<span class="log-ocsf">[...] CONFIG:LOADED [INFO] Policy reloaded successfully [policy_hash:b8cf8d97ded059fe...]</span>
+<span class="dim">pod_uid_before.txt = fbf7b80c-f6f2-4930-a1d3-edbcbad9eb71</span>
+<span class="dim">pod_uid_after.txt  = fbf7b80c-f6f2-4930-a1d3-edbcbad9eb71</span></pre>
     </div>
 
-    <h3>⑥ gVisor 特有：runsc 節點層日誌</h3>
+    <h3>⑥ gVisor 自身存在的證據</h3>
     <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> 節點上查看 runsc 相關日誌</div>
-      <pre><span class="cmd">$ journalctl -u k3s-agent --since "5 minutes ago" | grep runsc</span>
-<span class="cmd">$ ls /var/log/runsc/</span>  <span class="dim"># runsc 預設日誌目錄（若有設定 --log-dir）</span>
-<span class="dim"># runsc 啟動成功時，containerd log 應顯示：</span>
-<span class="log-ocsf">time="..." level=info msg="RunC start" container_type=container runtime=io.containerd.runsc.v1</span></pre>
+      <div class="terminal-header"><span></span><span></span><span></span> gVisor probe 結果</div>
+      <pre><span class="ok">4.19.0-gvisor</span>
+<span class="ok">Linux version 4.19.0-gvisor #1 SMP Sun Jan 10 15:06:54 PST 2016</span>
+<span class="ok">gVisor-probe-OK</span>
+<span class="dim">→ 這不是 kube spec 推論，而是 probe Pod 在 RuntimeClass gvisor 下直接回報的 uname 結果</span></pre>
     </div>
   </section>
 </div>
@@ -707,19 +621,19 @@ NET:LISTEN       10.200.0.1:3128</span>   <span class="dim"># ← 相同 CONNECT
 <!-- ══════════════════ 6. 相關文件 ══════════════════ -->
 <div id="tab-docs" class="tab-panel">
   <section class="section">
-    <h2 class="section-title">原始實驗證據（執行後填入）</h2>
-    <p class="callout">⏳ 以下連結在實驗執行後更新。執行 <code>make openshell-verify</code> 後結果存於 <code>testing/raw/verify-gvisor-&lt;timestamp&gt;/</code>。</p>
+    <h2 class="section-title">原始實驗證據</h2>
+    <p class="callout">本次 gVisor 驗證結果存於 <code>testing/raw/verify-1780497002/</code>。sandbox 本體已由驗證腳本清理，但證據檔與正式報告已保留下來。</p>
     <table class="data-table">
-      <thead><tr><th>檔案</th><th>對應實驗</th><th>重要內容（預期）</th></tr></thead>
+      <thead><tr><th>檔案</th><th>對應實驗</th><th>重要內容（實測）</th></tr></thead>
       <tbody>
-        <tr><td><span class="dim">default-egress.txt</span></td><td>實驗 1</td><td>預期：<code>CONNECT tunnel failed, response 403</code>（與 runc 相同）</td></tr>
-        <tr><td><span class="dim">filesystem.txt</span></td><td>實驗 2</td><td>預期：<code>TMP_OK</code> / <code>VARTMP_DENIED</code>（Landlock 行為待確認）</td></tr>
-        <tr><td><span class="dim">static-baseline.txt</span></td><td>實驗 2</td><td>預期：<code>ls: cannot open directory '/': Permission denied</code></td></tr>
-        <tr><td><span class="dim">curl-get.txt</span></td><td>實驗 3</td><td>預期：GitHub API 格言</td></tr>
-        <tr><td><span class="dim">python-get.txt</span></td><td>實驗 4</td><td>預期：URLError HTTP 403</td></tr>
-        <tr><td><span class="dim">curl-post.txt</span></td><td>實驗 5</td><td>預期：<code>{"error":"policy_denied","layer":"l7",...}</code></td></tr>
-        <tr><td><span class="dim">pod_uid_before.txt / pod_uid_after.txt</span></td><td>實驗 6</td><td>預期：UID 相同（熱重載不重啟 Pod）</td></tr>
-        <tr><td><span class="dim">sandbox-logs.txt</span></td><td>實驗 1–6</td><td>OCSF Supervisor 日誌；重點觀察 CONFIG:CREATING、Landlock ABI</td></tr>
+        <tr><td><span class="dim">default-egress.txt</span></td><td>實驗 1</td><td><code>curl: (56) CONNECT tunnel failed, response 403</code></td></tr>
+        <tr><td><span class="dim">filesystem.txt</span></td><td>實驗 2</td><td><code>TMP_OK</code> / <code>VARTMP_OK</code></td></tr>
+        <tr><td><span class="dim">static-baseline.txt</span></td><td>實驗 2</td><td>可列出 <code>/</code> 內容，表示 root listing 未被擋下</td></tr>
+        <tr><td><span class="dim">curl-get.txt</span></td><td>實驗 3</td><td><code>Favor focus over features.</code></td></tr>
+        <tr><td><span class="dim">python-get.txt</span></td><td>實驗 4</td><td><code>URLError: Tunnel connection failed: 403 Forbidden</code></td></tr>
+        <tr><td><span class="dim">curl-post.txt</span></td><td>實驗 5</td><td><code>{"error":"policy_denied","layer":"l7",...}</code></td></tr>
+        <tr><td><span class="dim">pod_uid_before.txt / pod_uid_after.txt</span></td><td>實驗 6</td><td>兩者相同，證明 hot-reload 不重建 Pod</td></tr>
+        <tr><td><span class="dim">sandbox-logs.txt</span></td><td>實驗 1–6</td><td>含 <code>NET:LISTEN</code>、<code>HTTP:GET ALLOWED</code>、<code>HTTP:POST DENIED</code>、<code>Landlock Filesystem Sandbox Unavailable</code></td></tr>
       </tbody>
     </table>
   </section>
