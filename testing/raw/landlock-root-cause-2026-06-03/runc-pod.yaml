@@ -1,0 +1,143 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"name":"landlock-runc-test","namespace":"default"},"spec":{"containers":[{"command":["python3","/tmp/landlock-test.py"],"image":"python:3.12-slim","name":"test","volumeMounts":[{"mountPath":"/tmp/landlock-test.py","name":"script","subPath":"landlock-test.py"}]}],"restartPolicy":"Never","volumes":[{"configMap":{"name":"landlock-test-script"},"name":"script"}]}}
+  creationTimestamp: "2026-06-03T15:27:25Z"
+  generation: 1
+  name: landlock-runc-test
+  namespace: default
+  resourceVersion: "5155"
+  uid: eef6dacc-1e1f-496e-bc38-16030b9ed573
+spec:
+  containers:
+  - command:
+    - python3
+    - /tmp/landlock-test.py
+    image: python:3.12-slim
+    imagePullPolicy: IfNotPresent
+    name: test
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /tmp/landlock-test.py
+      name: script
+      subPath: landlock-test.py
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-hmcnz
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: worker-2
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Never
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - configMap:
+      defaultMode: 420
+      name: landlock-test-script
+    name: script
+  - name: kube-api-access-hmcnz
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-03T15:27:27Z"
+    observedGeneration: 1
+    status: "False"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-03T15:27:25Z"
+    observedGeneration: 1
+    reason: PodCompleted
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-03T15:27:25Z"
+    observedGeneration: 1
+    reason: PodCompleted
+    status: "False"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-03T15:27:25Z"
+    observedGeneration: 1
+    reason: PodCompleted
+    status: "False"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-03T15:27:25Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://5031ec8b817cf86f685a8b6ccbbe7b590a6c25f3a4873bfcbf5d8d400cd701af
+    image: docker.io/library/python:3.12-slim
+    imageID: docker.io/library/python@sha256:090ba77e2958f6af52a5341f788b50b032dd4ca28377d2893dcf1ecbdfdfe203
+    lastState: {}
+    name: test
+    ready: false
+    resources: {}
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: containerd://5031ec8b817cf86f685a8b6ccbbe7b590a6c25f3a4873bfcbf5d8d400cd701af
+        exitCode: 0
+        finishedAt: "2026-06-03T15:27:26Z"
+        reason: Completed
+        startedAt: "2026-06-03T15:27:26Z"
+    user:
+      linux:
+        gid: 0
+        supplementalGroups:
+        - 0
+        uid: 0
+    volumeMounts:
+    - mountPath: /tmp/landlock-test.py
+      name: script
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-hmcnz
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 10.100.0.6
+  hostIPs:
+  - ip: 10.100.0.6
+  observedGeneration: 1
+  phase: Succeeded
+  podIP: 10.42.1.11
+  podIPs:
+  - ip: 10.42.1.11
+  qosClass: BestEffort
+  startTime: "2026-06-03T15:27:25Z"

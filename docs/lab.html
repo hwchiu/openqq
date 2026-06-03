@@ -38,10 +38,38 @@
     <p class="hero-sub">在 3 節點 k3s 叢集上部署 Sandbox CRD，搭配 OpenShell Supervisor（runc 組合），執行 7 項黑箱驗證。<br>本頁記錄架構細節、維運差異與完整實驗結果。</p>
     <div class="metrics">
       <div class="metric"><span class="metric-num">runc</span><span class="metric-label">Container Runtime</span></div>
-      <div class="metric"><span class="metric-num">Sandbox<br>CRD</span><span class="metric-label">工作負載管理</span></div>
-      <div class="metric"><span class="metric-num">OpenShell</span><span class="metric-label">行為管控層</span></div>
-      <div class="metric"><span class="metric-num">7</span><span class="metric-label">驗證實驗全通過</span></div>
+      <div class="metric"><span class="metric-num">7/7</span><span class="metric-label">黑箱驗證通過</span></div>
+      <div class="metric"><span class="metric-num">Landlock<br>v4</span><span class="metric-label">Filesystem 可用</span></div>
+      <div class="metric"><span class="metric-num">L7</span><span class="metric-label">GET / POST / binary 控制成立</span></div>
     </div>
+  </section>
+
+  <div class="status-strip">
+    <strong>基準組狀態</strong>
+    <p>這一頁是 OpenShell 在 `k3s + containerd + runc` 上的基準組。Landlock filesystem sandbox、預設 deny egress、binary allowlist、L7 method/path 控制、policy hot-reload 全部成立。這也是用來對照 [gVisor 實驗](/Users/hwchiu/hwchiu/openqq/docs/lab-gvisor.html) 的基線，方便看清楚哪些能力是 OpenShell 本身提供、哪些能力會受 runtime 切換影響。</p>
+  </div>
+
+  <section class="section">
+    <h2 class="section-title">基準組重點</h2>
+    <div class="spotlight-grid">
+      <div class="spotlight">
+        <span class="kicker">Filesystem</span>
+        <h3>Landlock 成立</h3>
+        <p>在 runc 組，<code>/tmp</code> 可寫、<code>/var/tmp</code> 被拒絕、根目錄列舉被拒，證明 OpenShell 的 filesystem policy 真正有套上。</p>
+      </div>
+      <div class="spotlight">
+        <span class="kicker">Network</span>
+        <h3>L7 控制完整</h3>
+        <p>同一個 GitHub endpoint，<code>curl GET</code> 可以、<code>python3 GET</code> 不行、<code>curl POST</code> 不行，清楚區分 binary 與 method/path。</p>
+      </div>
+      <div class="spotlight">
+        <span class="kicker">Compare</span>
+        <h3>對照 gVisor</h3>
+        <p>gVisor 組保留了 L7 與 hot-reload，但失去了這一頁看到的 Landlock filesystem enforcement。兩頁要一起看，才不會把 runtime 差異講錯。</p>
+        <p class="evidence-note"><a href="lab-gvisor.html">查看 gVisor 對照 →</a></p>
+      </div>
+    </div>
+    <p class="evidence-note" style="margin-top:16px;">runc 基準組的 OpenShell 特性驗證報告：<a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-sandbox-validation-2026-06-03.md" target="_blank">openshell-sandbox-validation-2026-06-03.md</a></p>
   </section>
 
   <section class="section">
