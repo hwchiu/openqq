@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: preflight repo-tree cluster-up cluster-kubeconfig cluster-status cluster-down tf-init tf-plan tf-apply tf-destroy openshell-install openshell-patcher openshell-verify openshell-endpoint
+.PHONY: preflight repo-tree cluster-up cluster-kubeconfig cluster-status cluster-down tf-init tf-plan tf-apply tf-destroy openshell-install openshell-patcher openshell-verify openshell-endpoint gvisor-install gvisor-verify openshell-patcher-gvisor
 
 preflight:
 	./scripts/check-azure-connectivity.sh
@@ -43,3 +43,12 @@ openshell-verify:
 
 openshell-endpoint:
 	./scripts/get-openshell-endpoint.sh
+
+gvisor-install:
+	./scripts/install-gvisor.sh
+
+gvisor-verify:
+	./scripts/verify-gvisor-runtime.sh
+
+openshell-patcher-gvisor:
+	./scripts/install-openshell-sandbox-patcher-gvisor.sh

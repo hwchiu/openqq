@@ -27,6 +27,27 @@ write_files:
         systemctl enable --now crio
       }
 
+      install_gvisor() {
+        curl -fsSL https://gvisor.dev/archive.key \
+          | gpg --batch --yes --dearmor -o /usr/share/keyrings/gvisor-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/gvisor-archive-keyring.gpg] \
+https://storage.googleapis.com/gvisor/releases release main" \
+          | tee /etc/apt/sources.list.d/gvisor.list > /dev/null
+        apt-get update -qq
+        apt-get install -y runsc
+      }
+
+      configure_gvisor_containerd() {
+        local tmpl="/var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl"
+        mkdir -p "$(dirname "$tmpl")"
+        k3s containerd config default > "$tmpl"
+        cat >> "$tmpl" << 'TOML'
+
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
+  runtime_type = "io.containerd.runsc.v1"
+TOML
+      }
+
       until curl -k --max-time 5 "https://${server_private}:6443/cacerts" >/dev/null; do
         sleep 5
       done
@@ -37,9 +58,17 @@ write_files:
         runtime_args+=(--container-runtime-endpoint unix:///var/run/crio/crio.sock)
       fi
 
+      if [[ '${container_runtime}' == 'gvisor' ]]; then
+        install_gvisor
+      fi
+
       if [[ '${container_runtime}' == 'crio' ]]; then
         curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_START=true INSTALL_K3S_VERSION='${k3s_version}' K3S_URL='https://${server_private}:6443' K3S_TOKEN='${k3s_token}' sh -s - \
           "$${runtime_args[@]}"
+      elif [[ '${container_runtime}' == 'gvisor' ]]; then
+        curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_START=true INSTALL_K3S_VERSION='${k3s_version}' K3S_URL='https://${server_private}:6443' K3S_TOKEN='${k3s_token}' sh -s -
+        configure_gvisor_containerd
+        systemctl start k3s-agent
       else
         curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION='${k3s_version}' K3S_URL='https://${server_private}:6443' K3S_TOKEN='${k3s_token}' sh -s - \
           "$${runtime_args[@]}"

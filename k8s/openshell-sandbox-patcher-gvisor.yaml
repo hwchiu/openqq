@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: openshell-sandbox-patcher-gvisor
+  namespace: openshell
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: openshell-sandbox-patcher-gvisor
+  namespace: openshell
+rules:
+  - apiGroups: ["agents.x-k8s.io"]
+    resources: ["sandboxes"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: openshell-sandbox-patcher-gvisor
+  namespace: openshell
+subjects:
+  - kind: ServiceAccount
+    name: openshell-sandbox-patcher-gvisor
+    namespace: openshell
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: openshell-sandbox-patcher-gvisor
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openshell-sandbox-patcher-gvisor
+  namespace: openshell
+data:
+  reconcile.sh: |
+    #!/bin/sh
+    set -eu
+
+    namespace="${NAMESPACE:-openshell}"
+    selector="${SELECTOR:-openshell.ai/managed-by=openshell}"
+    interval="${INTERVAL_SECONDS:-5}"
+    patch_privileged='[{"op":"add","path":"/spec/podTemplate/spec/containers/0/securityContext/privileged","value":true}]'
+    patch_runtime='[{"op":"add","path":"/spec/podTemplate/spec/runtimeClassName","value":"gvisor"}]'
+
+    while true; do
+      sandboxes="$(kubectl -n "${namespace}" get sandbox -l "${selector}" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null || true)"
+
+      for name in ${sandboxes}; do
+        # Ensure privileged=true on the Sandbox spec
+        desired_priv="$(kubectl -n "${namespace}" get sandbox "${name}" -o jsonpath='{.spec.podTemplate.spec.containers[0].securityContext.privileged}' 2>/dev/null || true)"
+        if [ "${desired_priv}" != "true" ]; then
+          kubectl -n "${namespace}" patch sandbox "${name}" --type json -p="${patch_privileged}" >/dev/null
+        fi
+
+        # Ensure runtimeClassName=gvisor on the Sandbox spec
+        desired_rt="$(kubectl -n "${namespace}" get sandbox "${name}" -o jsonpath='{.spec.podTemplate.spec.runtimeClassName}' 2>/dev/null || true)"
+        if [ "${desired_rt}" != "gvisor" ]; then
+          kubectl -n "${namespace}" patch sandbox "${name}" --type json -p="${patch_runtime}" >/dev/null
+        fi
+
+        # Delete the pod if either condition is not reflected yet (triggers recreation)
+        pod_priv="$(kubectl -n "${namespace}" get pod "${name}" -o jsonpath='{.spec.containers[0].securityContext.privileged}' 2>/dev/null || true)"
+        pod_rt="$(kubectl -n "${namespace}" get pod "${name}" -o jsonpath='{.spec.runtimeClassName}' 2>/dev/null || true)"
+        if [ "${pod_priv}" != "true" ] || [ "${pod_rt}" != "gvisor" ]; then
+          kubectl -n "${namespace}" delete pod "${name}" --ignore-not-found --wait=false >/dev/null || true
+        fi
+      done
+
+      sleep "${interval}"
+    done
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openshell-sandbox-patcher-gvisor
+  namespace: openshell
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openshell-sandbox-patcher-gvisor
+  template:
+    metadata:
+      labels:
+        app: openshell-sandbox-patcher-gvisor
+    spec:
+      serviceAccountName: openshell-sandbox-patcher-gvisor
+      containers:
+        - name: patcher
+          image: bitnami/kubectl:latest
+          command: ["/bin/sh", "/work/reconcile.sh"]
+          env:
+            - name: NAMESPACE
+              value: openshell
+            - name: SELECTOR
+              value: openshell.ai/managed-by=openshell
+            - name: INTERVAL_SECONDS
+              value: "5"
+          volumeMounts:
+            - name: script
+              mountPath: /work
+              readOnly: true
+      volumes:
+        - name: script
+          configMap:
+            name: openshell-sandbox-patcher-gvisor
+            defaultMode: 0755

@@ -72,7 +72,7 @@ variable "k3s_version" {
 
 variable "container_runtime" {
   type        = string
-  description = "Node container runtime for K3s. Supported values: containerd, crio."
+  description = "Node container runtime for K3s. Supported values: containerd, crio, gvisor."
   default     = "containerd"
 
   validation {
