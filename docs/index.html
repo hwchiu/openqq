@@ -225,6 +225,113 @@ Permission denied</span></pre>
   </section>
 
   <section class="section">
+    <h2 class="section-title">agent-sandbox 的底層 Runtime：Kata / gVisor 與 OpenShell 的關係</h2>
+    <p>
+      agent-sandbox 本身只是一個 CRD，它建出來的 Pod 可以套用不同的 <code>runtimeClassName</code>，
+      選擇不同的 container runtime 來獲得更強的底層隔離。常見選項包括：
+    </p>
+
+    <div class="cards-4" style="margin-top:16px;">
+      <div class="card" style="border-top:3px solid var(--muted);">
+        <div class="card-title">runc（預設）</div>
+        <p>標準 container runtime，共享 host kernel。本 repo 目前使用此模式。</p>
+        <p style="font-size:12px;color:var(--muted);">隔離靠 namespace + cgroup，無額外 kernel 隔離。</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--accent-4);">
+        <div class="card-title">Kata Containers</div>
+        <p>每個 Pod 跑在獨立輕量 VM（QEMU / Firecracker）。提供完整 kernel 邊界隔離。</p>
+        <p style="font-size:12px;color:var(--muted);">防禦目標：container escape、kernel exploit。</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--accent-2);">
+        <div class="card-title">gVisor（runsc）</div>
+        <p>User-space kernel，以 gofer 攔截所有 syscall。減少攻擊面但不是完整 VM。</p>
+        <p style="font-size:12px;color:var(--muted);">防禦目標：syscall 攻擊、host kernel 曝露。</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:28px;">功能重疊分析</h3>
+    <p>Kata / gVisor 與 OpenShell 在部分領域看似做了類似的事，但實際上解決的是不同層次的問題：</p>
+
+    <table class="data-table" style="margin-top:12px;">
+      <thead>
+        <tr><th>能力</th><th>Kata Containers</th><th>gVisor</th><th>OpenShell Supervisor</th><th>層次</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Kernel 邊界隔離</td>
+          <td><span class="tag green">✓ VM 隔離</span></td>
+          <td><span class="tag green">✓ Syscall 攔截</span></td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
+          <td><span class="tag azure">基礎設施層</span></td>
+        </tr>
+        <tr>
+          <td>Filesystem 存取限制</td>
+          <td><span class="tag green">✓ VM 邊界</span></td>
+          <td><span class="tag green">✓ Syscall 層</span></td>
+          <td><span class="tag green">✓ Landlock LSM（細粒度）</span></td>
+          <td><span class="tag warn">⚠ 重疊，但粒度不同</span></td>
+        </tr>
+        <tr>
+          <td>Network namespace 隔離</td>
+          <td><span class="tag green">✓ 獨立 VMM 網路</span></td>
+          <td><span class="tag green">✓ 獨立 network stack</span></td>
+          <td><span class="tag green">✓ veth + netns + proxy</span></td>
+          <td><span class="tag warn">⚠ 重疊，但機制不同</span></td>
+        </tr>
+        <tr>
+          <td>出口流量 L7 政策（HTTP method/path）</td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗ 無感知</span></td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗ 無感知</span></td>
+          <td><span class="tag green">✓ Supervisor Proxy</span></td>
+          <td><span class="tag" style="background:var(--accent);color:#fff;">OpenShell 獨有</span></td>
+        </tr>
+        <tr>
+          <td>Binary 級別 allowlist</td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
+          <td><span class="tag green">✓ Supervisor</span></td>
+          <td><span class="tag" style="background:var(--accent);color:#fff;">OpenShell 獨有</span></td>
+        </tr>
+        <tr>
+          <td>Policy 熱重載（不重啟 Pod）</td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
+          <td><span class="tag green">✓ Gateway + Supervisor</span></td>
+          <td><span class="tag" style="background:var(--accent);color:#fff;">OpenShell 獨有</span></td>
+        </tr>
+        <tr>
+          <td>OCSF 結構化安全日誌</td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
+          <td><span class="tag green">✓ Supervisor</span></td>
+          <td><span class="tag" style="background:var(--accent);color:#fff;">OpenShell 獨有</span></td>
+        </tr>
+        <tr>
+          <td>防止 container escape / kernel exploit</td>
+          <td><span class="tag green">✓ 最強</span></td>
+          <td><span class="tag green">✓ 部分</span></td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗ 非設計目標</span></td>
+          <td><span class="tag azure">基礎設施層</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:28px;">結論：不是替代，是互補</h3>
+    <p class="callout">
+      Kata / gVisor 解的是「<strong>如何防止 container 逃脫到 host</strong>」（基礎設施層安全）。<br>
+      OpenShell 解的是「<strong>允許 AI Agent 做哪些事</strong>」（應用層政策管控）。<br>
+      兩者可以同時使用，形成縱深防禦（Defense in Depth）：
+      Kata 防止 kernel-level 攻擊，OpenShell 控制 agent 行為。
+    </p>
+    <p style="font-size:13px;color:var(--muted);">
+      ⚠️ 注意：本 repo 目前使用標準 runc（k3s 預設），
+      尚未測試 Kata / gVisor 與 OpenShell Supervisor 共存時的相容性。
+      已知 k3s + containerd + netns 已有限制需要 privileged workaround，
+      加上 Kata 可能有額外的配置需求。
+    </p>
+  </section>
+
+  <section class="section">
     <h2 class="section-title">五層架構堆疊</h2>
     <div class="layer-stack">
       <div class="layer">
