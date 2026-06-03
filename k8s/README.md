@@ -1,20 +1,14 @@
-# Kubernetes Scaffold
+# Kubernetes Assets
 
-This directory is reserved for Kubernetes manifests and Helm values.
+This directory contains Kubernetes manifests and Helm values used by the lab environment.
 
-## Expected contents in the next implementation pass
+## Current contents
 
-1. CNI installation assets
-2. NVIDIA operator or driver-related manifests
-3. Sandbox namespace and workload manifests
-4. Validation workloads
+1. OpenShell Helm values
+2. Agent Sandbox validation manifests
+3. OpenShell sandbox patcher workaround
+4. Sandbox workload examples
 
-## Constraint
+## Important note
 
-Do not finalize manifests until these are known:
-
-1. Exact Kubernetes version
-2. CNI choice
-3. Exact NVIDIA product
-4. Sandbox workload definition
-
+The current OpenShell Kubernetes path is still experimental. The patcher manifest exists because the current `k3s` + `containerd` runtime path does not automatically produce sandbox pods with the privileges OpenShell needs for network namespace enforcement.

@@ -2,6 +2,8 @@
 package_update: true
 packages:
   - curl
+  - gpg
+  - software-properties-common
 
 write_files:
   - path: /usr/local/bin/install-k3s-agent.sh
@@ -9,11 +11,58 @@ write_files:
     content: |
       #!/usr/bin/env bash
       set -euxo pipefail
+      install_crio() {
+        local crio_version='${crio_version}'
+        install -d -m 0755 /etc/apt/keyrings
+        curl -fsSL "https://download.opensuse.org/repositories/isv:/cri-o:/stable:/${crio_version}/deb/Release.key" \
+          | gpg --batch --yes --dearmor -o /etc/apt/keyrings/cri-o-apt-keyring.gpg
+        echo "deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.gpg] https://download.opensuse.org/repositories/isv:/cri-o:/stable:/${crio_version}/deb/ /" \
+          > /etc/apt/sources.list.d/cri-o.list
+        apt-get update
+        apt-get install -y cri-o containernetworking-plugins
+        install -d -m 0755 /var/lib/rancher/k3s/agent/etc/cni/net.d
+        install -d -m 0755 /opt/cni/bin
+        rm -rf /etc/cni/net.d
+        ln -sfn /var/lib/rancher/k3s/agent/etc/cni/net.d /etc/cni/net.d
+        systemctl enable --now crio
+      }
+
       until curl -k --max-time 5 "https://${server_private}:6443/cacerts" >/dev/null; do
         sleep 5
       done
-      curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION='${k3s_version}' K3S_URL='https://${server_private}:6443' K3S_TOKEN='${k3s_token}' sh -
+
+      runtime_args=()
+      if [[ '${container_runtime}' == 'crio' ]]; then
+        install_crio
+        runtime_args+=(--container-runtime-endpoint unix:///var/run/crio/crio.sock)
+      fi
+
+      if [[ '${container_runtime}' == 'crio' ]]; then
+        curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_START=true INSTALL_K3S_VERSION='${k3s_version}' K3S_URL='https://${server_private}:6443' K3S_TOKEN='${k3s_token}' sh -s - \
+          "$${runtime_args[@]}"
+      else
+        curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION='${k3s_version}' K3S_URL='https://${server_private}:6443' K3S_TOKEN='${k3s_token}' sh -s - \
+          "$${runtime_args[@]}"
+      fi
+  - path: /usr/local/bin/finalize-crio-cni-agent.sh
+    permissions: "0755"
+    content: |
+      #!/usr/bin/env bash
+      set -euxo pipefail
+      [[ '${container_runtime}' == 'crio' ]] || exit 0
+      install -d -m 0755 /opt/cni/bin
+      for _ in $(seq 1 120); do
+        if [[ -d /var/lib/rancher/k3s/data/current/bin ]]; then
+          break
+        fi
+        sleep 2
+      done
+      for plugin in /var/lib/rancher/k3s/data/current/bin/*; do
+        ln -sfn "$plugin" "/opt/cni/bin/$(basename "$plugin")"
+      done
+      systemctl restart crio
+      systemctl start k3s-agent
 
 runcmd:
   - [ bash, /usr/local/bin/install-k3s-agent.sh ]
-
+  - [ bash, /usr/local/bin/finalize-crio-cni-agent.sh ]

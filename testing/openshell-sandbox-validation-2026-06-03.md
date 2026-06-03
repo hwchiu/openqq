@@ -181,6 +181,103 @@ after:  d1aef3ab-d47e-4b18-991d-760f48bd6fec
 
 也就是說，OpenShell 的 policy 是 runtime hot-reload，而不是靠刪 Pod / 重建 Pod 才生效。
 
+## 階段 4: 證明動態 policy 與靜態 policy 的差異
+
+這一段是本次最能說明 `OpenShell` 架構價值的實驗。
+
+我把 policy 再改成第 3 版，唯一重點是:
+
+1. 保留原本允許 `curl` 讀取 GitHub API 的動態 network policy
+2. 額外把 `filesystem_policy.read_write` 加上 `/var/tmp`
+
+理論上如果 filesystem 也是動態熱更新，那麼 `/var/tmp` 就應該變成可寫。
+
+### 實測結果
+
+Pod UID 沒變:
+
+```text
+after-policy-set pod uid: d1aef3ab-d47e-4b18-991d-760f48bd6fec
+```
+
+但 sandbox 內結果是:
+
+```text
+touch: cannot touch '/var/tmp/after-static-policy': Permission denied
+VARTMP_DENIED
+Keep it logically awesome.
+```
+
+也就是:
+
+1. `/var/tmp` 仍然不能寫
+2. `curl https://api.github.com/zen` 仍然可以成功
+
+### 這代表什麼
+
+這正好對應官方文件描述:
+
+1. `filesystem_policy` 是靜態控制，鎖在 sandbox 建立時
+2. `network_policies` 是動態控制，可在 runtime 熱更新
+
+這不是單純「policy server 下發 YAML」而已，而是 OpenShell 把控制分成兩層:
+
+1. 靜態層: supervisor 在 sandbox 啟動時建立 process / filesystem isolation
+2. 動態層: gateway 對 live sandbox 下發新的 network policy
+
+## 階段 5: 驗證 sandbox 沒有預設暴露 Kubernetes API token
+
+這一步的目的，是把 OpenShell sandbox 和一般 Kubernetes Pod 的預設曝險面切開。
+
+在 `proof-auto` sandbox 內實測：
+
+```text
+K8S_SA_ABSENT
+OPENSHELL_BOOTSTRAP_PRESENT
+```
+
+這代表：
+
+1. 標準 Kubernetes service account token 並沒有直接暴露給 child process
+2. 但 OpenShell 自己仍保留 bootstrap token 路徑，讓 supervisor 去和 gateway 完成 sandbox JWT 的交換
+
+這點很重要，因為它說明 OpenShell 在 Kubernetes 上並不是簡單地把預設 service account 直接塞進 agent 執行環境。
+
+## 階段 6: 把 containerd 路徑的 workaround 產品化
+
+目前 `k3s + containerd` 下，如果沒有額外處理，OpenShell sandbox 會因為 netns 建立失敗而 crash。
+
+因此 repo 已新增：
+
+- [k8s/openshell-sandbox-patcher.yaml](/Users/hwchiu/hwchiu/openqq/k8s/openshell-sandbox-patcher.yaml)
+- [scripts/install-openshell-sandbox-patcher.sh](/Users/hwchiu/hwchiu/openqq/scripts/install-openshell-sandbox-patcher.sh)
+
+這個 patcher 會：
+
+1. 監看 `openshell` namespace 中由 OpenShell 管理的 `Sandbox`
+2. 自動把 `spec.podTemplate.spec.containers[0].securityContext.privileged=true` 補上去
+3. 若現有 Pod 仍是舊的 non-privileged spec，則刪除 Pod，讓 controller 依新 spec 重建
+
+### 產品化驗證結果
+
+我建立了一個全新的 sandbox `proof-auto-...`，不手動 patch。
+
+結果在觀察期間內直接看到：
+
+```text
+spec.privileged=true
+Sandbox Ready=True
+Pod Running
+```
+
+這代表至少在目前的 `containerd` lab 上，OpenShell sandbox 的關鍵 workaround 已被自動化，不需要再手動修單一 sandbox。
+
+這個差異非常重要，因為它解釋了:
+
+- 為什麼 OpenShell 不是只有一個 CLI
+- 也不是只有一個 CRD controller
+- 而是 `gateway + supervisor + sandbox runtime` 一起構成整體安全模型
+
 ## Sandbox log 佐證
 
 節錄自 sandbox log:
@@ -214,6 +311,9 @@ HTTP:POST DENIED POST http://api.github.com:443/repos/octocat/hello-world/issues
 1. OpenShell sandbox 的確有自己獨特的 runtime enforcement
 2. 這些 enforcement 不等同於 Kubernetes `NetworkPolicy`
 3. 我們已經在實機環境驗證到 filesystem sandbox、default-deny egress、binary allowlist、L7 method/path 控制、policy hot-reload
+4. 我們也驗證到 OpenShell 的 static controls 與 dynamic controls 真的分層存在，並且行為不同
+5. 我們也驗證到 sandbox child process 沒有直接暴露標準 Kubernetes API token
+6. 目前 `containerd` 路徑的 privileged workaround 已被產品化成可重現 patcher
 
 ## 這次不能誠實宣稱的事情
 
@@ -241,6 +341,7 @@ HTTP:POST DENIED POST http://api.github.com:443/repos/octocat/hello-world/issues
 ## 相關原始資料
 
 - [github_readonly.yaml](/Users/hwchiu/hwchiu/openqq/testing/raw/openshell-sandbox-proof/github_readonly.yaml)
+- [github_readonly_plus_vartmp.yaml](/Users/hwchiu/hwchiu/openqq/testing/raw/openshell-sandbox-proof/github_readonly_plus_vartmp.yaml)
 - [pod_uid_before.txt](/Users/hwchiu/hwchiu/openqq/testing/raw/openshell-sandbox-proof/pod_uid_before.txt)
 - [pod_uid.txt](/Users/hwchiu/hwchiu/openqq/testing/raw/openshell-sandbox-proof/pod_uid.txt)
 - [sandbox_status.txt](/Users/hwchiu/hwchiu/openqq/testing/raw/openshell-sandbox-proof/sandbox_status.txt)

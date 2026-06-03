@@ -36,3 +36,12 @@ OpenShell still requires:
 1. `agent-sandbox` installation
 2. OpenShell Helm chart installation
 3. Gateway exposure values for remote CLI access
+
+## Runtime modes
+
+Use `terraform/terraform.tfvars` to select the node runtime:
+
+1. `container_runtime = "containerd"`
+2. `container_runtime = "crio"`
+
+`crio` mode installs the external CRI-O service before K3s starts and then points K3s at the CRI socket.

@@ -9,6 +9,9 @@
 
 1. [k8s/openshell-values.yaml](/Users/hwchiu/hwchiu/openqq/k8s/openshell-values.yaml)
 2. [terraform/main.tf](/Users/hwchiu/hwchiu/openqq/terraform/main.tf)
+3. [k8s/openshell-sandbox-patcher.yaml](/Users/hwchiu/hwchiu/openqq/k8s/openshell-sandbox-patcher.yaml)
+4. [scripts/install-openshell-stack.sh](/Users/hwchiu/hwchiu/openqq/scripts/install-openshell-stack.sh)
+5. [scripts/verify-openshell-runtime.sh](/Users/hwchiu/hwchiu/openqq/scripts/verify-openshell-runtime.sh)
 
 ## Current lab configuration
 
@@ -36,3 +39,15 @@ An HTTP `404` from `/` is expected here and confirms the gateway is reachable ov
 This is a lab-first configuration only. It intentionally disables TLS and allows unauthenticated users to simplify initial validation.
 
 Do not treat this as a production configuration.
+
+## Sandbox patcher
+
+Current `k3s` + `containerd` validation requires one Kubernetes-side workaround: OpenShell sandbox pods need `privileged: true` so the supervisor can create its network namespace and proxy path.
+
+This repo now carries [k8s/openshell-sandbox-patcher.yaml](/Users/hwchiu/hwchiu/openqq/k8s/openshell-sandbox-patcher.yaml), which:
+
+1. Watches OpenShell-managed `Sandbox` CRs in the `openshell` namespace
+2. Patches `spec.podTemplate.spec.containers[0].securityContext.privileged=true`
+3. Deletes a stale non-privileged Pod so the controller recreates it from the patched spec
+
+This is a reproducibility workaround, not a final upstream-quality integration.

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OpenQQ Lab Report</title>
+    <meta
+      name="description"
+      content="Azure + K3s + OpenShell + Agent Sandbox 的設計、概念、實驗與驗證結果。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./assets/site.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>OpenQQ Lab</span>
+        </div>
+        <nav class="nav">
+          <a href="#architecture">架構</a>
+          <a href="#concepts">概念</a>
+          <a href="#experiments">實驗</a>
+          <a href="#evidence">證據</a>
+          <a href="#runtime">Runtime</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <div class="eyebrow">Azure / K3s / OpenShell / Agent Sandbox</div>
+        <h1>把名詞拆成架構，把架構拆成證據。</h1>
+        <p>
+          這個頁面整併目前 repo 裡所有和 OpenShell 有關的核心設計、概念差異、runtime
+          特性、實驗流程與結果。重點不是只說「有 sandbox」，而是把
+          <code>driver</code>、<code>agent-sandbox</code>、<code>supervisor</code>、
+          <code>OpenShell sandbox</code> 各自負責什麼，以及哪些能力已經在這個叢集上被真正驗證。
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-sandbox-validation-2026-06-03.md">看完整驗證報告</a>
+          <a class="button" href="https://github.com/hwchiu/openqq/blob/main/docs/openshell-architecture.md">看架構介紹</a>
+          <a class="button" href="https://github.com/hwchiu/openqq/blob/main/docs/openshell-vs-sandbox.md">看概念差異</a>
+        </div>
+        <div class="grid metrics">
+          <div class="metric">
+            <div class="label">Verified Nodes</div>
+            <div class="value">3</div>
+          </div>
+          <div class="metric">
+            <div class="label">Runtime Path</div>
+            <div class="value">k3s + containerd</div>
+          </div>
+          <div class="metric">
+            <div class="label">OpenShell Proofs</div>
+            <div class="value">5+</div>
+          </div>
+          <div class="metric">
+            <div class="label">CRI-O Status</div>
+            <div class="value">Prepared</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="architecture">
+        <h2 class="section-title">系統架構</h2>
+        <p class="section-intro">
+          現在這個 lab 的實際鏈路不是單一元件，而是由 control plane、compute
+          driver、Kubernetes 承載層與 sandbox 本地 enforcement 一起組成。
+        </p>
+        <div class="flow">
+          <div class="flow-step">
+            <strong>CLI</strong>
+            <span>建立 sandbox、連線、套 policy、讀 logs</span>
+          </div>
+          <div class="flow-step">
+            <strong>Gateway</strong>
+            <span>管理 state、policy、provider、settings、relay</span>
+          </div>
+          <div class="flow-step">
+            <strong>K8s Driver</strong>
+            <span>把抽象 sandbox 轉成 Kubernetes `Sandbox` 物件</span>
+          </div>
+          <div class="flow-step">
+            <strong>agent-sandbox</strong>
+            <span>reconcile CRD，建立 Pod / Service / PVC</span>
+          </div>
+          <div class="flow-step">
+            <strong>Supervisor</strong>
+            <span>套 process / filesystem / network enforcement</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="concepts">
+        <h2 class="section-title">核心概念</h2>
+        <div class="cards-3">
+          <article class="card">
+            <h3>OpenShell</h3>
+            <p>
+              整個系統名稱，不是單一 Pod。包含 CLI、Gateway、Supervisor、policy
+              模型與 compute driver。
+            </p>
+          </article>
+          <article class="card">
+            <h3>OpenShell Sandbox</h3>
+            <p>
+              被 OpenShell runtime 保護的執行環境。它表面上像 Pod，但實際上有自己的本地 enforcement。
+            </p>
+          </article>
+          <article class="card">
+            <h3>agent-sandbox</h3>
+            <p>
+              Kubernetes SIG 專案，提供 `Sandbox` CRD/controller。它是承載層，不是 OpenShell policy engine。
+            </p>
+          </article>
+        </div>
+        <div class="cards-2" style="margin-top: 18px">
+          <article class="card">
+            <h3>Driver 是什麼</h3>
+            <p>
+              Driver 負責把 OpenShell 的 sandbox 抽象語意翻譯成平台動作。現在這個環境用的是
+              Kubernetes driver，證據是 gateway config 與 runtime logs 都出現
+              <code>openshell.drivers.kubernetes</code>。
+            </p>
+          </article>
+          <article class="card">
+            <h3>Supervisor 是什麼</h3>
+            <p>
+              Supervisor 是 sandbox 內真正的 enforcement 元件。它建立 network namespace、套
+              Landlock、處理 egress proxy、載入 policy，最後才啟動 child process。
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="experiments">
+        <h2 class="section-title">已完成實驗</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>實驗</th>
+                <th>要證明什麼</th>
+                <th>結果</th>
+                <th>意義</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Default deny egress</td>
+                <td>OpenShell 不是單靠 K8s 網路，sandbox 預設就拒絕未授權外連</td>
+                <td><span class="badge ok">已驗證</span></td>
+                <td><code>curl https://api.github.com/zen</code> 預設回 <code>403</code></td>
+              </tr>
+              <tr>
+                <td>Filesystem sandbox</td>
+                <td>child process 的可讀寫路徑受本地 policy 約束</td>
+                <td><span class="badge ok">已驗證</span></td>
+                <td><code>/tmp</code> 可寫，<code>/var/tmp</code> 不可寫，<code>ls /</code> 被拒絕</td>
+              </tr>
+              <tr>
+                <td>Binary allowlist</td>
+                <td>同一 endpoint 可依 binary 身份決策</td>
+                <td><span class="badge ok">已驗證</span></td>
+                <td><code>curl</code> 可連 GitHub，<code>python3</code> 不可連</td>
+              </tr>
+              <tr>
+                <td>L7 method/path control</td>
+                <td>OpenShell 可做到 HTTP method/path 級別控制</td>
+                <td><span class="badge ok">已驗證</span></td>
+                <td><code>GET /zen</code> 允許，<code>POST /repos/.../issues</code> 拒絕</td>
+              </tr>
+              <tr>
+                <td>Static vs Dynamic policy</td>
+                <td>filesystem/process 與 network policy 並不是同一層</td>
+                <td><span class="badge ok">已驗證</span></td>
+                <td>live update 後 GitHub 規則立即生效，但 <code>/var/tmp</code> 仍不能寫</td>
+              </tr>
+              <tr>
+                <td>ServiceAccount exposure</td>
+                <td>sandbox child process 沒有直接拿到標準 K8s SA token</td>
+                <td><span class="badge ok">已驗證</span></td>
+                <td><code>K8S_SA_ABSENT</code>，但 <code>OPENSHELL_BOOTSTRAP_PRESENT</code></td>
+              </tr>
+              <tr>
+                <td>Containerd workaround automation</td>
+                <td>目前 k3s + containerd 缺的 privileged workaround 已能自動化</td>
+                <td><span class="badge ok">已驗證</span></td>
+                <td>新建 sandbox 不需手動 patch 也可進入 <code>Ready</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="evidence">
+        <h2 class="section-title">核心證據</h2>
+        <p class="section-intro">
+          下列每一項不是抽象說明，而是目前叢集上的實際輸出或 Kubernetes 物件。
+        </p>
+        <div class="evidence-list">
+          <div class="evidence-item">
+            <div>
+              <strong>Kubernetes Driver Config</strong>
+              <small>證明 gateway 正在使用 Kubernetes driver</small>
+            </div>
+            <a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/architecture-evidence/openshell-configmap.yaml">openshell-configmap.yaml</a>
+          </div>
+          <div class="evidence-item">
+            <div>
+              <strong>Driver Runtime Logs</strong>
+              <small>證明 CreateSandbox / Kubernetes listing 是由 driver 執行</small>
+            </div>
+            <a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/architecture-evidence/openshell-driver-log.txt">openshell-driver-log.txt</a>
+          </div>
+          <div class="evidence-item">
+            <div>
+              <strong>Sandbox CR Evidence</strong>
+              <small>證明 OpenShell 在 Kubernetes 上是經由 `Sandbox` CR 承載</small>
+            </div>
+            <a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/architecture-evidence/proof-auto-sandbox.yaml">proof-auto-sandbox.yaml</a>
+          </div>
+          <div class="evidence-item">
+            <div>
+              <strong>Supervisor Pod Spec</strong>
+              <small>證明 agent container command 是 <code>/opt/openshell/bin/openshell-sandbox</code></small>
+            </div>
+            <a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/architecture-evidence/proof-auto-pod.yaml">proof-auto-pod.yaml</a>
+          </div>
+          <div class="evidence-item">
+            <div>
+              <strong>Supervisor Enforcement Logs</strong>
+              <small>證明 netns、Landlock、L7 allow/deny 真的在 sandbox 內發生</small>
+            </div>
+            <a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/architecture-evidence/proof-auto-sandbox-log.txt">proof-auto-sandbox-log.txt</a>
+          </div>
+          <div class="evidence-item">
+            <div>
+              <strong>Automated Runtime Verification</strong>
+              <small>可重跑的驗證輸出，之後可直接拿去驗 CRI-O 路徑</small>
+            </div>
+            <a href="https://github.com/hwchiu/openqq/tree/main/testing/raw/verify-1780439786">verify-1780439786/</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="runtime">
+        <h2 class="section-title">Runtime 與後續路線</h2>
+        <div class="cards-2">
+          <article class="card">
+            <h3>目前狀態</h3>
+            <ul>
+              <li>Azure 三節點 k3s 叢集已驗證</li>
+              <li>底層 runtime 是 <code>containerd</code></li>
+              <li>OpenShell 與 agent-sandbox 已運作</li>
+              <li>OpenShell sandbox 需透過 patcher 自動補上 <code>privileged</code> workaround</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>下一步</h3>
+            <ul>
+              <li>Terraform 已新增 <code>container_runtime</code> 與 <code>crio_version</code></li>
+              <li>cloud-init 已具備安裝 CRI-O 與把 K3s 指向 CRI socket 的邏輯</li>
+              <li>下一輪可直接切到 <code>container_runtime = "crio"</code> 重建叢集</li>
+              <li>之後重跑同一套 OpenShell 驗證腳本，比較 containerd / CRI-O 差異</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="section-title">文件入口</h2>
+        <div class="cards-3">
+          <article class="card">
+            <h3>概念差異</h3>
+            <p>釐清 OpenShell、OpenShell sandbox、agent-sandbox 三者的層次關係。</p>
+            <a class="button" href="https://github.com/hwchiu/openqq/blob/main/docs/openshell-vs-sandbox.md">閱讀文件</a>
+          </article>
+          <article class="card">
+            <h3>架構介紹</h3>
+            <p>把 driver、gateway、supervisor、sandbox 的實際職責整併成完整說明。</p>
+            <a class="button" href="https://github.com/hwchiu/openqq/blob/main/docs/openshell-architecture.md">閱讀文件</a>
+          </article>
+          <article class="card">
+            <h3>驗證報告</h3>
+            <p>包含 default deny、binary allowlist、L7 policy、static vs dynamic policy 等結果。</p>
+            <a class="button" href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-sandbox-validation-2026-06-03.md">閱讀報告</a>
+          </article>
+        </div>
+      </section>
+
+      <footer class="footer">
+        本頁對照的外部官方資料：
+        <a href="https://docs.nvidia.com/openshell/about/how-it-works">How OpenShell Works</a>、
+        <a href="https://docs.nvidia.com/openshell/kubernetes/setup">Set Up OpenShell on Kubernetes</a>、
+        <a href="https://docs.nvidia.com/openshell/latest/sandboxes/policies.html">Customize Sandbox Policies</a>、
+        <a href="https://docs.k3s.io/cli/agent">K3s Agent CLI</a>、
+        <a href="https://github.com/cri-o/packaging">CRI-O Packaging</a>。
+      </footer>
+    </div>
+  </body>
+  </html>

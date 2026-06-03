@@ -136,12 +136,14 @@ resource "azurerm_linux_virtual_machine" "server" {
   }
 
   custom_data = base64encode(templatefile("${path.module}/templates/cloud-init-server.yaml.tftpl", {
-    k3s_version    = var.k3s_version
-    k3s_token      = random_password.k3s_token.result
-    public_ip      = azurerm_public_ip.nodes[var.server_name].ip_address
-    cluster_cidr   = var.k3s_cluster_cidr
-    service_cidr   = var.k3s_service_cidr
-    admin_username = var.admin_username
+    k3s_version       = var.k3s_version
+    k3s_token         = random_password.k3s_token.result
+    public_ip         = azurerm_public_ip.nodes[var.server_name].ip_address
+    cluster_cidr      = var.k3s_cluster_cidr
+    service_cidr      = var.k3s_service_cidr
+    admin_username    = var.admin_username
+    container_runtime = var.container_runtime
+    crio_version      = var.crio_version
   }))
 }
 
@@ -174,10 +176,12 @@ resource "azurerm_linux_virtual_machine" "workers" {
   }
 
   custom_data = base64encode(templatefile("${path.module}/templates/cloud-init-agent.yaml.tftpl", {
-    k3s_version    = var.k3s_version
-    k3s_token      = random_password.k3s_token.result
-    server_private = azurerm_network_interface.nodes[var.server_name].private_ip_address
-    admin_username = var.admin_username
+    k3s_version       = var.k3s_version
+    k3s_token         = random_password.k3s_token.result
+    server_private    = azurerm_network_interface.nodes[var.server_name].private_ip_address
+    admin_username    = var.admin_username
+    container_runtime = var.container_runtime
+    crio_version      = var.crio_version
   }))
 
   depends_on = [azurerm_linux_virtual_machine.server]

@@ -70,6 +70,23 @@ variable "k3s_version" {
   default     = "v1.35.5+k3s1"
 }
 
+variable "container_runtime" {
+  type        = string
+  description = "Node container runtime for K3s. Supported values: containerd, crio."
+  default     = "containerd"
+
+  validation {
+    condition     = contains(["containerd", "crio"], var.container_runtime)
+    error_message = "container_runtime must be either 'containerd' or 'crio'."
+  }
+}
+
+variable "crio_version" {
+  type        = string
+  description = "CRI-O minor stream to install when container_runtime=crio, for example v1.35."
+  default     = "v1.35"
+}
+
 variable "server_name" {
   type        = string
   description = "Control plane VM name."
@@ -96,4 +113,3 @@ variable "tags" {
     workload   = "k3s"
   }
 }
-

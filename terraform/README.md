@@ -12,6 +12,7 @@ This directory contains a Terraform implementation for a repeatable Azure-backed
 6. One control-plane VM
 7. Two worker VMs
 8. `k3s` bootstrap via cloud-init
+9. Runtime selection between embedded `containerd` and external `CRI-O`
 
 ## Files
 
@@ -37,6 +38,28 @@ terraform -chdir=terraform apply
 
 4. Fetch kubeconfig from the control plane using the output command
 5. Replace `127.0.0.1` in the fetched kubeconfig with the control-plane public IP
+
+## Runtime selection
+
+The stack supports:
+
+1. `containerd`
+2. `crio`
+
+Set `container_runtime` in `terraform.tfvars`:
+
+```hcl
+container_runtime = "containerd"
+```
+
+or:
+
+```hcl
+container_runtime = "crio"
+crio_version      = "v1.35"
+```
+
+When `container_runtime="crio"`, cloud-init installs CRI-O from the official packaging repository, enables the `crio` service, points K3s at `unix:///var/run/crio/crio.sock`, and shares the K3s CNI config directory with CRI-O.
 
 ## Design note
 

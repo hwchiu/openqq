@@ -1,0 +1,146 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-06-02T14:24:15Z"
+    generateName: agent-sandbox-controller-dbc467768-
+    generation: 1
+    labels:
+      app: agent-sandbox-controller
+      pod-template-hash: dbc467768
+    name: agent-sandbox-controller-dbc467768-4854h
+    namespace: agent-sandbox-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: agent-sandbox-controller-dbc467768
+      uid: 936e54f2-d3e4-49a0-ac3c-c7843f658db5
+    resourceVersion: "976"
+    uid: 69a03e03-c0cd-4c19-9de2-0291245fb292
+  spec:
+    containers:
+    - args:
+      - --leader-elect=true
+      image: registry.k8s.io/agent-sandbox/agent-sandbox-controller:v0.4.5
+      imagePullPolicy: IfNotPresent
+      name: agent-sandbox-controller
+      ports:
+      - containerPort: 8080
+        name: metrics
+        protocol: TCP
+      - containerPort: 8081
+        name: healthz
+        protocol: TCP
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-x9hs2
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: worker-2
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: agent-sandbox-controller
+    serviceAccountName: agent-sandbox-controller
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: kube-api-access-x9hs2
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T14:24:21Z"
+      observedGeneration: 1
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T14:24:15Z"
+      observedGeneration: 1
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T14:24:21Z"
+      observedGeneration: 1
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T14:24:21Z"
+      observedGeneration: 1
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-06-02T14:24:15Z"
+      observedGeneration: 1
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://d4076d39584f038e4b3d383b16c5e38dd8f576d55fc402329706af52c1be3951
+      image: registry.k8s.io/agent-sandbox/agent-sandbox-controller:v0.4.5
+      imageID: registry.k8s.io/agent-sandbox/agent-sandbox-controller@sha256:64317cf5694991d9d63ce6a1b3fda16dfeecca0f01c863945cbcdb38ccc18473
+      lastState: {}
+      name: agent-sandbox-controller
+      ready: true
+      resources: {}
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-06-02T14:24:20Z"
+      user:
+        linux:
+          gid: 65532
+          supplementalGroups:
+          - 65532
+          uid: 65532
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-x9hs2
+        readOnly: true
+        recursiveReadOnly: Disabled
+    hostIP: 10.100.0.6
+    hostIPs:
+    - ip: 10.100.0.6
+    observedGeneration: 1
+    phase: Running
+    podIP: 10.42.2.3
+    podIPs:
+    - ip: 10.42.2.3
+    qosClass: BestEffort
+    startTime: "2026-06-02T14:24:15Z"
+kind: List
+metadata:
+  resourceVersion: ""

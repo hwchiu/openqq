@@ -11,6 +11,8 @@ subnet_cidr         = "10.100.0.0/24"
 k3s_cluster_cidr    = "10.42.0.0/16"
 k3s_service_cidr    = "10.43.0.0/16"
 k3s_version         = "v1.35.5+k3s1"
+container_runtime   = "containerd"
+crio_version        = "v1.35"
 server_name         = "cp-0"
 worker_names        = ["worker-1", "worker-2"]
 
@@ -19,4 +21,3 @@ tags = {
   managed-by  = "terraform"
   workload    = "k3s"
 }
-

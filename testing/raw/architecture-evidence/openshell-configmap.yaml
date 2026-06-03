@@ -1,0 +1,48 @@
+apiVersion: v1
+data:
+  gateway.toml: |
+    [openshell]
+    version = 1
+
+    [openshell.gateway]
+    bind_address          = "0.0.0.0:8080"
+    health_bind_address   = "0.0.0.0:8081"
+    metrics_bind_address  = "0.0.0.0:9090"
+    log_level             = "info"
+    sandbox_namespace     = "openshell"
+    default_image         = "ghcr.io/nvidia/openshell-community/sandboxes/base:latest"
+    supervisor_image      = "ghcr.io/nvidia/openshell/supervisor:0.0.53"
+    disable_tls            = true
+    enable_loopback_service_http = true
+
+    [openshell.gateway.auth]
+    allow_unauthenticated_users = true
+
+    [openshell.gateway.gateway_jwt]
+    signing_key_path = "/etc/openshell-jwt/signing.pem"
+    public_key_path  = "/etc/openshell-jwt/public.pem"
+    kid_path         = "/etc/openshell-jwt/kid"
+    gateway_id       = "openshell"
+    ttl_secs         = 3600
+
+    [openshell.drivers.kubernetes]
+    grpc_endpoint                = "http://openshell.openshell.svc.cluster.local:8080"
+    service_account_name         = "openshell-sandbox"
+    supervisor_sideload_method   = "image-volume"
+    sa_token_ttl_secs            = 3600
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: openshell
+    meta.helm.sh/release-namespace: openshell
+  creationTimestamp: "2026-06-02T14:26:40Z"
+  labels:
+    app.kubernetes.io/instance: openshell
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: openshell
+    app.kubernetes.io/version: 0.0.53
+    helm.sh/chart: helm-chart-0.0.53
+  name: openshell-config
+  namespace: openshell
+  resourceVersion: "1128"
+  uid: 59809497-b3ba-4a81-adf8-3a3249f84467

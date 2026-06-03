@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: preflight repo-tree cluster-up cluster-kubeconfig cluster-status cluster-down tf-init tf-plan tf-apply tf-destroy
+.PHONY: preflight repo-tree cluster-up cluster-kubeconfig cluster-status cluster-down tf-init tf-plan tf-apply tf-destroy openshell-install openshell-patcher openshell-verify openshell-endpoint
 
 preflight:
 	./scripts/check-azure-connectivity.sh
@@ -31,3 +31,15 @@ tf-apply:
 
 tf-destroy:
 	terraform -chdir=terraform destroy
+
+openshell-install:
+	./scripts/install-openshell-stack.sh
+
+openshell-patcher:
+	./scripts/install-openshell-sandbox-patcher.sh
+
+openshell-verify:
+	./scripts/verify-openshell-runtime.sh
+
+openshell-endpoint:
+	./scripts/get-openshell-endpoint.sh
