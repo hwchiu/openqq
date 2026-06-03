@@ -153,182 +153,182 @@ Permission denied</span></pre>
 <div id="tab-arch" class="tab-panel">
 
   <section class="section">
-    <h2 class="section-title">openqq、agent-sandbox、OpenShell 各自負責什麼？</h2>
-    <p>這三個名詞很容易混在一起，但它們分屬不同層次，負責的事情完全不同。</p>
+    <h2 class="section-title">agent-sandbox 到底在解什麼問題？</h2>
+    <p>
+      agent-sandbox 是 Kubernetes SIG 的專案，目標是為「AI agent 工作負載」在 Kubernetes 上定義一個
+      <strong>標準化的 CRD 抽象</strong>，解決的是比 Pod 更高層的生命週期管理問題。
+    </p>
+    <p class="callout" style="margin-top:12px;">
+      類比：StatefulSet 是為「有狀態服務」設計的 Pod 抽象；<br>
+      <strong>agent-sandbox 的 Sandbox CRD 是為「AI agent 任務」設計的 Pod 抽象</strong>。<br>
+      它本身不提供任何安全管控，只管「這個 agent workload 應該長什麼樣子、怎麼跑、怎麼存活」。
+    </p>
 
-    <div class="cards-4" style="margin-top:20px;">
-      <div class="card" style="border-top:3px solid var(--accent-3);">
-        <div class="card-icon">🧪</div>
-        <div class="card-title">openqq（本專案）</div>
-        <p>黑箱測試框架，不是沙箱本身。負責：</p>
-        <ul style="font-size:13px;padding-left:18px;margin:8px 0 0;">
-          <li>用 Terraform 在 Azure 建立 k3s 叢集</li>
-          <li>安裝 OpenShell stack</li>
-          <li>從外部執行驗證腳本（curl、python3…）</li>
-          <li>收集與保存原始測試輸出</li>
-        </ul>
-        <p style="margin-top:10px;font-size:12px;color:var(--muted);">📌 openqq 自己不提供任何沙箱或安全能力。</p>
-      </div>
-      <div class="card" style="border-top:3px solid var(--accent-4);">
-        <div class="card-icon">☸️</div>
-        <div class="card-title">agent-sandbox（k8s SIG）</div>
-        <p>Kubernetes SIG 專案，提供 <code>Sandbox</code> CRD 與 controller。負責：</p>
-        <ul style="font-size:13px;padding-left:18px;margin:8px 0 0;">
-          <li>為每個 Sandbox CR 建立 Pod / Service / PVC</li>
-          <li>維持 stable identity 與 lifecycle</li>
-          <li>保證 singleton 語意</li>
-        </ul>
-        <p style="margin-top:10px;font-size:12px;color:var(--muted);">📌 agent-sandbox 是底層承載器，<strong>不負責</strong> policy enforcement 或安全控制。</p>
-      </div>
-      <div class="card" style="border-top:3px solid var(--accent);">
-        <div class="card-icon">🔒</div>
-        <div class="card-title">OpenShell（NVIDIA）</div>
-        <p>完整的 AI Agent 安全 runtime 系統。負責：</p>
-        <ul style="font-size:13px;padding-left:18px;margin:8px 0 0;">
-          <li>CLI：操作入口（建立 sandbox、套用 policy）</li>
-          <li>Gateway：control plane，管理政策版本與 session</li>
-          <li>Driver：將抽象語意轉成 k8s / 其他平台操作</li>
-          <li>Supervisor：在容器內執行所有 enforcement</li>
-        </ul>
-        <p style="margin-top:10px;font-size:12px;color:var(--muted);">📌 真正的安全特性（Landlock、netns、L7 policy、熱重載）全部由 OpenShell 提供。</p>
-      </div>
+    <h3 style="margin-top:24px;">純 agent-sandbox 能給你什麼</h3>
+    <p>下面是一個最小的 Sandbox CR，不需要 OpenShell，直接可以用：</p>
+    <div class="terminal">
+      <div class="terminal-header"><span></span><span></span><span></span> k8s/agent-sandbox-smoke.yaml</div>
+      <pre><span class="log-ocsf">apiVersion: agents.x-k8s.io/v1alpha1
+kind: Sandbox
+metadata:
+  name: my-agent
+spec:
+  podTemplate:
+    spec:
+      containers:
+        - name: agent
+          image: busybox:1.36
+          command: ["/bin/sh", "-c", "sleep infinity"]</span></pre>
     </div>
+    <p>套用後，controller 會自動幫你建好 Pod、Service、PVC，並維持 singleton 語意。</p>
 
-    <h3 style="margin-top:32px;">三者的關係</h3>
-    <p class="callout" style="margin-bottom:16px;">OpenShell <strong>利用</strong> agent-sandbox 來承載 workload；agent-sandbox 只管 Pod 生命週期，安全控制全由 OpenShell 的 Driver + Supervisor 負責。openqq 則站在系統外部，驗證整個堆疊的行為是否符合預期。</p>
-
-    <h3>Sandbox 建立完整呼叫鏈</h3>
-    <div class="pipeline">
-      <div class="pipe-step"><strong>CLI</strong><br><span class="dim">openshell sandbox create</span></div>
-      <div class="pipe-step"><strong>Gateway</strong><br><span class="dim">control plane，接受請求</span></div>
-      <div class="pipe-step"><strong>k8s Driver</strong><br><span class="dim">建立 Sandbox CR</span></div>
-      <div class="pipe-step"><strong>agent-sandbox controller</strong><br><span class="dim">建立 Pod / Service / PVC</span></div>
-      <div class="pipe-step"><strong>Supervisor</strong><br><span class="dim">拉取政策，套用 Landlock / netns</span></div>
-      <div class="pipe-step"><strong>agent child</strong><br><span class="dim">受保護地執行任務</span></div>
-    </div>
-
-    <h3 style="margin-top:32px;">agent-sandbox 提供 vs OpenShell 額外提供</h3>
+    <h3 style="margin-top:24px;">純 agent-sandbox vs 使用 OpenShell — 優缺點比較</h3>
     <table class="data-table">
-      <thead><tr><th>能力</th><th>agent-sandbox</th><th>OpenShell</th></tr></thead>
+      <thead>
+        <tr><th>面向</th><th>純 agent-sandbox</th><th>agent-sandbox + OpenShell</th></tr>
+      </thead>
       <tbody>
-        <tr><td>建立 Pod / Service / PVC</td><td><span class="tag green">✓</span></td><td><span class="tag" style="background:#ddd;color:#666;">—</span></td></tr>
-        <tr><td>Stable identity / singleton 語意</td><td><span class="tag green">✓</span></td><td><span class="tag" style="background:#ddd;color:#666;">—</span></td></tr>
-        <tr><td>Landlock 檔案系統沙箱</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ Supervisor</span></td></tr>
-        <tr><td>獨立網路命名空間（netns）</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ Supervisor</span></td></tr>
-        <tr><td>預設封鎖所有出口流量</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ Supervisor</span></td></tr>
-        <tr><td>Binary 級別 allowlist</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ Supervisor</span></td></tr>
-        <tr><td>L7 Method / Path 級別控制</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ Supervisor</span></td></tr>
-        <tr><td>Policy 熱重載（不重啟 Pod）</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ Gateway + Supervisor</span></td></tr>
-        <tr><td>OCSF 結構化安全日誌</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ Supervisor</span></td></tr>
+        <tr>
+          <td><strong>複雜度</strong></td>
+          <td><span class="tag green">低</span> 只需安裝一個 controller</td>
+          <td><span class="tag warn">高</span> 需要 Gateway、Driver、Supervisor</td>
+        </tr>
+        <tr>
+          <td><strong>Kubernetes 工作負載管理</strong></td>
+          <td><span class="tag green">✓</span> Pod / Service / PVC 自動建立、stable DNS、singleton、lifecycle</td>
+          <td><span class="tag green">✓</span> 繼承 agent-sandbox 全部能力</td>
+        </tr>
+        <tr>
+          <td><strong>底層 Container Runtime 選擇</strong></td>
+          <td><span class="tag green">✓</span> runc / Kata / gVisor，透過 <code>runtimeClassName</code> 自由切換</td>
+          <td><span class="tag green">✓</span> 同樣可切換（OpenShell 不干涉 runtimeClass）</td>
+        </tr>
+        <tr>
+          <td><strong>預設出口流量控制</strong></td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗</span> 完全沒有，agent 可任意對外連線</td>
+          <td><span class="tag green">✓</span> 預設封鎖所有出口，明確 allowlist 才能連</td>
+        </tr>
+        <tr>
+          <td><strong>L7 HTTP 政策（method / path）</strong></td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
+          <td><span class="tag green">✓</span> 可精確控制哪個 binary 能用哪個 method 連哪個 endpoint</td>
+        </tr>
+        <tr>
+          <td><strong>Filesystem 存取控制</strong></td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗</span> 靠 runtimeClass（Kata/gVisor），或自己寫 securityContext</td>
+          <td><span class="tag green">✓</span> Landlock LSM，細到目錄層級</td>
+        </tr>
+        <tr>
+          <td><strong>Policy 熱重載</strong></td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
+          <td><span class="tag green">✓</span> 不重啟 Pod，Gateway 推送新 policy</td>
+        </tr>
+        <tr>
+          <td><strong>可審計的安全日誌</strong></td>
+          <td><span class="tag" style="background:#ddd;color:#666;">✗</span> 普通 container log</td>
+          <td><span class="tag green">✓</span> OCSF 結構化事件（ALLOWED / DENIED / CONFIG）</td>
+        </tr>
+        <tr>
+          <td><strong>適合場景</strong></td>
+          <td>內部工具、低安全需求 agent、快速 PoC</td>
+          <td>對外服務、需要治理的 AI agent、多租戶環境</td>
+        </tr>
       </tbody>
     </table>
   </section>
 
   <section class="section">
-    <h2 class="section-title">agent-sandbox 的底層 Runtime：Kata / gVisor 與 OpenShell 的關係</h2>
-    <p>
-      agent-sandbox 本身只是一個 CRD，它建出來的 Pod 可以套用不同的 <code>runtimeClassName</code>，
-      選擇不同的 container runtime 來獲得更強的底層隔離。常見選項包括：
-    </p>
+    <h2 class="section-title">三個獨立維度：不要混在一起看</h2>
+    <p>理解這個系統的關鍵是把三個維度拆開：</p>
 
     <div class="cards-4" style="margin-top:16px;">
-      <div class="card" style="border-top:3px solid var(--muted);">
-        <div class="card-title">runc（預設）</div>
-        <p>標準 container runtime，共享 host kernel。本 repo 目前使用此模式。</p>
-        <p style="font-size:12px;color:var(--muted);">隔離靠 namespace + cgroup，無額外 kernel 隔離。</p>
-      </div>
       <div class="card" style="border-top:3px solid var(--accent-4);">
-        <div class="card-title">Kata Containers</div>
-        <p>每個 Pod 跑在獨立輕量 VM（QEMU / Firecracker）。提供完整 kernel 邊界隔離。</p>
-        <p style="font-size:12px;color:var(--muted);">防禦目標：container escape、kernel exploit。</p>
+        <div class="card-icon">☸️</div>
+        <div class="card-title">維度 1：工作負載管理</div>
+        <p><strong>agent-sandbox CRD</strong> 解決的問題：「如何在 Kubernetes 上表示與管理一個 AI agent 生命週期？」</p>
+        <p style="font-size:12px;color:var(--muted);">選項：直接用 Pod（無 CRD）<br>or 用 Sandbox CRD（推薦）</p>
       </div>
       <div class="card" style="border-top:3px solid var(--accent-2);">
-        <div class="card-title">gVisor（runsc）</div>
-        <p>User-space kernel，以 gofer 攔截所有 syscall。減少攻擊面但不是完整 VM。</p>
-        <p style="font-size:12px;color:var(--muted);">防禦目標：syscall 攻擊、host kernel 曝露。</p>
+        <div class="card-icon">⚙️</div>
+        <div class="card-title">維度 2：Container Runtime</div>
+        <p><strong>runtimeClassName</strong> 解決的問題：「這個 Pod 要用什麼底層 runtime 執行？」</p>
+        <p style="font-size:12px;color:var(--muted);">選項：runc（預設）/ Kata（VM）/ gVisor（user-space kernel）<br>與維度 1、3 正交，可自由組合</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--accent);">
+        <div class="card-icon">🔒</div>
+        <div class="card-title">維度 3：Agent 行為管控</div>
+        <p><strong>OpenShell Supervisor</strong> 解決的問題：「這個 agent 被允許做哪些事？」</p>
+        <p style="font-size:12px;color:var(--muted);">選項：不裝（無管控）<br>or 裝 OpenShell（有 policy enforcement）</p>
       </div>
     </div>
 
-    <h3 style="margin-top:28px;">功能重疊分析</h3>
-    <p>Kata / gVisor 與 OpenShell 在部分領域看似做了類似的事，但實際上解決的是不同層次的問題：</p>
+    <p class="callout" style="margin-top:20px;">
+      三個維度完全正交：<br>
+      你可以用 <strong>Sandbox CRD + Kata + OpenShell</strong>（最完整），<br>
+      也可以用 <strong>Sandbox CRD + runc（無 OpenShell）</strong>（只要 lifecycle 管理），<br>
+      也可以用 <strong>raw Pod + Kata + OpenShell</strong>（跳過 CRD）。<br>
+      本 repo 目前的組合是：<strong>Sandbox CRD + runc + OpenShell</strong>。
+    </p>
 
-    <table class="data-table" style="margin-top:12px;">
-      <thead>
-        <tr><th>能力</th><th>Kata Containers</th><th>gVisor</th><th>OpenShell Supervisor</th><th>層次</th></tr>
-      </thead>
+    <h3 style="margin-top:24px;">OpenShell 如何「插入」agent-sandbox</h3>
+    <p>OpenShell 不是在 agent-sandbox 外面包一層，而是把 Supervisor binary 注入進 Sandbox CR 的 <code>podTemplate</code>：</p>
+    <div class="terminal">
+      <div class="terminal-header"><span></span><span></span><span></span> OpenShell 建立的 Sandbox CR（節錄）</div>
+      <pre><span class="dim">spec:
+  podTemplate:
+    spec:
+      containers:
+        - name: agent</span>
+          <span class="ok">command: ["/opt/openshell/bin/openshell-sandbox"]</span>  <span class="dim"># ← Supervisor，不是 agent 本體</span>
+          <span class="log-ocsf">env:
+            - name: OPENSHELL_ENDPOINT
+              value: http://openshell.openshell.svc.cluster.local:8080
+            - name: OPENSHELL_SANDBOX_COMMAND
+              value: sleep infinity                               # ← 真正的 agent 指令</span>
+          <span class="dim">image: ghcr.io/nvidia/openshell-community/sandboxes/base:latest
+      automountServiceAccountToken: false</span>                   <span class="dim"># ← 預設關掉 SA token</span></pre>
+    </div>
+    <p>Supervisor 啟動後才會去執行 <code>OPENSHELL_SANDBOX_COMMAND</code>，並對它套用所有 policy。agent-sandbox controller 對此一無所知，它只看到一個普通 Sandbox CR。</p>
+
+    <h3 style="margin-top:24px;">Container Runtime 與 OpenShell 的關係</h3>
+    <table class="data-table">
+      <thead><tr><th>runtimeClass</th><th>防禦目標</th><th>與 OpenShell 的關係</th><th>本 repo 狀態</th></tr></thead>
       <tbody>
         <tr>
-          <td>Kernel 邊界隔離</td>
-          <td><span class="tag green">✓ VM 隔離</span></td>
-          <td><span class="tag green">✓ Syscall 攔截</span></td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
-          <td><span class="tag azure">基礎設施層</span></td>
+          <td><strong>runc</strong></td>
+          <td>無額外隔離，靠 namespace + cgroup</td>
+          <td>目前使用，需 privileged workaround for netns</td>
+          <td><span class="tag green">✓ 已驗證</span></td>
         </tr>
         <tr>
-          <td>Filesystem 存取限制</td>
-          <td><span class="tag green">✓ VM 邊界</span></td>
-          <td><span class="tag green">✓ Syscall 層</span></td>
-          <td><span class="tag green">✓ Landlock LSM（細粒度）</span></td>
-          <td><span class="tag warn">⚠ 重疊，但粒度不同</span></td>
+          <td><strong>Kata Containers</strong></td>
+          <td>防 container escape、kernel exploit（VM 邊界）</td>
+          <td>理論上可搭配 OpenShell，但 netns + VM 雙層隔離的相容性未測試</td>
+          <td><span class="tag warn">未測試</span></td>
         </tr>
         <tr>
-          <td>Network namespace 隔離</td>
-          <td><span class="tag green">✓ 獨立 VMM 網路</span></td>
-          <td><span class="tag green">✓ 獨立 network stack</span></td>
-          <td><span class="tag green">✓ veth + netns + proxy</span></td>
-          <td><span class="tag warn">⚠ 重疊，但機制不同</span></td>
-        </tr>
-        <tr>
-          <td>出口流量 L7 政策（HTTP method/path）</td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗ 無感知</span></td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗ 無感知</span></td>
-          <td><span class="tag green">✓ Supervisor Proxy</span></td>
-          <td><span class="tag" style="background:var(--accent);color:#fff;">OpenShell 獨有</span></td>
-        </tr>
-        <tr>
-          <td>Binary 級別 allowlist</td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
-          <td><span class="tag green">✓ Supervisor</span></td>
-          <td><span class="tag" style="background:var(--accent);color:#fff;">OpenShell 獨有</span></td>
-        </tr>
-        <tr>
-          <td>Policy 熱重載（不重啟 Pod）</td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
-          <td><span class="tag green">✓ Gateway + Supervisor</span></td>
-          <td><span class="tag" style="background:var(--accent);color:#fff;">OpenShell 獨有</span></td>
-        </tr>
-        <tr>
-          <td>OCSF 結構化安全日誌</td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
-          <td><span class="tag green">✓ Supervisor</span></td>
-          <td><span class="tag" style="background:var(--accent);color:#fff;">OpenShell 獨有</span></td>
-        </tr>
-        <tr>
-          <td>防止 container escape / kernel exploit</td>
-          <td><span class="tag green">✓ 最強</span></td>
-          <td><span class="tag green">✓ 部分</span></td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗ 非設計目標</span></td>
-          <td><span class="tag azure">基礎設施層</span></td>
+          <td><strong>gVisor</strong></td>
+          <td>防 syscall 攻擊（user-space kernel）</td>
+          <td>gVisor 的 network stack 與 OpenShell 的 netns proxy 可能衝突</td>
+          <td><span class="tag warn">未測試</span></td>
         </tr>
       </tbody>
     </table>
+    <p style="font-size:13px;color:var(--muted);margin-top:8px;">
+      💡 Kata / gVisor 解的是「<strong>防止 container 逃脫到 host</strong>」；OpenShell 解的是「<strong>AI agent 的行為治理</strong>」。兩者威脅模型不同，可以疊加使用達到縱深防禦。
+    </p>
+  </section>
 
-    <h3 style="margin-top:28px;">結論：不是替代，是互補</h3>
-    <p class="callout">
-      Kata / gVisor 解的是「<strong>如何防止 container 逃脫到 host</strong>」（基礎設施層安全）。<br>
-      OpenShell 解的是「<strong>允許 AI Agent 做哪些事</strong>」（應用層政策管控）。<br>
-      兩者可以同時使用，形成縱深防禦（Defense in Depth）：
-      Kata 防止 kernel-level 攻擊，OpenShell 控制 agent 行為。
-    </p>
-    <p style="font-size:13px;color:var(--muted);">
-      ⚠️ 注意：本 repo 目前使用標準 runc（k3s 預設），
-      尚未測試 Kata / gVisor 與 OpenShell Supervisor 共存時的相容性。
-      已知 k3s + containerd + netns 已有限制需要 privileged workaround，
-      加上 Kata 可能有額外的配置需求。
-    </p>
+  <section class="section">
+    <h2 class="section-title">Sandbox 建立完整呼叫鏈</h2>
+    <div class="pipeline">
+      <div class="pipe-step"><strong>CLI</strong><br><span class="dim">openshell sandbox create</span></div>
+      <div class="pipe-step"><strong>Gateway</strong><br><span class="dim">control plane，接受請求</span></div>
+      <div class="pipe-step"><strong>k8s Driver</strong><br><span class="dim">建立 Sandbox CR（注入 Supervisor）</span></div>
+      <div class="pipe-step"><strong>agent-sandbox controller</strong><br><span class="dim">建立 Pod / Service / PVC</span></div>
+      <div class="pipe-step"><strong>Supervisor</strong><br><span class="dim">拉政策、套 Landlock / netns</span></div>
+      <div class="pipe-step"><strong>agent child</strong><br><span class="dim">受 policy 保護地執行</span></div>
+    </div>
   </section>
 
   <section class="section">
