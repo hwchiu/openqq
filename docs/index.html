@@ -17,6 +17,7 @@
       <button class="tab-btn active" onclick="showTab('overview',this)">總覽</button>
       <button class="tab-btn" onclick="showTab('arch',this)">架構設計</button>
       <button class="tab-btn" onclick="showTab('infra',this)">基礎設施</button>
+      <a href="report.html" style="text-decoration:none;margin-left:4px;padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent-4);color:var(--accent-4);font-size:13px;font-weight:600;display:inline-flex;align-items:center;">Executive Report</a>
       <a href="lab.html" style="text-decoration:none;margin-left:4px;padding:6px 14px;border-radius:20px;background:var(--accent-2);color:#fff;font-size:13px;font-weight:600;display:inline-flex;align-items:center;">runc 實驗</a>
       <a href="lab-gvisor.html" style="text-decoration:none;margin-left:4px;padding:6px 14px;border-radius:20px;background:var(--accent-3);color:#fff;font-size:13px;font-weight:600;display:inline-flex;align-items:center;">gVisor 實驗 →</a>
     </nav>
@@ -44,6 +45,41 @@
     <strong>目前真實狀態</strong>
     <p>Azure 測試環境已切換成 <code>k3s + containerd + RuntimeClass gvisor</code>。OpenShell 與 agent-sandbox 已重裝完成，gVisor probe Pod 成功回報 <code>4.19.0-gvisor</code>。OpenShell 的預設 deny egress、binary allowlist、L7 method/path 控制、policy hot-reload 在 gVisor 上仍成立；但 <code>testing/raw/verify-1780497002/filesystem.txt</code> 與 <code>sandbox-logs.txt</code> 也明確證明這組合下 <strong>Landlock Filesystem Sandbox Unavailable</strong>，所以 gVisor 組不是單純「更安全」，而是「底層隔離更強，但 OpenShell 的 filesystem enforcement 退化」。</p>
   </div>
+
+  <section class="section">
+    <h2 class="section-title">決策摘要</h2>
+    <div class="decision-grid">
+      <div class="decision-card">
+        <h3>現在應該怎麼選</h3>
+        <ul>
+          <li>如果你要 OpenShell 的完整能力，尤其是 <code>filesystem_policy</code>，目前應優先選 `runc`。</li>
+          <li>如果你要更強的 runtime / kernel 邊界，`gVisor` 有價值，但要接受目前 `Landlock` 缺口。</li>
+          <li>目前最穩定的說法不是「gVisor 比 runc 更安全」，而是「兩者保護面不同」。</li>
+        </ul>
+      </div>
+      <div class="decision-card">
+        <h3>本輪實驗給出的訊號</h3>
+        <div class="score-board">
+          <div class="score-pill">
+            <strong>runc</strong>
+            <span>功能完整度最高</span>
+          </div>
+          <div class="score-pill">
+            <strong>gVisor</strong>
+            <span>runtime 邊界較強</span>
+          </div>
+          <div class="score-pill">
+            <strong>L7</strong>
+            <span>兩條路徑都成立</span>
+          </div>
+          <div class="score-pill">
+            <strong>Landlock</strong>
+            <span>目前只有 runc 成立</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section class="section">
     <h2 class="section-title">這個專案在做什麼？</h2>
