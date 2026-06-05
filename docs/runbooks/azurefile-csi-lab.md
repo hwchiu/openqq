@@ -50,3 +50,19 @@ export NAMESPACE=csi-lab
 1. `Pod` 與 `Sandbox` 都成功 `Ready`
 2. 兩者都能在 `/mnt/azurefile` 看到已掛載的 Azure File share
 3. `Pod` 寫入的內容可被 `Sandbox` 讀取與修改，且修改後可被 `Pod` 再次讀取
+
+## 限制
+
+這份 lab 只證明：
+
+- `agent-sandbox` / `Sandbox` CR 可以掛載 Azure File CSI-backed PVC
+
+這不等於：
+
+- OpenShell-managed sandbox 對任何新掛載路徑都自動可寫
+
+在目前 `runc + OpenShell` 驗證組裡，寫入權限仍由 `filesystem_policy.read_write` 決定。  
+如果把遠端儲存掛在新路徑，例如 `/mnt/azurefile`，還必須：
+
+1. 把該路徑加入 OpenShell policy 的 writable allowlist
+2. 重建 sandbox，使 Landlock 重新套用

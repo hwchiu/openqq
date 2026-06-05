@@ -578,6 +578,7 @@ mount --make-shared /run/netns failed: Permission denied</span>
 from-sandbox</span></pre>
         </div>
         <p>這證明 Azure File CSI-backed PVC 已可直接進入 `Sandbox` 的 filesystem。就這個需求來看，Azure File 這條路比 `sshfs in sandbox` 更穩，也更接近正式方案。</p>
+        <p style="font-size:13px;color:var(--muted);margin-top:10px;">但這裡要切清楚：這次成功的是 `agent-sandbox` / `Sandbox` CR 直接掛載 PVC，不等於 OpenShell-managed sandbox 對新掛載路徑自動可寫。在目前 `runc + OpenShell` 組合下，若要把 Azure File 掛到像 <code>/mnt/azurefile</code> 這種新路徑，仍需把該路徑加入 <code>filesystem_policy.read_write</code>，並重建 sandbox 讓 Landlock 規則重新套用。</p>
         <p class="evidence-note"><a href="https://github.com/hwchiu/openqq/blob/main/testing/azurefile-csi-validation-2026-06-06.md" target="_blank">Azure File CSI 驗證報告</a> · <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/azurefile-csi-lab.md" target="_blank">Runbook</a></p>
       </div>
     </div>

@@ -107,6 +107,26 @@ Workloads:
 - `CSI-backed remote storage`：可以
 - `不需要在 sandbox 內跑 sshfs`：對，至少這個 Azure File 路徑不需要
 
+但有一個很重要的限制必須寫清楚：
+
+- 這次成功的是 `agent-sandbox` / `Sandbox` CR 直接掛載 PVC
+- 這**不等於** OpenShell-managed sandbox 看到新掛載路徑後就自動可寫
+
+原因是目前 `runc + OpenShell` 這條路徑下，filesystem write 權限受 `filesystem_policy.read_write` 控制。
+
+目前這份已驗證的 OpenShell policy 只放行：
+
+- `/sandbox`
+- `/tmp`
+- `/dev/null`
+
+因此如果未來把 Azure File 掛到像 `/mnt/azurefile` 這種新路徑，還要再做兩件事：
+
+1. 把 `/mnt/azurefile` 加進 OpenShell `filesystem_policy.read_write`
+2. 重建該 OpenShell sandbox
+
+因為這條路徑下的 filesystem policy 是靜態套用，不是熱更新後立即生效。
+
 但這次還沒有直接驗證：
 
 - OpenShell CLI 建立的 `workspace` 是否能直接切到 Azure File storage class
