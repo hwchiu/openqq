@@ -1,0 +1,25 @@
+apiVersion: agents.x-k8s.io/v1alpha1
+kind: Sandbox
+metadata:
+  name: azurefile-csi-sandbox
+  namespace: csi-lab
+spec:
+  podTemplate:
+    metadata:
+      labels:
+        app: azurefile-csi-sandbox
+    spec:
+      containers:
+        - name: shell
+          image: alpine:3.20
+          command:
+            - /bin/sh
+            - -c
+            - sleep 3600
+          volumeMounts:
+            - name: azure-share
+              mountPath: /mnt/azurefile
+      volumes:
+        - name: azure-share
+          persistentVolumeClaim:
+            claimName: pvc-azurefile-csi-lab

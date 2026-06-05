@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"PersistentVolume","metadata":{"annotations":{"pv.kubernetes.io/provisioned-by":"file.csi.azure.com"},"name":"pv-azurefile-001841"},"spec":{"accessModes":["ReadWriteMany"],"capacity":{"storage":"10Gi"},"csi":{"driver":"file.csi.azure.com","nodeStageSecretRef":{"name":"azure-secret","namespace":"csi-lab"},"volumeAttributes":{"resourceGroup":"rg-azure-k3s-lab-tf","shareName":"openshell-csi-share","storageAccount":"stopenqq06001115"},"volumeHandle":"rg-azure-k3s-lab-tf#stopenqq06001115#openshell-csi-share"},"mountOptions":["dir_mode=0777","file_mode=0777","uid=0","gid=0","mfsymlinks","cache=strict","nosharesock","actimeo=30","nobrl"],"persistentVolumeReclaimPolicy":"Retain","storageClassName":"azurefile-csi-static"}}
+    pv.kubernetes.io/bound-by-controller: "yes"
+    pv.kubernetes.io/provisioned-by: file.csi.azure.com
+  creationTimestamp: "2026-06-05T16:19:12Z"
+  finalizers:
+  - kubernetes.io/pv-protection
+  name: pv-azurefile-001841
+  resourceVersion: "13075"
+  uid: 36e4988e-7c45-477b-b99d-cb201e0c58af
+spec:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 10Gi
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: pvc-azurefile-001841
+    namespace: csi-lab
+    resourceVersion: "13073"
+    uid: c9e6c3fb-6af7-475f-9665-c253dd46a34e
+  csi:
+    driver: file.csi.azure.com
+    nodeStageSecretRef:
+      name: azure-secret
+      namespace: csi-lab
+    volumeAttributes:
+      resourceGroup: rg-azure-k3s-lab-tf
+      shareName: openshell-csi-share
+      storageAccount: stopenqq06001115
+    volumeHandle: rg-azure-k3s-lab-tf#stopenqq06001115#openshell-csi-share
+  mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=0
+  - gid=0
+  - mfsymlinks
+  - cache=strict
+  - nosharesock
+  - actimeo=30
+  - nobrl
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: azurefile-csi-static
+  volumeMode: Filesystem
+status:
+  lastPhaseTransitionTime: "2026-06-05T16:19:13Z"
+  phase: Bound

@@ -37,11 +37,12 @@
   <section class="hero" style="padding-bottom:24px;">
     <div class="hero-eyebrow"><span class="badge info">本實驗組合</span> Sandbox CRD + runc + OpenShell</div>
     <h1 class="hero-title" style="font-size:clamp(24px,4vw,36px);">OpenShell + runc<br>實驗報告</h1>
-    <p class="hero-sub">在 3 節點 k3s 叢集上部署 Sandbox CRD，搭配 OpenShell Supervisor（runc 組合），執行 7 項黑箱驗證，並補做 1 組 FUSE 基線實驗。<br>本頁記錄架構細節、維運差異與完整實驗結果。</p>
+    <p class="hero-sub">在 3 節點 k3s 叢集上部署 Sandbox CRD，搭配 OpenShell Supervisor（runc 組合），執行 7 項黑箱驗證，並補做 FUSE 與 Azure File CSI 兩組基線實驗。<br>本頁記錄架構細節、維運差異與完整實驗結果。</p>
     <div class="metrics">
       <div class="metric"><span class="metric-num">runc</span><span class="metric-label">Container Runtime</span></div>
       <div class="metric"><span class="metric-num">7/7</span><span class="metric-label">黑箱驗證通過</span></div>
       <div class="metric"><span class="metric-num">FUSE<br>✓</span><span class="metric-label">sshfs 基線通過</span></div>
+      <div class="metric"><span class="metric-num">CSI<br>✓</span><span class="metric-label">Azure File 進入 Sandbox</span></div>
       <div class="metric"><span class="metric-num">Landlock<br>v4</span><span class="metric-label">Filesystem 可用</span></div>
       <div class="metric"><span class="metric-num">L7</span><span class="metric-label">GET / POST / binary 控制成立</span></div>
     </div>
@@ -76,6 +77,12 @@
         <h3>remote mount 基線成立</h3>
         <p>普通 privileged Pod 已可在這套 `runc` 基線上用 <code>sshfs</code> 把叢集內遠端目錄掛到 <code>/mnt/remote</code>，並成功讀檔與卸載。這代表下一步若 OpenShell sandbox 失敗，問題會集中在 sandbox 權限、helper binary 或 policy，而不是 Azure / k3s / FUSE 本身。</p>
         <p class="evidence-note"><a href="https://github.com/hwchiu/openqq/blob/main/testing/fuse-runc-baseline-2026-06-05.md" target="_blank">查看 FUSE 基線報告 →</a></p>
+      </div>
+      <div class="spotlight">
+        <span class="kicker">CSI</span>
+        <h3>Azure File 可直接掛進 Sandbox</h3>
+        <p>同一顆 Azure File-backed `PVC` 已成功同時掛進普通 Pod 與 `Sandbox`。Pod 先寫入、Sandbox 讀取並追加、Pod 再次讀回，證明 `CSI-backed filesystem` 可以直接進入 sandbox，不必依賴 `sshfs in sandbox`。</p>
+        <p class="evidence-note"><a href="https://github.com/hwchiu/openqq/blob/main/testing/azurefile-csi-validation-2026-06-06.md" target="_blank">查看 Azure File CSI 驗證 →</a></p>
       </div>
     </div>
     <p class="evidence-note" style="margin-top:16px;">runc 基準組的 OpenShell 特性驗證報告：<a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-sandbox-validation-2026-06-03.md" target="_blank">openshell-sandbox-validation-2026-06-03.md</a></p>
@@ -545,6 +552,33 @@ mount --make-shared /run/netns failed: Permission denied</span>
         <p>這組結果證明 Azure `k3s + containerd + runc` 上的 FUSE 基本路徑成立。接下來若要驗證 OpenShell sandbox，可把問題聚焦在 `/dev/fuse`、helper binaries 與 sandbox 網路模型，而不是重複懷疑底層叢集。</p>
         <p class="evidence-note"><a href="https://github.com/hwchiu/openqq/blob/main/testing/fuse-runc-baseline-2026-06-05.md" target="_blank">runc 基線報告</a> · <a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-fuse-validation-2026-06-05.md" target="_blank">OpenShell FUSE 報告</a></p>
         <p style="font-size:13px;color:var(--muted);margin-top:10px;">最新結果：自訂 `amd64` sandbox image 已成功把 <code>/dev/fuse</code>、<code>sshfs</code>、<code>fusermount3</code> 帶進 OpenShell sandbox，但對本實驗的 SSH endpoint 仍然無法建立連線。普通 Pod 對同一個 `ClusterIP` / `PodIP` / `NodePort` 路徑可以成功，因此阻塞點已收斂到 OpenShell sandbox 的網路可達性模型，而不是 FUSE binary 本身。</p>
+      </div>
+    </div>
+
+    <div class="experiment">
+      <div class="exp-header">
+        <span class="exp-num">F2</span>
+        <div><strong>Azure File CSI 掛載基線</strong><span class="tag azure" style="margin-left:10px;">Supplement</span></div>
+        <span class="tag green">✓ 通過</span>
+      </div>
+      <div class="exp-body">
+        <p>這組實驗改走更正式的 Kubernetes 儲存路徑：官方 <code>azurefile-csi-driver</code> + Azure File share + `RWX PVC`。同一顆 `PVC` 被同時掛進普通 Pod 與 `Sandbox`，目標是證明 `CSI-backed filesystem` 可以直接進入 sandbox。</p>
+        <table class="result-table">
+          <tr><td>普通 Pod 掛載 Azure File PVC</td><td><span class="tag green">PASS</span></td></tr>
+          <tr><td>`Sandbox` 掛載同一顆 Azure File PVC</td><td><span class="tag green">PASS</span></td></tr>
+          <tr><td>Pod 與 Sandbox 共用同一份 `proof.txt`</td><td><span class="tag green">PASS</span></td></tr>
+        </table>
+        <div class="terminal">
+          <div class="terminal-header"><span></span><span></span><span></span> Azure File mount</div>
+          <pre><span class="log-ok">//stopenqq06001115.file.core.windows.net/openshell-csi-share on /mnt/azurefile type cifs</span></pre>
+        </div>
+        <div class="terminal" style="margin-top:8px;">
+          <div class="terminal-header"><span></span><span></span><span></span> 最終 proof.txt</div>
+          <pre><span class="log-ocsf">from-pod
+from-sandbox</span></pre>
+        </div>
+        <p>這證明 Azure File CSI-backed PVC 已可直接進入 `Sandbox` 的 filesystem。就這個需求來看，Azure File 這條路比 `sshfs in sandbox` 更穩，也更接近正式方案。</p>
+        <p class="evidence-note"><a href="https://github.com/hwchiu/openqq/blob/main/testing/azurefile-csi-validation-2026-06-06.md" target="_blank">Azure File CSI 驗證報告</a> · <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/azurefile-csi-lab.md" target="_blank">Runbook</a></p>
       </div>
     </div>
   </section>

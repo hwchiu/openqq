@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: azurefile-csi-pod
+  namespace: csi-lab
+spec:
+  restartPolicy: Never
+  containers:
+    - name: shell
+      image: alpine:3.20
+      command:
+        - /bin/sh
+        - -c
+        - sleep 3600
+      volumeMounts:
+        - name: azure-share
+          mountPath: /mnt/azurefile
+  volumes:
+    - name: azure-share
+      persistentVolumeClaim:
+        claimName: pvc-azurefile-csi-lab

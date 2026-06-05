@@ -1,0 +1,7 @@
+from-pod
+from-pod
+from-sandbox
+Filesystem                Size      Used Available Use% Mounted on
+//stopenqq06001115.file.core.windows.net/openshell-csi-share
+                        100.0G     64.0K    100.0G   0% /mnt/azurefile
+//stopenqq06001115.file.core.windows.net/openshell-csi-share on /mnt/azurefile type cifs (rw,relatime,vers=3.1.1,cache=strict,upcall_target=app,username=stopenqq06001115,uid=0,forceuid,gid=0,forcegid,addr=135.130.108.198,file_mode=0777,dir_mode=0777,soft,persistenthandles,nounix,serverino,mapposix,nobrl,mfsymlinks,rsize=1048576,wsize=1048576,bsize=1048576,retrans=1,echo_interval=60,nosharesock,actimeo=30,closetimeo=1)

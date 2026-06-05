@@ -1,0 +1,46 @@
+Name:         azurefile-sandbox-001841
+Namespace:    csi-lab
+Labels:       <none>
+Annotations:  agents.x-k8s.io/pod-name: azurefile-sandbox-001841
+API Version:  agents.x-k8s.io/v1alpha1
+Kind:         Sandbox
+Metadata:
+  Creation Timestamp:  2026-06-05T16:19:14Z
+  Generation:          1
+  Resource Version:    13102
+  UID:                 2489b1ea-ad0d-4776-8b27-d645d3c8f24e
+Spec:
+  Pod Template:
+    Metadata:
+      Labels:
+        App:  azurefile-sandbox-001841
+    Spec:
+      Containers:
+        Command:
+          /bin/sh
+          -c
+          sleep 3600
+        Image:  alpine:3.20
+        Name:   shell
+        Volume Mounts:
+          Mount Path:  /mnt/azurefile
+          Name:        azure-share
+      Volumes:
+        Name:  azure-share
+        Persistent Volume Claim:
+          Claim Name:  pvc-azurefile-001841
+  Replicas:            1
+  Shutdown Policy:     Retain
+Status:
+  Conditions:
+    Last Transition Time:  2026-06-05T16:19:15Z
+    Message:               Pod is Ready
+    Observed Generation:   1
+    Reason:                DependenciesReady
+    Status:                True
+    Type:                  Ready
+  Pod I Ps:
+    10.42.2.17
+  Replicas:  1
+  Selector:  agents.x-k8s.io/sandbox-name-hash=1b002065
+Events:      <none>
