@@ -1,0 +1,210 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    agents.x-k8s.io/propagated-annotations: openshell.io/sandbox-id
+    openshell.io/sandbox-id: 1ab19c5f-b4aa-4ac5-9e1d-3a0d4c62a53b
+  creationTimestamp: "2026-06-05T13:27:51Z"
+  generation: 1
+  labels:
+    agents.x-k8s.io/sandbox-name-hash: 5fc8cbff
+  name: fuse-proof
+  namespace: openshell
+  ownerReferences:
+  - apiVersion: agents.x-k8s.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Sandbox
+    name: fuse-proof
+    uid: 44fb2c6f-ee11-452b-851d-0f0a5b3a8054
+  resourceVersion: "1788"
+  uid: 520d3187-b862-4ae0-8bfb-ccb293af8230
+spec:
+  automountServiceAccountToken: false
+  containers:
+  - command:
+    - /opt/openshell/bin/openshell-sandbox
+    env:
+    - name: OPENSHELL_SANDBOX_ID
+      value: 1ab19c5f-b4aa-4ac5-9e1d-3a0d4c62a53b
+    - name: OPENSHELL_SANDBOX
+      value: fuse-proof
+    - name: OPENSHELL_ENDPOINT
+      value: http://openshell.openshell.svc.cluster.local:8080
+    - name: OPENSHELL_SANDBOX_COMMAND
+      value: sleep infinity
+    - name: OPENSHELL_SSH_SOCKET_PATH
+      value: /run/openshell/ssh.sock
+    - name: OPENSHELL_K8S_SA_TOKEN_FILE
+      value: /var/run/secrets/openshell/token
+    image: ghcr.io/nvidia/openshell-community/sandboxes/base:latest
+    imagePullPolicy: Always
+    name: agent
+    resources: {}
+    securityContext:
+      capabilities:
+        add:
+        - SYS_ADMIN
+        - NET_ADMIN
+        - SYS_PTRACE
+        - SYSLOG
+      privileged: true
+      runAsUser: 0
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/openshell
+      name: openshell-sa-token
+      readOnly: true
+    - mountPath: /opt/openshell/bin
+      name: openshell-supervisor-bin
+      readOnly: true
+    - mountPath: /sandbox
+      name: workspace
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  initContainers:
+  - command:
+    - sh
+    - -c
+    - if [ ! -f /workspace-pvc/.workspace-initialized ]; then if [ -d /sandbox ];
+      then tar -C /sandbox -cf - . | tar -C /workspace-pvc -xpf -; fi && touch /workspace-pvc/.workspace-initialized;
+      fi
+    image: ghcr.io/nvidia/openshell-community/sandboxes/base:latest
+    imagePullPolicy: Always
+    name: workspace-init
+    resources: {}
+    securityContext:
+      runAsUser: 0
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /workspace-pvc
+      name: workspace
+  nodeName: worker-2
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: openshell-sandbox
+  serviceAccountName: openshell-sandbox
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: openshell-sa-token
+    projected:
+      defaultMode: 256
+      sources:
+      - serviceAccountToken:
+          audience: openshell-gateway
+          expirationSeconds: 3600
+          path: token
+  - image:
+      pullPolicy: IfNotPresent
+      reference: ghcr.io/nvidia/openshell/supervisor:0.0.53
+    name: openshell-supervisor-bin
+  - name: workspace
+    persistentVolumeClaim:
+      claimName: workspace-fuse-proof
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-05T13:29:27Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-05T13:29:33Z"
+    observedGeneration: 1
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-05T13:29:34Z"
+    observedGeneration: 1
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-05T13:29:34Z"
+    observedGeneration: 1
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-05T13:27:51Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://7defff1c0c11a37f96825c50fe61201cd93dfc132ead5c37f4e90348a7140af0
+    image: ghcr.io/nvidia/openshell-community/sandboxes/base:latest
+    imageID: ghcr.io/nvidia/openshell-community/sandboxes/base@sha256:aeef1c63f00e2913ea002ccb3aaf925f338b5c5d70e63576f0d95c16a138044e
+    lastState: {}
+    name: agent
+    ready: true
+    resources: {}
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2026-06-05T13:29:34Z"
+    user:
+      linux:
+        gid: 0
+        supplementalGroups:
+        - 0
+        uid: 0
+    volumeMounts:
+    - mountPath: /var/run/secrets/openshell
+      name: openshell-sa-token
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /opt/openshell/bin
+      name: openshell-supervisor-bin
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /sandbox
+      name: workspace
+  hostIP: 10.100.0.5
+  hostIPs:
+  - ip: 10.100.0.5
+  initContainerStatuses:
+  - containerID: containerd://3f88cc762f6660edd37ad82a409e37f0cdf540efcb26ef9f49081d6935da6b39
+    image: ghcr.io/nvidia/openshell-community/sandboxes/base:latest
+    imageID: ghcr.io/nvidia/openshell-community/sandboxes/base@sha256:aeef1c63f00e2913ea002ccb3aaf925f338b5c5d70e63576f0d95c16a138044e
+    lastState: {}
+    name: workspace-init
+    ready: true
+    resources: {}
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: containerd://3f88cc762f6660edd37ad82a409e37f0cdf540efcb26ef9f49081d6935da6b39
+        exitCode: 0
+        finishedAt: "2026-06-05T13:29:27Z"
+        reason: Completed
+        startedAt: "2026-06-05T13:29:26Z"
+    user:
+      linux:
+        gid: 0
+        supplementalGroups:
+        - 0
+        uid: 0
+    volumeMounts:
+    - mountPath: /workspace-pvc
+      name: workspace
+  observedGeneration: 1
+  phase: Running
+  podIP: 10.42.2.9
+  podIPs:
+  - ip: 10.42.2.9
+  qosClass: BestEffort
+  startTime: "2026-06-05T13:27:51Z"

@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: preflight repo-tree cluster-up cluster-kubeconfig cluster-status cluster-down tf-init tf-plan tf-apply tf-destroy openshell-install openshell-patcher openshell-verify openshell-endpoint gvisor-install gvisor-verify openshell-patcher-gvisor kata-prereq kata-install kata-verify openshell-patcher-kata
+.PHONY: preflight repo-tree cluster-up cluster-kubeconfig cluster-status cluster-down tf-init tf-plan tf-apply tf-destroy tf-plan-fuse tf-apply-fuse tf-destroy-fuse openshell-install openshell-patcher openshell-verify openshell-endpoint gvisor-install gvisor-verify openshell-patcher-gvisor kata-prereq kata-install kata-verify openshell-patcher-kata fuse-prereq
 
 preflight:
 	./scripts/check-azure-connectivity.sh
@@ -28,6 +28,15 @@ tf-plan:
 
 tf-apply:
 	terraform -chdir=terraform apply
+
+tf-plan-fuse:
+	terraform -chdir=terraform plan -var-file=terraform.fuse.tfvars
+
+tf-apply-fuse:
+	terraform -chdir=terraform apply -var-file=terraform.fuse.tfvars
+
+tf-destroy-fuse:
+	terraform -chdir=terraform destroy -var-file=terraform.fuse.tfvars
 
 tf-destroy:
 	terraform -chdir=terraform destroy
@@ -64,3 +73,6 @@ kata-verify:
 
 openshell-patcher-kata:
 	./scripts/install-openshell-sandbox-patcher-kata.sh
+
+fuse-prereq:
+	./scripts/check-fuse-prereqs.sh

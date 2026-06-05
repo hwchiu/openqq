@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sshfs-baseline
+  namespace: fuse-lab
+spec:
+  restartPolicy: Never
+  containers:
+    - name: client
+      image: ubuntu:24.04
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["SYS_ADMIN"]
+      command:
+        - /bin/bash
+        - -lc
+        - |
+          set -euxo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y sshfs fuse3 openssh-client sshpass
+          echo user_allow_other >> /etc/fuse.conf
+          mkdir -p /mnt/remote
+          mkdir -p /root/.ssh
+          echo 'change-me-please' > /tmp/sshpass.txt
+          chmod 600 /tmp/sshpass.txt
+          printf 'Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile /dev/null\n' > /root/.ssh/config
+          echo 'probe-from-client' > /tmp/local.txt
+          sshpass -p "$(cat /tmp/sshpass.txt)" ssh fuseuser@sshfs-server.fuse-lab.svc.cluster.local -p 2222 'mkdir -p /data/export && echo server-file > /data/export/hello.txt'
+          echo 'change-me-please' | sshfs fuseuser@sshfs-server.fuse-lab.svc.cluster.local:/data/export /mnt/remote -p 2222 -o password_stdin,allow_other,default_permissions,reconnect
+          ls -la /mnt/remote
+          cat /mnt/remote/hello.txt
+          mount | grep /mnt/remote
+          fusermount3 -u /mnt/remote

@@ -1,0 +1,12 @@
+
+[1m[36mCreated sandbox:[39m[0m [1mfuse-sshfs-proof[0m
+
+  [2m[0.0s][0m Requesting compute...
+[2m[6.9s][0m Sandbox allocated
+[2m[7.5s][0m Pulling image ghcr.io/nvidia/openshell/supervisor:0.0.53
+[2m[8.4s][0m Image pulled (6 MB)
+[2m[8.6s][0m Image pulled
+[2m[9.2s][0m Image pulled
+[2m[10.2s][0m Image pulled
+[2m[11.5s][0m Image pulled
+[2m[11.6s][0m Image pulled
