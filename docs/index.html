@@ -11,16 +11,18 @@
 </head>
 <body>
 <header class="topbar">
-  <div class="page" style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:0;padding-bottom:0;">
-    <span class="brand"><span class="brand-mark"></span>OpenShell Lab</span>
+  <div class="page topbar-row">
+    <div class="brand-group">
+      <span class="brand"><span class="brand-mark"></span>OpenShell Lab</span>
+      <a href="report.html" class="nav-chip outline-blue">Executive Report</a>
+      <a href="lab.html" class="nav-chip fill-green">runc 實驗</a>
+      <a href="lab-gvisor.html" class="nav-chip fill-amber">gVisor 實驗</a>
+      <a href="lab-kata.html" class="nav-chip fill-teal">Kata 實驗</a>
+    </div>
     <nav class="tab-nav" id="tabNav">
       <button class="tab-btn active" onclick="showTab('overview',this)">總覽</button>
       <button class="tab-btn" onclick="showTab('arch',this)">架構設計</button>
       <button class="tab-btn" onclick="showTab('infra',this)">基礎設施</button>
-      <a href="report.html" style="text-decoration:none;margin-left:4px;padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent-4);color:var(--accent-4);font-size:13px;font-weight:600;display:inline-flex;align-items:center;">Executive Report</a>
-      <a href="lab.html" style="text-decoration:none;margin-left:4px;padding:6px 14px;border-radius:20px;background:var(--accent-2);color:#fff;font-size:13px;font-weight:600;display:inline-flex;align-items:center;">runc 實驗</a>
-      <a href="lab-gvisor.html" style="text-decoration:none;margin-left:4px;padding:6px 14px;border-radius:20px;background:var(--accent-3);color:#fff;font-size:13px;font-weight:600;display:inline-flex;align-items:center;">gVisor 實驗</a>
-      <a href="lab-kata.html" style="text-decoration:none;margin-left:4px;padding:6px 14px;border-radius:20px;background:#0f766e;color:#fff;font-size:13px;font-weight:600;display:inline-flex;align-items:center;">Kata 實驗 →</a>
     </nav>
   </div>
 </header>
@@ -29,16 +31,39 @@
 
 <!-- ══════════════════ 1. 總覽 ══════════════════ -->
 <div id="tab-overview" class="tab-panel active">
-  <section class="hero">
-    <div class="hero-eyebrow"><span class="badge info">實驗報告</span> hwchiu / openqq</div>
-    <h1 class="hero-title">OpenShell Sandbox<br>驗證實驗室</h1>
-    <p class="hero-sub">在 Azure 上建立 3 節點 k3s 叢集，維護 <strong>runc 基準組</strong>、<strong>gVisor 強隔離組</strong> 與 <strong>Kata VM 邊界組</strong>，<br>用同一組黑箱測試分辨 OpenShell 控制能力、runtime 邊界，以及各組合真正的相容性極限。</p>
+  <section class="hero site-index-hero">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <div class="hero-eyebrow"><span class="badge info">實驗報告</span> hwchiu / openqq</div>
+        <h1 class="hero-title">OpenShell Sandbox<br>驗證實驗室</h1>
+        <p class="hero-sub">這不是產品宣傳頁，而是一個把 <strong>runtime 邊界</strong>、<strong>OpenShell policy enforcement</strong>、<strong>agent-sandbox workload model</strong> 拆開驗證的技術展示站。目標很直接：找出哪一層真的在保護 agent，哪一層只是提供執行環境。</p>
+        <div class="hero-actions">
+          <a href="lab.html" class="nav-chip fill-green">先看完整基準組</a>
+          <a href="report.html" class="nav-chip outline-blue">看決策摘要</a>
+        </div>
+      </div>
+      <aside class="hero-rail">
+        <div class="rail-card">
+          <div class="rail-label">Current Verdict</div>
+          <h3>目前最穩的主線</h3>
+          <p>`runc + OpenShell` 仍是功能最完整的落地方案。`gVisor` 保住 L7 與網路治理，但失去 filesystem policy。`Kata` runtime 可跑，但 OpenShell sandbox 仍被 privileged 相容性卡住。</p>
+        </div>
+        <div class="rail-card">
+          <div class="rail-label">How To Read</div>
+          <ul>
+            <li>首頁看架構切分與決策結論</li>
+            <li>`runc` 頁看完整特性基準</li>
+            <li>`gVisor`、`Kata` 頁看 runtime 切換後的保留與退化</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
     <div class="metrics">
       <div class="metric"><span class="metric-num">3</span><span class="metric-label">Azure VM 節點</span></div>
       <div class="metric"><span class="metric-num">3</span><span class="metric-label">Runtime 實驗軌</span></div>
       <div class="metric"><span class="metric-num">runsc</span><span class="metric-label">gVisor Probe 已通過</span></div>
       <div class="metric"><span class="metric-num">kata</span><span class="metric-label">Guest Kernel 已通過</span></div>
-      <div class="metric"><span class="metric-num">Blocked</span><span class="metric-label">OpenShell on Kata</span></div>
+      <div class="metric"><span class="metric-num">runc</span><span class="metric-label">唯一完整保留 Landlock</span></div>
     </div>
   </section>
 
