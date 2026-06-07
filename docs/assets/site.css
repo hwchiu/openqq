@@ -1675,3 +1675,139 @@ code {
     grid-template-columns: 1fr;
   }
 }
+
+/* dossier pages */
+.doc-page .topbar {
+  background: rgba(247, 243, 235, 0.82);
+}
+
+.doc-page-shell {
+  display: grid;
+  gap: 0;
+}
+
+.doc-hero {
+  margin-bottom: 6px;
+}
+
+.doc-page .status-strip,
+.doc-page .section,
+.doc-page .tab-panel {
+  position: relative;
+}
+
+.doc-page .tab-panel > .section,
+.doc-page > main > .section,
+.doc-page-shell > .section {
+  padding: 28px 28px 24px;
+  border-radius: 28px;
+  border: 1px solid rgba(22,20,17,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.82), rgba(255,249,242,0.92));
+  box-shadow: var(--shadow);
+}
+
+.doc-page .tab-panel > .section + .section,
+.doc-page-shell > .section + .section,
+.doc-page > main > .section + .section {
+  margin-top: 20px;
+}
+
+.doc-page .tab-panel {
+  margin-top: 18px;
+}
+
+.doc-page .tab-panel.active {
+  display: block;
+}
+
+.doc-page .tab-nav {
+  padding: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.54);
+  border: 1px solid rgba(22,20,17,0.08);
+}
+
+.doc-page .metrics {
+  margin-top: 26px;
+}
+
+.doc-page .hero-copy {
+  max-width: 760px;
+}
+
+.doc-page .hero-sub {
+  max-width: 760px;
+}
+
+.doc-page .section-title {
+  margin-top: 0;
+}
+
+.doc-page .spotlight,
+.doc-page .card,
+.doc-page .decision-card,
+.doc-page .infra-box,
+.doc-page .experiment {
+  background: rgba(255,255,255,0.78);
+}
+
+.doc-page .status-strip {
+  margin-top: 18px;
+}
+
+.theme-runc .hero::before,
+.theme-runc .hero::after {
+  background: radial-gradient(circle, rgba(15,118,105,0.12), transparent 70%);
+}
+
+.theme-runc .section-tag,
+.theme-runc .runtime-name,
+.theme-runc .rail-label::before {
+  color: var(--accent-2);
+}
+
+.theme-gvisor .hero::before,
+.theme-gvisor .hero::after {
+  background: radial-gradient(circle, rgba(208,154,45,0.14), transparent 70%);
+}
+
+.theme-kata .hero::before,
+.theme-kata .hero::after,
+.theme-report .hero::before,
+.theme-report .hero::after {
+  background: radial-gradient(circle, rgba(48,94,168,0.12), transparent 70%);
+}
+
+.theme-gvisor .doc-page-shell > .section,
+.theme-gvisor .tab-panel > .section {
+  background: linear-gradient(180deg, rgba(255,252,244,0.9), rgba(255,255,255,0.92));
+}
+
+.theme-kata .doc-page-shell > .section,
+.theme-kata .section {
+  background: linear-gradient(180deg, rgba(242,249,252,0.92), rgba(255,255,255,0.92));
+}
+
+.theme-report .doc-page-shell > .section {
+  background: linear-gradient(180deg, rgba(245,248,252,0.92), rgba(255,252,246,0.92));
+}
+
+.theme-runc .doc-page-shell > .section,
+.theme-runc .tab-panel > .section {
+  background: linear-gradient(180deg, rgba(243,255,251,0.92), rgba(255,252,247,0.94));
+}
+
+@media (max-width: 720px) {
+  .doc-page .tab-nav {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .doc-page .tab-panel > .section,
+  .doc-page-shell > .section,
+  .doc-page > main > .section {
+    padding: 22px 18px 20px;
+    border-radius: 24px;
+  }
+}

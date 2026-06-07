@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/site.css">
 </head>
-<body>
+<body class="doc-page theme-report">
 <header class="topbar">
   <div class="page topbar-row">
     <div class="brand-group">
@@ -24,16 +24,27 @@
   </div>
 </header>
 
-<main class="page">
-  <section class="hero">
-    <div class="hero-eyebrow"><span class="badge info">Executive Report</span> OpenShell Runtime Assessment</div>
-    <h1 class="hero-title">OpenShell on Azure k3s<br>整合效益評估</h1>
-    <p class="hero-sub">這份摘要不是逐條實驗紀錄，而是把目前所有實測結果收斂成設計選項、風險、效益與建議路徑，方便做平台決策。</p>
-    <div class="metrics">
+<main class="page doc-page-shell">
+  <section class="hero doc-hero">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <div class="hero-eyebrow"><span class="badge info">Executive Report</span> OpenShell Runtime Assessment</div>
+        <h1 class="hero-title">平台決策不該只看<br>誰隔離比較強</h1>
+        <p class="hero-sub">這頁把整個 lab 的實驗結果濃縮成平台決策語言。核心問題不是「哪個 runtime 名字比較安全」，而是 <strong>OpenShell 哪些能力在不同 runtime 上還存在</strong>，以及這些能力對你的實際部署是否重要。</p>
+      </div>
+      <aside class="hero-rail">
+        <div class="rail-card accent-card">
+          <div class="rail-label">Executive Summary</div>
+          <h3>現在的穩定答案</h3>
+          <p>`runc + OpenShell` 是目前唯一已完整保留 filesystem、network、L7、hot-reload 的組合。`gVisor` 適合作為更強 runtime 邊界支線。`Kata` 目前仍停在相容性定位階段。</p>
+        </div>
+      </aside>
+    </div>
+    <div class="metrics runtime-metrics">
       <div class="metric"><span class="metric-num">3</span><span class="metric-label">已驗證 Runtime</span></div>
-      <div class="metric"><span class="metric-num">3</span><span class="metric-label">核心保護面</span></div>
-      <div class="metric"><span class="metric-num">2</span><span class="metric-label">已確認相容性缺口</span></div>
-      <div class="metric"><span class="metric-num">Now</span><span class="metric-label">可行決策版本</span></div>
+      <div class="metric"><span class="metric-num">runc</span><span class="metric-label">唯一保留完整 OpenShell 能力</span></div>
+      <div class="metric"><span class="metric-num">ENOSYS</span><span class="metric-label">gVisor 阻塞 Landlock syscall</span></div>
+      <div class="metric"><span class="metric-num">QMP</span><span class="metric-label">Kata 被 privileged 卡住</span></div>
     </div>
   </section>
 

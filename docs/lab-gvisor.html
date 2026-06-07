@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/site.css">
 </head>
-<body>
+<body class="doc-page theme-gvisor">
 <header class="topbar">
   <div class="page topbar-row">
     <div class="brand-group">
@@ -30,15 +30,26 @@
   </div>
 </header>
 
-<main class="page">
+<main class="page doc-page-shell">
 
 <!-- ══════════════════ 1. 架構細節 ══════════════════ -->
 <div id="tab-impl" class="tab-panel active">
-  <section class="hero" style="padding-bottom:24px;">
-    <div class="hero-eyebrow"><span class="badge info">本實驗組合</span> Sandbox CRD + gVisor (runsc) + OpenShell</div>
-    <h1 class="hero-title" style="font-size:clamp(24px,4vw,36px);">OpenShell + gVisor<br>實驗報告</h1>
-    <p class="hero-sub">在同一套 3 節點 k3s 叢集上，以 <strong>gVisor (runsc)</strong> 取代預設 runtime，<br>重跑 OpenShell 驗證，分辨哪一層安全能力來自 runtime，哪一層來自 OpenShell supervisor。</p>
-    <div class="metrics">
+  <section class="hero doc-hero">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <div class="hero-eyebrow"><span class="badge info">Isolation Branch</span> Sandbox CRD + gVisor (runsc) + OpenShell</div>
+        <h1 class="hero-title">gVisor 不是全面升級<br>而是明確 trade-off</h1>
+        <p class="hero-sub">這頁的重點不是「gVisor 很安全」這種空泛結論，而是具體回答：切到 runsc 之後，OpenShell 的哪些特性還在、哪些直接退化，以及根因是不是我們真的用 syscall 證據釘死了。</p>
+      </div>
+      <aside class="hero-rail">
+        <div class="rail-card accent-card">
+          <div class="rail-label">Most Important Finding</div>
+          <h3>不是 policy 下發失敗</h3>
+          <p>gVisor 路徑中，OpenShell 的 L7 與 hot-reload 仍成立；真正失去的是 filesystem policy，而原因不是配置錯，是 `landlock_create_ruleset` 在這條路徑回 `ENOSYS`。</p>
+        </div>
+      </aside>
+    </div>
+    <div class="metrics runtime-metrics">
       <div class="metric"><span class="metric-num">runsc</span><span class="metric-label">Probe 通過</span></div>
       <div class="metric"><span class="metric-num">OpenShell</span><span class="metric-label">Sandbox Ready</span></div>
       <div class="metric"><span class="metric-num">L7</span><span class="metric-label">4/4 關鍵測試通過</span></div>

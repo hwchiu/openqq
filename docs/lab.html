@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/site.css">
 </head>
-<body>
+<body class="doc-page theme-runc">
 <header class="topbar">
   <div class="page topbar-row">
     <div class="brand-group">
@@ -30,15 +30,26 @@
   </div>
 </header>
 
-<main class="page">
+<main class="page doc-page-shell">
 
 <!-- ══════════════════ 架構細節 ══════════════════ -->
 <div id="tab-impl" class="tab-panel active">
-  <section class="hero" style="padding-bottom:24px;">
-    <div class="hero-eyebrow"><span class="badge info">本實驗組合</span> Sandbox CRD + runc + OpenShell</div>
-    <h1 class="hero-title" style="font-size:clamp(24px,4vw,36px);">OpenShell + runc<br>實驗報告</h1>
-    <p class="hero-sub">在 3 節點 k3s 叢集上部署 Sandbox CRD，搭配 OpenShell Supervisor（runc 組合），執行 7 項黑箱驗證，並補做 FUSE 與 Azure File CSI 兩組基線實驗。<br>本頁記錄架構細節、維運差異與完整實驗結果。</p>
-    <div class="metrics">
+  <section class="hero doc-hero">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <div class="hero-eyebrow"><span class="badge info">Baseline Runtime</span> Sandbox CRD + runc + OpenShell</div>
+        <h1 class="hero-title">runc 是這個實驗站的<br>真實基準組</h1>
+        <p class="hero-sub">如果你想知道 OpenShell 在功能完整時長什麼樣子，這頁就是答案。這裡不是在展示「最強隔離」，而是在展示 <strong>OpenShell 自己的能力上限</strong>：filesystem policy、L7、binary allowlist、policy hot-reload、OCSF 日誌，全都在這條路徑上成立。</p>
+      </div>
+      <aside class="hero-rail">
+        <div class="rail-card accent-card">
+          <div class="rail-label">What This Page Proves</div>
+          <h3>這一頁回答什麼</h3>
+          <p>OpenShell 自己提供哪些能力？哪些能力不是 Kubernetes 原生就有？CSI / FUSE / Landlock / L7 在功能完整的 runtime 下到底是什麼樣子？</p>
+        </div>
+      </aside>
+    </div>
+    <div class="metrics runtime-metrics">
       <div class="metric"><span class="metric-num">runc</span><span class="metric-label">Container Runtime</span></div>
       <div class="metric"><span class="metric-num">7/7</span><span class="metric-label">黑箱驗證通過</span></div>
       <div class="metric"><span class="metric-num">FUSE<br>✓</span><span class="metric-label">sshfs 基線通過</span></div>
