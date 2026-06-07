@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OpenShell 實驗室報告 · hwchiu/openqq</title>
+<title>OpenShell Sandbox Lab · hwchiu/openqq</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -14,572 +14,209 @@
   <div class="page topbar-row">
     <div class="brand-group">
       <span class="brand"><span class="brand-mark"></span>OpenShell Lab</span>
+      <span class="nav-chip outline-blue">Azure / k3s / OpenShell</span>
+    </div>
+    <nav class="site-nav">
       <a href="report.html" class="nav-chip outline-blue">Executive Report</a>
       <a href="lab.html" class="nav-chip fill-green">runc 實驗</a>
       <a href="lab-gvisor.html" class="nav-chip fill-amber">gVisor 實驗</a>
       <a href="lab-kata.html" class="nav-chip fill-teal">Kata 實驗</a>
-    </div>
-    <nav class="tab-nav" id="tabNav">
-      <button class="tab-btn active" onclick="showTab('overview',this)">總覽</button>
-      <button class="tab-btn" onclick="showTab('arch',this)">架構設計</button>
-      <button class="tab-btn" onclick="showTab('infra',this)">基礎設施</button>
     </nav>
   </div>
 </header>
 
-<main class="page">
-
-<!-- ══════════════════ 1. 總覽 ══════════════════ -->
-<div id="tab-overview" class="tab-panel active">
-  <section class="hero site-index-hero">
+<main class="page landing-page">
+  <section class="hero site-index-hero hero-marquee">
     <div class="hero-grid">
       <div class="hero-copy">
-        <div class="hero-eyebrow"><span class="badge info">實驗報告</span> hwchiu / openqq</div>
-        <h1 class="hero-title">OpenShell Sandbox<br>驗證實驗室</h1>
-        <p class="hero-sub">這不是產品宣傳頁，而是一個把 <strong>runtime 邊界</strong>、<strong>OpenShell policy enforcement</strong>、<strong>agent-sandbox workload model</strong> 拆開驗證的技術展示站。目標很直接：找出哪一層真的在保護 agent，哪一層只是提供執行環境。</p>
+        <div class="hero-eyebrow"><span class="badge info">Research Site</span> runtime boundary × policy enforcement × sandbox lifecycle</div>
+        <h1 class="hero-title">把 OpenShell<br>拆開驗證到不能再含糊</h1>
+        <p class="hero-sub">這個網站不是一般產品介紹，而是把 <strong>OpenShell</strong>、<strong>agent-sandbox</strong>、<strong>runtime</strong> 三層角色拆開，逐條用實驗證明它們的能力與限制。你在這裡看到的不是宣稱，而是已收斂過的系統結論。</p>
         <div class="hero-actions">
-          <a href="lab.html" class="nav-chip fill-green">先看完整基準組</a>
-          <a href="report.html" class="nav-chip outline-blue">看決策摘要</a>
+          <a href="report.html" class="nav-chip outline-blue">先看決策結論</a>
+          <a href="lab.html" class="nav-chip fill-green">從 runc 基準組開始</a>
         </div>
       </div>
       <aside class="hero-rail">
-        <div class="rail-card">
-          <div class="rail-label">Current Verdict</div>
-          <h3>目前最穩的主線</h3>
-          <p>`runc + OpenShell` 仍是功能最完整的落地方案。`gVisor` 保住 L7 與網路治理，但失去 filesystem policy。`Kata` runtime 可跑，但 OpenShell sandbox 仍被 privileged 相容性卡住。</p>
+        <div class="rail-card accent-card">
+          <div class="rail-label">Current Recommendation</div>
+          <h3>目前最可落地的組合</h3>
+          <p><strong>runc + OpenShell</strong> 仍是功能最完整的主線。`gVisor` 保留 L7 與網路治理，但失去 filesystem policy。`Kata` runtime 本身已驗證存在，但 OpenShell sandbox 仍被 privileged 相容性卡住。</p>
         </div>
         <div class="rail-card">
-          <div class="rail-label">How To Read</div>
+          <div class="rail-label">Read Path</div>
           <ul>
-            <li>首頁看架構切分與決策結論</li>
-            <li>`runc` 頁看完整特性基準</li>
-            <li>`gVisor`、`Kata` 頁看 runtime 切換後的保留與退化</li>
+            <li>首頁：看系統切分與總體判斷</li>
+            <li>Report：看平台決策與 trade-off</li>
+            <li>Lab 頁：看每條 runtime 的原始證據與行為差異</li>
           </ul>
         </div>
       </aside>
     </div>
-    <div class="metrics">
-      <div class="metric"><span class="metric-num">3</span><span class="metric-label">Azure VM 節點</span></div>
-      <div class="metric"><span class="metric-num">3</span><span class="metric-label">Runtime 實驗軌</span></div>
-      <div class="metric"><span class="metric-num">runsc</span><span class="metric-label">gVisor Probe 已通過</span></div>
-      <div class="metric"><span class="metric-num">kata</span><span class="metric-label">Guest Kernel 已通過</span></div>
-      <div class="metric"><span class="metric-num">runc</span><span class="metric-label">唯一完整保留 Landlock</span></div>
+    <div class="metrics runtime-metrics">
+      <div class="metric"><span class="metric-num">3</span><span class="metric-label">Runtime 實驗線</span></div>
+      <div class="metric"><span class="metric-num">7/7</span><span class="metric-label">runc 黑箱驗證通過</span></div>
+      <div class="metric"><span class="metric-num">ENOSYS</span><span class="metric-label">gVisor 缺失 Landlock syscall</span></div>
+      <div class="metric"><span class="metric-num">QMP</span><span class="metric-label">Kata 被 privileged 阻塞</span></div>
+      <div class="metric"><span class="metric-num">CSI ✓</span><span class="metric-label">Azure File 已進入 Sandbox</span></div>
     </div>
   </section>
 
-  <div class="status-strip">
-    <strong>目前真實狀態</strong>
-    <p>Azure 目前的真實環境已切到 <code>k3s + containerd + RuntimeClass kata</code>，節點規格改為 <code>Standard_D4s_v3</code>，三台 VM 都已驗證存在 <code>/dev/kvm</code>。`kata-verify` probe 已成功進入 Kata guest kernel；但 OpenShell sandbox 在被 patch 成 <code>privileged: true</code> 與 <code>runtimeClassName: kata</code> 後，會被 Kata 以 <strong>QMP command failed: The device is not writable: Permission denied</strong> 阻擋。因此目前的三條線結論是：`runc` 功能最完整、`gVisor` 保留 L7 但失去 Landlock、`Kata` runtime 可用但 OpenShell sandbox 被 privileged 相容性卡住。</p>
-  </div>
+  <section class="section intro-ribbon">
+    <div class="status-strip headline-strip">
+      <strong>一句話總結</strong>
+      <p>這個 repo 最重要的價值，不是把 OpenShell 裝起來，而是把「哪一種保護來自 OpenShell、哪一種保護來自 runtime、哪一種只是 Kubernetes workload 抽象」講清楚。這也是為什麼首頁不再堆滿教學，而是先把判讀框架建立起來。</p>
+    </div>
+  </section>
 
   <section class="section">
-    <h2 class="section-title">決策摘要</h2>
-    <div class="decision-grid">
-      <div class="decision-card">
-        <h3>現在應該怎麼選</h3>
+    <div class="section-header-block">
+      <span class="section-tag">System Split</span>
+      <h2 class="section-title">先把三個維度拆開</h2>
+      <p class="section-intro">整個系統最容易誤解的地方，是把 `agent-sandbox`、`OpenShell`、`runtime` 混成同一件事。實際上它們各自解不同問題，而且可以自由組合。</p>
+    </div>
+    <div class="chapter-grid chapter-grid-3">
+      <article class="chapter-card">
+        <div class="chapter-index">01</div>
+        <h3>Workload Lifecycle</h3>
+        <p><strong>agent-sandbox</strong> 是 Kubernetes 抽象層，負責 Pod / Service / PVC / 單例語意與生命週期。它本身不是安全產品。</p>
+        <div class="chapter-note">代表物件：`Sandbox` CRD</div>
+      </article>
+      <article class="chapter-card">
+        <div class="chapter-index">02</div>
+        <h3>Runtime Boundary</h3>
+        <p><strong>runc / gVisor / Kata</strong> 決定容器和 kernel 的邊界強度。這層保護的是「逃逸到 host」的難度，不是 agent 可以呼叫哪些 API。</p>
+        <div class="chapter-note">代表物件：`runtimeClassName`</div>
+      </article>
+      <article class="chapter-card">
+        <div class="chapter-index">03</div>
+        <h3>Behavior Governance</h3>
+        <p><strong>OpenShell Supervisor</strong> 決定 agent 在 sandbox 內能做什麼：L7、binary allowlist、filesystem policy、hot-reload、OCSF audit。</p>
+        <div class="chapter-note">代表物件：Gateway / Supervisor / policy</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-header-block">
+      <span class="section-tag">Runtime Verdict</span>
+      <h2 class="section-title">三條實驗線，不講空話</h2>
+      <p class="section-intro">每一條 runtime 都用相同問題去驗證：OpenShell sandbox 能不能起、L7 還在不在、filesystem policy 還在不在、阻塞點到底卡在哪一層。</p>
+    </div>
+    <div class="runtime-board">
+      <article class="runtime-panel runtime-runc">
+        <div class="runtime-head">
+          <span class="runtime-name">runc</span>
+          <span class="tag green">Recommended Baseline</span>
+        </div>
+        <p>完整保留 OpenShell 的 filesystem、network、L7、policy hot-reload。這是目前唯一已證實功能全開的主線。</p>
         <ul>
-          <li>如果你要 OpenShell 的完整能力，尤其是 <code>filesystem_policy</code>，目前仍應優先選 `runc`。</li>
-          <li>如果你要更強的 runtime / kernel 邊界，`gVisor` 有價值，但要接受 `Landlock` 缺口。</li>
-          <li>`Kata` 目前不能當正式 OpenShell 路徑，因為 sandbox 的 `privileged` 需求會直接把它卡死。</li>
+          <li>Landlock 成立</li>
+          <li>L7 成立</li>
+          <li>Azure File CSI 可掛入 Sandbox</li>
         </ul>
+        <a href="lab.html" class="nav-chip fill-green">查看完整實驗</a>
+      </article>
+      <article class="runtime-panel runtime-gvisor">
+        <div class="runtime-head">
+          <span class="runtime-name">gVisor</span>
+          <span class="tag warn">Partial Retention</span>
+        </div>
+        <p>runtime 邊界更強，但 `landlock_create_ruleset` 在這條路徑回 `ENOSYS`，所以 filesystem policy 退化。</p>
+        <ul>
+          <li>L7 仍成立</li>
+          <li>hot-reload 仍成立</li>
+          <li>filesystem policy 失效</li>
+        </ul>
+        <a href="lab-gvisor.html" class="nav-chip fill-amber">查看 gVisor 報告</a>
+      </article>
+      <article class="runtime-panel runtime-kata">
+        <div class="runtime-head">
+          <span class="runtime-name">Kata</span>
+          <span class="tag azure">Blocked by Privileged</span>
+        </div>
+        <p>VM 邊界最強，但 OpenShell sandbox 目前需要的 privileged bootstrap 直接撞上 Kata 的相容性限制。</p>
+        <ul>
+          <li>`/dev/kvm` 已驗證</li>
+          <li>guest kernel 已驗證</li>
+          <li>OpenShell sandbox 尚未打通</li>
+        </ul>
+        <a href="lab-kata.html" class="nav-chip fill-teal">查看 Kata 報告</a>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-header-block">
+      <span class="section-tag">Core Idea</span>
+      <h2 class="section-title">OpenShell 真正補的是什麼</h2>
+      <p class="section-intro">如果你不用 Kata / gVisor，OpenShell 也不是沒意義。它補的是 agent 行為治理，不是 VM 邊界。這兩者互補，但不能混為一談。</p>
+    </div>
+    <div class="split-diagram">
+      <div class="diagram-shell host-layer">
+        <div class="diagram-label">Host Layer</div>
+        <h3>Linux Kernel + containerd</h3>
+        <p>runc 路徑仍共享 host kernel。若發生 kernel exploit，OpenShell 的應用層政策不會自動變成 VM 邊界。</p>
       </div>
-      <div class="decision-card">
-        <h3>本輪實驗給出的訊號</h3>
-        <div class="score-board">
-          <div class="score-pill">
-            <strong>runc</strong>
-            <span>功能完整度最高</span>
-          </div>
-          <div class="score-pill"><strong>gVisor</strong><span>runtime 邊界較強</span></div>
-          <div class="score-pill"><strong>Kata</strong><span>VM 邊界最強，但被 privileged 阻塞</span></div>
-          <div class="score-pill">
-            <strong>L7</strong>
-            <span>兩條路徑都成立</span>
-          </div>
-          <div class="score-pill">
-            <strong>Landlock</strong>
-            <span>目前只有 runc 成立</span>
-          </div>
+      <div class="diagram-shell runtime-layer">
+        <div class="diagram-label">Container Layer</div>
+        <h3>Sandbox Pod / runtimeClass</h3>
+        <p>這層決定「容器怎麼執行」：runc 是 baseline，gVisor 是 user-space kernel，Kata 是輕量 VM。</p>
+      </div>
+      <div class="diagram-shell policy-layer">
+        <div class="diagram-label">OpenShell Layer</div>
+        <h3>Supervisor Enforcement</h3>
+        <div class="policy-grid">
+          <div class="policy-box"><strong>L7</strong><span>method / path governance</span></div>
+          <div class="policy-box"><strong>Binary</strong><span>allowlist by executable</span></div>
+          <div class="policy-box"><strong>FS</strong><span>Landlock path rules</span></div>
+          <div class="policy-box"><strong>Audit</strong><span>OCSF event stream</span></div>
         </div>
       </div>
     </div>
   </section>
 
   <section class="section">
-    <h2 class="section-title">這個專案在做什麼？</h2>
-    <div class="cards-4">
-      <div class="card">
-        <div class="card-icon">🏗️</div>
-        <div class="card-title">自動化基礎設施</div>
-        <p>用 Terraform + Makefile 在 Azure 上一鍵建立 3 節點 k3s 叢集，無需手動設定。</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">🔬</div>
-        <div class="card-title">黑箱驗證</div>
-        <p>從 agent-sandbox Pod 內部執行 curl / python3，驗證 OpenShell 的網路政策是否真正生效。</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">📋</div>
-        <div class="card-title">OCSF 結構化日誌</div>
-        <p>所有安全事件以 OCSF 格式輸出，覆蓋 netns 建立、Policy 熱重載、L7 allow/deny 與 Landlock fallback。</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">⚡</div>
-        <div class="card-title">熱重載驗證</div>
-        <p>政策更新後 Pod UID 不變，確認沙箱在不重啟的情況下套用新政策。</p>
-      </div>
+    <div class="section-header-block">
+      <span class="section-tag">Site Map</span>
+      <h2 class="section-title">網站不是一頁看完，而是四種閱讀角色</h2>
+    </div>
+    <div class="chapter-grid chapter-grid-4">
+      <a class="chapter-card chapter-link" href="report.html">
+        <div class="chapter-index">A</div>
+        <h3>Decision Makers</h3>
+        <p>直接進 Executive Report，看哪條 runtime 適合現在上線，哪條只適合研究。</p>
+      </a>
+      <a class="chapter-card chapter-link" href="lab.html">
+        <div class="chapter-index">B</div>
+        <h3>Platform Engineers</h3>
+        <p>從 runc 基準組開始，看 OpenShell 最完整的行為樣貌與維運成本。</p>
+      </a>
+      <a class="chapter-card chapter-link" href="lab-gvisor.html">
+        <div class="chapter-index">C</div>
+        <h3>Security Reviewers</h3>
+        <p>看 gVisor 如何改變 runtime 邊界，並用 syscall 證據釘死 Landlock 缺口。</p>
+      </a>
+      <a class="chapter-card chapter-link" href="lab-kata.html">
+        <div class="chapter-index">D</div>
+        <h3>Isolation Researchers</h3>
+        <p>看 Kata 為什麼不是部署問題，而是 privileged 權限模型的實質阻塞。</p>
+      </a>
     </div>
   </section>
 
   <section class="section">
-    <h2 class="section-title">三軌驗證結果摘要</h2>
-    <table class="data-table">
-      <thead><tr><th>#</th><th>實驗項目</th><th>runc 基準組</th><th>gVisor 組</th><th>Kata 組</th><th>結論</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>Runtime 可用性</td><td><span class="tag green">✓</span></td><td><span class="tag green">✓</span></td><td><span class="tag green">✓ kata guest kernel</span></td><td>三條 runtime 都已各自驗證存在</td></tr>
-        <tr><td>2</td><td>OpenShell sandbox 可建立</td><td><span class="tag green">✓</span></td><td><span class="tag green">✓</span></td><td><span class="tag deny">✗ privileged blocked</span></td><td>Kata 問題發生在 sandbox 啟動，不在 control plane</td></tr>
-        <tr><td>3</td><td>Filesystem / Landlock</td><td><span class="tag green">✓ /var/tmp 拒絕</span></td><td><span class="tag warn">退化</span></td><td><span class="tag deny">未達驗證點</span></td><td>gVisor 退化；Kata 尚未跑到這一層</td></tr>
-        <tr><td>4</td><td>L7 policy</td><td><span class="tag green">✓</span></td><td><span class="tag green">✓</span></td><td><span class="tag deny">未達驗證點</span></td><td>Kata 因 sandbox 起不來，無法驗證 L7</td></tr>
-        <tr><td>5</td><td>policy hot-reload</td><td><span class="tag green">✓ UID 不變</span></td><td><span class="tag green">✓ UID 不變</span></td><td><span class="tag deny">未達驗證點</span></td><td>Kata 尚未進入可熱重載狀態</td></tr>
-        <tr><td>6</td><td>核心阻塞點</td><td><span class="tag green">無</span></td><td><span class="tag warn">Landlock ENOSYS</span></td><td><span class="tag deny">privileged → QMP permission denied</span></td><td>三條路徑的限制面不同</td></tr>
-      </tbody>
-    </table>
-    <div class="spotlight-grid" style="margin-top:24px;">
-      <div class="spotlight">
-        <span class="kicker">Baseline</span>
-        <h3>runc 報告</h3>
-        <p>OpenShell 在標準 k3s/containerd 上的完整驗證基準。Landlock、L7、policy hot-reload 均成立。</p>
-        <p class="evidence-note"><a href="lab.html">查看 runc 實驗 →</a></p>
-      </div>
-      <div class="spotlight">
-        <span class="kicker">Isolation</span>
-        <h3>gVisor 報告</h3>
-        <p>runsc probe 與 OpenShell-on-gVisor 已實測。重點不是「全部更強」，而是釐清哪些安全層留存、哪些安全層退化。</p>
-        <p class="evidence-note"><a href="lab-gvisor.html">查看 gVisor 實驗 →</a></p>
-      </div>
-      <div class="spotlight">
-        <span class="kicker">VM Boundary</span>
-        <h3>Kata 報告</h3>
-        <p>Kata runtime 本身已在 Azure 上成功，但 OpenShell sandbox 目前被 `privileged` 相容性阻塞。這條線的價值在於把阻塞點精準釘到權限模型，而不是雜亂的部署問題。</p>
-        <p class="evidence-note"><a href="lab-kata.html">查看 Kata 實驗 →</a></p>
-      </div>
-      <div class="spotlight">
-        <span class="kicker">Raw Evidence</span>
-        <h3>正式報告</h3>
-        <p>三條 runtime 的文字版報告都已整理進 repo。Kata 報告重點不是「沒成功」，而是把 `privileged` 阻塞這件事縮到最小矩陣並完成證明。</p>
-        <p class="evidence-note"><a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-kata-validation-2026-06-03.md" target="_blank">開啟 Kata 報告 →</a></p>
-      </div>
+    <div class="section-header-block">
+      <span class="section-tag">Glossary</span>
+      <h2 class="section-title">最容易搞混的術語</h2>
+    </div>
+    <div class="glossary-strip">
+      <div class="glossary-item"><strong>agent-sandbox</strong><span>Kubernetes workload abstraction</span></div>
+      <div class="glossary-item"><strong>OpenShell</strong><span>agent behavior governance system</span></div>
+      <div class="glossary-item"><strong>Supervisor</strong><span>the binary that enforces policy</span></div>
+      <div class="glossary-item"><strong>RuntimeClass</strong><span>the boundary under the sandbox pod</span></div>
     </div>
   </section>
-</div>
-
-<!-- ══════════════════ 2. 基礎設施 ══════════════════ -->
-<div id="tab-infra" class="tab-panel">
-  <section class="section">
-    <h2 class="section-title">Azure 資源配置</h2>
-    <div class="infra-grid">
-      <div class="infra-box">
-        <h3>☁️ Azure 資源</h3>
-        <ul class="kv-list">
-          <li><span>VM 規格</span><span><span class="tag azure">Standard_D4s_v3</span></span></li>
-          <li><span>節點數量</span><span>3（1 control-plane + 2 worker）</span></li>
-          <li><span>作業系統</span><span><span class="tag os">Ubuntu 22.04 LTS</span></span></li>
-          <li><span>區域</span><span>East US</span></li>
-          <li><span>基礎設施工具</span><span>Terraform + Azure CLI</span></li>
-        </ul>
-      </div>
-      <div class="infra-box">
-        <h3>⚙️ k3s 叢集</h3>
-        <ul class="kv-list">
-          <li><span>發行版</span><span><span class="tag k3s">k3s</span></span></li>
-          <li><span>Container Runtime</span><span>containerd + RuntimeClass <code>kata</code></span></li>
-          <li><span>Pod CIDR</span><span>10.42.0.0/16</span></li>
-          <li><span>Service CIDR</span><span>10.43.0.0/16</span></li>
-          <li><span>CNI</span><span>Flannel（預設）</span></li>
-        </ul>
-      </div>
-      <div class="infra-box">
-        <h3>🛠️ Makefile 常用指令</h3>
-        <ul class="kv-list">
-          <li><span><code>make infra-up</code></span><span>建立 Azure VM</span></li>
-          <li><span><code>make k3s-install</code></span><span>安裝 k3s 叢集</span></li>
-          <li><span><code>make openshell-install</code></span><span>部署 OpenShell</span></li>
-          <li><span><code>make kata-verify</code></span><span>驗證 Kata RuntimeClass</span></li>
-          <li><span><code>make infra-down</code></span><span>銷毀所有資源</span></li>
-        </ul>
-      </div>
-      <div class="infra-box">
-        <h3>⚠️ k3s 已知限制</h3>
-        <p style="font-size:13px;margin-top:8px;">k3s + containerd 預設不允許在 Sandbox CR 建立時掛載 netns，導致錯誤：</p>
-        <div class="terminal" style="margin-top:8px;">
-          <pre><span class="deny">mount --make-shared /run/netns failed:
-Permission denied</span></pre>
-        </div>
-        <p style="font-size:13px;margin-top:8px;"><strong>解決方式：</strong>部署 DaemonSet 自動為每個新建的 Sandbox CR 加上 <code>privileged: true</code>。</p>
-        <div class="terminal" style="margin-top:8px;">
-          <pre><span class="cmd">$ bash scripts/install-openshell-sandbox-patcher.sh</span></pre>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2 class="section-title">OpenShell 元件部署</h2>
-    <table class="data-table">
-      <thead><tr><th>元件</th><th>Namespace</th><th>說明</th></tr></thead>
-      <tbody>
-        <tr><td>openshell-controller</td><td>openshell</td><td>監聽 Sandbox CRD，建立 Pod</td></tr>
-        <tr><td>openshell-gateway</td><td>openshell</td><td>gRPC 端點，提供政策與推理路由</td></tr>
-        <tr><td>openshell-sandbox</td><td>openshell</td><td>執行 agent 任務的隔離 Pod</td></tr>
-        <tr><td>sandbox-patcher</td><td>openshell</td><td>DaemonSet，自動修補 Sandbox CR（k3s 專用）</td></tr>
-      </tbody>
-    </table>
-  </section>
-</div>
-
-<!-- ══════════════════ 3. 架構設計 ══════════════════ -->
-<div id="tab-arch" class="tab-panel">
-
-  <section class="section">
-    <h2 class="section-title">agent-sandbox 到底在解什麼問題？</h2>
-    <p>
-      agent-sandbox 是 Kubernetes SIG 的專案，目標是為「AI agent 工作負載」在 Kubernetes 上定義一個
-      <strong>標準化的 CRD 抽象</strong>，解決的是比 Pod 更高層的生命週期管理問題。
-    </p>
-    <p class="callout" style="margin-top:12px;">
-      類比：StatefulSet 是為「有狀態服務」設計的 Pod 抽象；<br>
-      <strong>agent-sandbox 的 Sandbox CRD 是為「AI agent 任務」設計的 Pod 抽象</strong>。<br>
-      它本身不提供任何安全管控，只管「這個 agent workload 應該長什麼樣子、怎麼跑、怎麼存活」。
-    </p>
-
-    <h3 style="margin-top:24px;">純 agent-sandbox 能給你什麼</h3>
-    <p>下面是一個最小的 Sandbox CR，不需要 OpenShell，直接可以用：</p>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> k8s/agent-sandbox-smoke.yaml</div>
-      <pre><span class="log-ocsf">apiVersion: agents.x-k8s.io/v1alpha1
-kind: Sandbox
-metadata:
-  name: my-agent
-spec:
-  podTemplate:
-    spec:
-      containers:
-        - name: agent
-          image: busybox:1.36
-          command: ["/bin/sh", "-c", "sleep infinity"]</span></pre>
-    </div>
-    <p>套用後，controller 會自動幫你建好 Pod、Service、PVC，並維持 singleton 語意。</p>
-
-    <h3 style="margin-top:24px;">純 agent-sandbox vs 使用 OpenShell — 優缺點比較</h3>
-    <table class="data-table">
-      <thead>
-        <tr><th>面向</th><th>純 agent-sandbox</th><th>agent-sandbox + OpenShell</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>複雜度</strong></td>
-          <td><span class="tag green">低</span> 只需安裝一個 controller</td>
-          <td><span class="tag warn">高</span> 需要 Gateway、Driver、Supervisor</td>
-        </tr>
-        <tr>
-          <td><strong>Kubernetes 工作負載管理</strong></td>
-          <td><span class="tag green">✓</span> Pod / Service / PVC 自動建立、stable DNS、singleton、lifecycle</td>
-          <td><span class="tag green">✓</span> 繼承 agent-sandbox 全部能力</td>
-        </tr>
-        <tr>
-          <td><strong>底層 Container Runtime 選擇</strong></td>
-          <td><span class="tag green">✓</span> runc / Kata / gVisor，透過 <code>runtimeClassName</code> 自由切換</td>
-          <td><span class="tag green">✓</span> 同樣可切換（OpenShell 不干涉 runtimeClass）</td>
-        </tr>
-        <tr>
-          <td><strong>預設出口流量控制</strong></td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗</span> 完全沒有，agent 可任意對外連線</td>
-          <td><span class="tag green">✓</span> 預設封鎖所有出口，明確 allowlist 才能連</td>
-        </tr>
-        <tr>
-          <td><strong>L7 HTTP 政策（method / path）</strong></td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
-          <td><span class="tag green">✓</span> 可精確控制哪個 binary 能用哪個 method 連哪個 endpoint</td>
-        </tr>
-        <tr>
-          <td><strong>Filesystem 存取控制</strong></td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗</span> 靠 runtimeClass（Kata/gVisor），或自己寫 securityContext</td>
-          <td><span class="tag green">✓</span> Landlock LSM，細到目錄層級</td>
-        </tr>
-        <tr>
-          <td><strong>Policy 熱重載</strong></td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗</span></td>
-          <td><span class="tag green">✓</span> 不重啟 Pod，Gateway 推送新 policy</td>
-        </tr>
-        <tr>
-          <td><strong>可審計的安全日誌</strong></td>
-          <td><span class="tag" style="background:#ddd;color:#666;">✗</span> 普通 container log</td>
-          <td><span class="tag green">✓</span> OCSF 結構化事件（ALLOWED / DENIED / CONFIG）</td>
-        </tr>
-        <tr>
-          <td><strong>適合場景</strong></td>
-          <td>內部工具、低安全需求 agent、快速 PoC</td>
-          <td>對外服務、需要治理的 AI agent、多租戶環境</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section class="section">
-    <h2 class="section-title">三個獨立維度：不要混在一起看</h2>
-    <p>理解這個系統的關鍵是把三個維度拆開：</p>
-
-    <div class="cards-4" style="margin-top:16px;">
-      <div class="card" style="border-top:3px solid var(--accent-4);">
-        <div class="card-icon">☸️</div>
-        <div class="card-title">維度 1：工作負載管理</div>
-        <p><strong>agent-sandbox CRD</strong> 解決的問題：「如何在 Kubernetes 上表示與管理一個 AI agent 生命週期？」</p>
-        <p style="font-size:12px;color:var(--muted);">選項：直接用 Pod（無 CRD）<br>or 用 Sandbox CRD（推薦）</p>
-      </div>
-      <div class="card" style="border-top:3px solid var(--accent-2);">
-        <div class="card-icon">⚙️</div>
-        <div class="card-title">維度 2：Container Runtime</div>
-        <p><strong>runtimeClassName</strong> 解決的問題：「這個 Pod 要用什麼底層 runtime 執行？」</p>
-        <p style="font-size:12px;color:var(--muted);">選項：runc（預設）/ Kata（VM）/ gVisor（user-space kernel）<br>與維度 1、3 正交，可自由組合</p>
-      </div>
-      <div class="card" style="border-top:3px solid var(--accent);">
-        <div class="card-icon">🔒</div>
-        <div class="card-title">維度 3：Agent 行為管控</div>
-        <p><strong>OpenShell Supervisor</strong> 解決的問題：「這個 agent 被允許做哪些事？」</p>
-        <p style="font-size:12px;color:var(--muted);">選項：不裝（無管控）<br>or 裝 OpenShell（有 policy enforcement）</p>
-      </div>
-    </div>
-
-    <!-- ① 組合矩陣 -->
-    <h3 style="margin-top:28px;">📊 組合矩陣：三維度的所有排列</h3>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">橫軸 = Container Runtime，縱軸 = 工作負載管理，每格各顯示「有/無 OpenShell」兩種情境。</p>
-    <div style="overflow-x:auto;">
-    <table style="border-collapse:separate;border-spacing:8px;width:100%;min-width:640px;table-layout:fixed;">
-      <thead>
-        <tr>
-          <th style="width:130px;text-align:center;padding:8px;font-size:11px;color:var(--muted);font-weight:500;vertical-align:bottom;">維度2 Runtime ↘<br>維度1 Workload</th>
-          <th style="background:#f2f2f2;border-radius:8px;padding:10px 8px;text-align:center;font-size:13px;font-weight:600;">⚙️ runc<br><span style="font-size:11px;font-weight:400;color:var(--muted);">共享 host kernel</span></th>
-          <th style="background:#eef2ff;border-radius:8px;padding:10px 8px;text-align:center;font-size:13px;font-weight:600;">🔵 Kata Containers<br><span style="font-size:11px;font-weight:400;color:var(--muted);">輕量 VM 隔離</span></th>
-          <th style="background:#edfaf5;border-radius:8px;padding:10px 8px;text-align:center;font-size:13px;font-weight:600;">🟢 gVisor<br><span style="font-size:11px;font-weight:400;color:var(--muted);">user-space kernel</span></th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- row 1: raw Pod -->
-        <tr>
-          <td style="background:#f2f2f2;border-radius:8px;padding:10px;text-align:center;font-size:12px;font-weight:600;vertical-align:middle;">📦 raw Pod<br><span style="font-size:11px;font-weight:400;color:var(--muted);">直接用 Pod<br>無 Sandbox CRD</span></td>
-          <td style="border:2px solid #ddd;border-radius:8px;padding:10px;vertical-align:top;font-size:12px;">
-            <div style="padding:5px 7px;border-radius:4px;background:rgba(29,107,97,0.07);margin-bottom:5px;">
-              🔒 <strong>+ OpenShell</strong><br>
-              <span style="color:var(--muted);">行為管控 ✓ &nbsp; Lifecycle ✗ &nbsp; Kernel隔離 ✗</span>
-            </div>
-            <div style="padding:5px 7px;border-radius:4px;background:#f5f5f5;color:#c00;">
-              ⬜ 無 OpenShell — 無任何安全層
-            </div>
-          </td>
-          <td style="border:2px solid #c5d0ef;border-radius:8px;padding:10px;vertical-align:top;font-size:12px;">
-            <div style="padding:5px 7px;border-radius:4px;background:rgba(29,107,97,0.07);margin-bottom:5px;">
-              🔒 <strong>+ OpenShell</strong><br>
-              <span style="color:var(--muted);">行為管控 ✓ &nbsp; Lifecycle ✗ &nbsp; Kernel隔離 ✓</span>
-            </div>
-            <div style="padding:5px 7px;border-radius:4px;background:#f5f5f5;color:var(--muted);">
-              ⬜ 無 OpenShell — 僅 kernel 邊界
-            </div>
-          </td>
-          <td style="border:2px solid #b8e8d4;border-radius:8px;padding:10px;vertical-align:top;font-size:12px;">
-            <div style="padding:5px 7px;border-radius:4px;background:rgba(29,107,97,0.07);margin-bottom:5px;">
-              🔒 <strong>+ OpenShell</strong><br>
-              <span style="color:var(--muted);">行為管控 ✓ &nbsp; Lifecycle ✗ &nbsp; Kernel隔離 ✓(部分)</span>
-            </div>
-            <div style="padding:5px 7px;border-radius:4px;background:#f5f5f5;color:var(--muted);">
-              ⬜ 無 OpenShell — 僅 syscall 攔截
-            </div>
-          </td>
-        </tr>
-        <!-- row 2: Sandbox CRD -->
-        <tr>
-          <td style="background:#f2f2f2;border-radius:8px;padding:10px;text-align:center;font-size:12px;font-weight:600;vertical-align:middle;">☸️ Sandbox CRD<br><span style="font-size:11px;font-weight:400;color:var(--muted);">agent-sandbox 管理<br>Pod / Service / PVC</span></td>
-          <!-- ★ 本 repo -->
-          <td style="border:3px solid var(--accent-3);border-radius:8px;padding:10px;vertical-align:top;font-size:12px;position:relative;">
-            <div style="position:absolute;top:-1px;right:8px;background:var(--accent-3);color:#fff;font-size:10px;padding:2px 7px;border-radius:0 0 5px 5px;font-weight:700;">⭐ 本 repo</div>
-            <div style="margin-top:12px;padding:5px 7px;border-radius:4px;background:rgba(29,107,97,0.07);border-left:3px solid var(--accent-3);margin-bottom:5px;">
-              🔒 <strong>+ OpenShell</strong><br>
-              <span style="color:var(--muted);">行為管控 ✓ &nbsp; Lifecycle ✓ &nbsp; Kernel隔離 ✗</span>
-            </div>
-            <div style="padding:5px 7px;border-radius:4px;background:#f5f5f5;color:var(--muted);">
-              ⬜ 無 OpenShell — 僅 lifecycle 管理
-            </div>
-          </td>
-          <!-- 🏆 縱深防禦 -->
-          <td style="border:3px solid var(--accent);border-radius:8px;padding:10px;vertical-align:top;font-size:12px;position:relative;">
-            <div style="position:absolute;top:-1px;right:8px;background:var(--accent);color:#fff;font-size:10px;padding:2px 7px;border-radius:0 0 5px 5px;font-weight:700;">🏆 縱深防禦</div>
-            <div style="margin-top:12px;padding:5px 7px;border-radius:4px;background:rgba(29,107,97,0.07);border-left:3px solid var(--accent);margin-bottom:5px;">
-              🔒 <strong>+ OpenShell</strong><br>
-              <span style="color:var(--muted);">行為管控 ✓ &nbsp; Lifecycle ✓ &nbsp; Kernel隔離 ✓</span>
-            </div>
-            <div style="padding:5px 7px;border-radius:4px;background:#f5f5f5;color:var(--muted);">
-              ⬜ 無 OpenShell — lifecycle + kernel 隔離
-            </div>
-          </td>
-          <td style="border:2px solid #b8e8d4;border-radius:8px;padding:10px;vertical-align:top;font-size:12px;">
-            <div style="padding:5px 7px;border-radius:4px;background:rgba(29,107,97,0.07);margin-bottom:5px;">
-              🔒 <strong>+ OpenShell</strong><br>
-              <span style="color:var(--muted);">行為管控 ✓ &nbsp; Lifecycle ✓ &nbsp; Kernel隔離 ✓(部分)</span>
-            </div>
-            <div style="padding:5px 7px;border-radius:4px;background:#f5f5f5;color:var(--muted);">
-              ⬜ 無 OpenShell — lifecycle + syscall 攔截
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-
-    <!-- ② 不使用 Kata/gVisor 時，OpenShell 的防護層示意圖 -->
-    <h3 style="margin-top:36px;">🛡️ 不用 Kata / gVisor 時，OpenShell 用什麼補？</h3>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">以下是「<strong>⭐ 本 repo 組合</strong>：Sandbox CRD + runc + OpenShell」的實際防護層剖面圖。</p>
-
-    <div style="border:2px dashed #bbb;border-radius:14px;padding:18px;background:#fafafa;">
-      <!-- Host -->
-      <div style="font-size:12px;font-weight:700;color:#777;margin-bottom:6px;">🏠 Host OS（Linux Kernel + containerd）</div>
-      <div style="display:inline-block;background:rgba(210,163,58,0.1);border:1.5px dashed var(--accent-3);border-radius:5px;padding:3px 10px;font-size:11px;color:#7a5e0a;margin-bottom:14px;">
-        ⚠️ runc 共享 host kernel — 若 container escape 成功，攻擊者可直達 host
-      </div>
-
-      <!-- Container (runc) -->
-      <div style="border:2px solid #a0b8d8;border-radius:10px;padding:14px;background:#eef3fb;">
-        <div style="font-size:12px;font-weight:700;color:var(--accent-4);margin-bottom:12px;">📦 Container（runc） — Linux namespace + cgroup 隔離</div>
-
-        <!-- OpenShell Supervisor box -->
-        <div style="border:2px solid var(--accent);border-radius:8px;padding:14px;background:#fff;">
-          <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:14px;">🔒 OpenShell Supervisor（PID 1）— 以下為 agent 執行前套用的所有策略</div>
-
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
-            <div style="background:rgba(29,107,97,0.08);border-left:3px solid var(--accent-2);border-radius:5px;padding:8px 10px;font-size:12px;">
-              <strong>🗂 Landlock LSM</strong><br>
-              <span style="color:var(--muted);">檔案系統白名單<br>9 rules（本 lab 實測）</span><br>
-              <span style="font-size:11px;color:var(--accent-2);">→ agent 只能讀/寫指定路徑</span>
-            </div>
-            <div style="background:rgba(29,107,97,0.08);border-left:3px solid var(--accent-2);border-radius:5px;padding:8px 10px;font-size:12px;">
-              <strong>🌐 獨立 netns</strong><br>
-              <span style="color:var(--muted);">veth pair + 10.200.0.2<br>與 host netns 隔離</span><br>
-              <span style="font-size:11px;color:var(--accent-2);">→ agent 無法直接與 host 共用網路堆疊</span>
-            </div>
-            <div style="background:rgba(29,107,97,0.08);border-left:3px solid var(--accent-2);border-radius:5px;padding:8px 10px;font-size:12px;">
-              <strong>📡 CONNECT Proxy</strong><br>
-              <span style="color:var(--muted);">10.200.0.1:3128<br>L7 method / path 過濾</span><br>
-              <span style="font-size:11px;color:var(--accent-2);">→ 預設封鎖所有出口，僅白名單通行</span>
-            </div>
-            <div style="background:rgba(29,107,97,0.08);border-left:3px solid var(--accent-2);border-radius:5px;padding:8px 10px;font-size:12px;">
-              <strong>📋 Binary allowlist</strong><br>
-              <span style="color:var(--muted);">只允許白名單內<br>的 executable 執行</span><br>
-              <span style="font-size:11px;color:var(--accent-2);">→ 防止 agent 安裝並執行惡意工具</span>
-            </div>
-            <div style="background:rgba(29,107,97,0.08);border-left:3px solid var(--accent-2);border-radius:5px;padding:8px 10px;font-size:12px;">
-              <strong>🔄 Policy hot-reload</strong><br>
-              <span style="color:var(--muted);">Gateway 即時推送<br>不重啟 Pod</span><br>
-              <span style="font-size:11px;color:var(--accent-2);">→ 動態收緊/放寬 policy，無服務中斷</span>
-            </div>
-            <div style="background:rgba(29,107,97,0.08);border-left:3px solid var(--accent-2);border-radius:5px;padding:8px 10px;font-size:12px;">
-              <strong>📊 OCSF Audit Log</strong><br>
-              <span style="color:var(--muted);">ALLOWED / DENIED<br>結構化安全事件</span><br>
-              <span style="font-size:11px;color:var(--accent-2);">→ 每次存取皆有可追溯紀錄</span>
-            </div>
-          </div>
-
-          <!-- Agent child -->
-          <div style="background:#e8f5e9;border:1.5px solid #81c784;border-radius:6px;padding:8px 14px;text-align:center;font-size:13px;font-weight:600;">
-            👶 agent child process — 在上述所有策略保護下執行
-          </div>
-        </div><!-- /Supervisor -->
-      </div><!-- /Container -->
-
-      <!-- Gap -->
-      <div style="margin-top:14px;background:rgba(180,63,40,0.06);border:1.5px dashed var(--accent);border-radius:7px;padding:10px 14px;font-size:12px;">
-        <strong style="color:var(--accent);">🔴 runc 組合的防護空白（需要 Kata / gVisor 才能補）</strong><br>
-        <span style="color:var(--muted);">
-          OpenShell 管控的是「agent 被允許做什麼」（應用層行為）。<br>
-          但若 agent 利用 <strong>kernel exploit</strong> 或 <strong>container escape</strong> 逃出 runc 的 namespace 邊界，
-          就會直接面對 host kernel，所有 Supervisor 策略失效。<br>
-          <strong>Kata</strong> 在此插入一個輕量 VM 邊界；<strong>gVisor</strong> 在此插入 user-space kernel 過濾。
-          兩者與 OpenShell 互補，不衝突。
-        </span>
-      </div>
-    </div>
-
-    <h3 style="margin-top:24px;">OpenShell 如何「插入」agent-sandbox</h3>
-    <p>OpenShell 不是在 agent-sandbox 外面包一層，而是把 Supervisor binary 注入進 Sandbox CR 的 <code>podTemplate</code>：</p>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> OpenShell 建立的 Sandbox CR（節錄）</div>
-      <pre><span class="dim">spec:
-  podTemplate:
-    spec:
-      containers:
-        - name: agent</span>
-          <span class="ok">command: ["/opt/openshell/bin/openshell-sandbox"]</span>  <span class="dim"># ← Supervisor，不是 agent 本體</span>
-          <span class="log-ocsf">env:
-            - name: OPENSHELL_ENDPOINT
-              value: http://openshell.openshell.svc.cluster.local:8080
-            - name: OPENSHELL_SANDBOX_COMMAND
-              value: sleep infinity                               # ← 真正的 agent 指令</span>
-          <span class="dim">image: ghcr.io/nvidia/openshell-community/sandboxes/base:latest
-      automountServiceAccountToken: false</span>                   <span class="dim"># ← 預設關掉 SA token</span></pre>
-    </div>
-    <p>Supervisor 啟動後才會去執行 <code>OPENSHELL_SANDBOX_COMMAND</code>，並對它套用所有 policy。agent-sandbox controller 對此一無所知，它只看到一個普通 Sandbox CR。</p>
-
-    <h3 style="margin-top:24px;">Container Runtime 與 OpenShell 的關係</h3>
-    <table class="data-table">
-      <thead><tr><th>runtimeClass</th><th>防禦目標</th><th>與 OpenShell 的關係</th><th>本 repo 狀態</th></tr></thead>
-      <tbody>
-        <tr>
-          <td><strong>runc</strong></td>
-          <td>無額外隔離，靠 namespace + cgroup</td>
-          <td>目前使用，需 privileged workaround for netns</td>
-          <td><span class="tag green">✓ 已驗證</span></td>
-        </tr>
-        <tr>
-          <td><strong>Kata Containers</strong></td>
-          <td>防 container escape、kernel exploit（VM 邊界）</td>
-          <td>理論上可搭配 OpenShell，但 netns + VM 雙層隔離的相容性未測試</td>
-          <td><span class="tag warn">未測試</span></td>
-        </tr>
-        <tr>
-          <td><strong>gVisor</strong></td>
-          <td>防 syscall 攻擊（user-space kernel）</td>
-          <td>與 OpenShell 可共存，但目前只驗證到 L7 / policy 層；filesystem policy 退化</td>
-          <td><span class="tag warn">已驗證，有限制</span></td>
-        </tr>
-      </tbody>
-    </table>
-    <p style="font-size:13px;color:var(--muted);margin-top:8px;">
-      💡 Kata / gVisor 解的是「<strong>防止 container 逃脫到 host</strong>」；OpenShell 解的是「<strong>AI agent 的行為治理</strong>」。兩者威脅模型不同，可以疊加使用達到縱深防禦。
-    </p>
-  </section>
-
-
-  <section class="section">
-    <h2 class="section-title">術語對照表</h2>
-    <table class="data-table">
-      <thead><tr><th>術語</th><th>實際指稱</th><th>說明</th></tr></thead>
-      <tbody>
-        <tr><td><strong>OpenShell Sandbox</strong></td><td>整個沙箱系統</td><td>NVIDIA 提供的 AI Agent 隔離執行環境</td></tr>
-        <tr><td><strong>Sandbox CR</strong></td><td>Kubernetes CRD 物件</td><td>用來描述一個 sandbox 實例的 CR，由 controller 處理</td></tr>
-        <tr><td><strong>Controller</strong></td><td>openshell-controller Pod</td><td>監聽 Sandbox CR，實際建立 agent-sandbox Pod</td></tr>
-        <tr><td><strong>Supervisor</strong></td><td><code>/opt/openshell/bin/openshell-sandbox</code></td><td>在容器內執行，負責 Landlock、netns、L7 政策執行</td></tr>
-        <tr><td><strong>Gateway</strong></td><td>openshell-gateway Service</td><td>提供 gRPC 政策端點，Supervisor 啟動時拉取政策</td></tr>
-      </tbody>
-    </table>
-  </section>
-</div>
-
-
 </main>
-<script>
-function showTab(id, btn) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  if (btn) btn.classList.add('active');
-}
-</script>
 </body>
 </html>
