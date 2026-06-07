@@ -3,777 +3,108 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OpenShell 實驗報告 · hwchiu/openqq</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>runc Lab · OpenShell Lab</title>
 <link rel="stylesheet" href="assets/site.css">
 </head>
-<body class="doc-page theme-runc">
+<body>
 <header class="topbar">
   <div class="page topbar-row">
     <div class="brand-group">
-      <a href="index.html" class="nav-chip outline-green">← 架構介紹</a>
+      <a href="index.html" class="toplink">← Home</a>
       <span class="brand"><span class="brand-mark"></span>OpenShell Lab</span>
-      <a href="report.html" class="nav-chip outline-blue">Executive Report</a>
-      <a href="lab-gvisor.html" class="nav-chip fill-amber">gVisor 實驗</a>
-      <a href="lab-kata.html" class="nav-chip fill-teal">Kata 實驗</a>
     </div>
-    <nav class="tab-nav" id="tabNav">
-      <button class="tab-btn active" onclick="showTab('impl',this)">架構細節</button>
-      <button class="tab-btn" onclick="showTab('ops',this)">維運差異</button>
-      <button class="tab-btn" onclick="showTab('exp',this)">實驗結果</button>
-      <button class="tab-btn" onclick="showTab('logs',this)">日誌分析</button>
-      <button class="tab-btn" onclick="showTab('repro',this)">重現步驟</button>
-      <button class="tab-btn" onclick="showTab('docs',this)">相關文件</button>
+    <nav class="site-nav">
+      <a href="report.html" class="chip">Report</a>
+      <a href="lab-gvisor.html" class="chip amber">gVisor</a>
+      <a href="lab-kata.html" class="chip blue">Kata</a>
     </nav>
   </div>
 </header>
 
-<main class="page doc-page-shell">
-
-<!-- ══════════════════ 架構細節 ══════════════════ -->
-<div id="tab-impl" class="tab-panel active">
-  <section class="hero doc-hero">
+<main class="page">
+  <section class="hero">
     <div class="hero-grid">
-      <div class="hero-copy">
-        <div class="hero-eyebrow"><span class="badge info">Baseline Runtime</span> Sandbox CRD + runc + OpenShell</div>
-        <h1 class="hero-title">runc 是這個實驗站的<br>真實基準組</h1>
-        <p class="hero-sub">如果你想知道 OpenShell 在功能完整時長什麼樣子，這頁就是答案。這裡不是在展示「最強隔離」，而是在展示 <strong>OpenShell 自己的能力上限</strong>：filesystem policy、L7、binary allowlist、policy hot-reload、OCSF 日誌，全都在這條路徑上成立。</p>
-      </div>
-      <aside class="hero-rail">
-        <div class="rail-card accent-card">
-          <div class="rail-label">What This Page Proves</div>
-          <h3>這一頁回答什麼</h3>
-          <p>OpenShell 自己提供哪些能力？哪些能力不是 Kubernetes 原生就有？CSI / FUSE / Landlock / L7 在功能完整的 runtime 下到底是什麼樣子？</p>
+      <div>
+        <div class="eyebrow">Baseline Runtime / runc + OpenShell</div>
+        <h1>這才是 OpenShell<br>功能全開的樣子</h1>
+        <p class="lead">runc 不是最強隔離，但它是這個 lab 中唯一能完整呈現 OpenShell 能力的基準組。Landlock、L7、binary allowlist、hot-reload、FUSE baseline、Azure File CSI，全都在這條路上有明確證據。</p>
+        <div class="hero-actions">
+          <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-sandbox-validation-2026-06-03.md" target="_blank">主驗證報告</a>
+          <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/testing/azurefile-csi-validation-2026-06-06.md" target="_blank">CSI 驗證</a>
         </div>
-      </aside>
-    </div>
-    <div class="metrics runtime-metrics">
-      <div class="metric"><span class="metric-num">runc</span><span class="metric-label">Container Runtime</span></div>
-      <div class="metric"><span class="metric-num">7/7</span><span class="metric-label">黑箱驗證通過</span></div>
-      <div class="metric"><span class="metric-num">FUSE<br>✓</span><span class="metric-label">sshfs 基線通過</span></div>
-      <div class="metric"><span class="metric-num">CSI<br>✓</span><span class="metric-label">Azure File 進入 Sandbox</span></div>
-      <div class="metric"><span class="metric-num">Landlock<br>v4</span><span class="metric-label">Filesystem 可用</span></div>
-      <div class="metric"><span class="metric-num">L7</span><span class="metric-label">GET / POST / binary 控制成立</span></div>
-    </div>
-  </section>
-
-  <div class="status-strip">
-    <strong>基準組狀態</strong>
-        <p>這一頁是 OpenShell 在 `k3s + containerd + runc` 上的基準組。Landlock filesystem sandbox、預設 deny egress、binary allowlist、L7 method/path 控制、policy hot-reload 全部成立。這也是用來對照 [gVisor 實驗](/Users/hwchiu/hwchiu/openqq/docs/lab-gvisor.html) 與 [Kata 實驗](/Users/hwchiu/hwchiu/openqq/docs/lab-kata.html) 的基線，方便看清楚哪些能力是 OpenShell 本身提供、哪些能力會受 runtime 切換影響。</p>
-  </div>
-
-  <section class="section">
-    <h2 class="section-title">基準組重點</h2>
-    <div class="spotlight-grid">
-      <div class="spotlight">
-        <span class="kicker">Filesystem</span>
-        <h3>Landlock 成立</h3>
-        <p>在 runc 組，<code>/tmp</code> 可寫、<code>/var/tmp</code> 被拒絕、根目錄列舉被拒，證明 OpenShell 的 filesystem policy 真正有套上。</p>
       </div>
-      <div class="spotlight">
-        <span class="kicker">Network</span>
-        <h3>L7 控制完整</h3>
-        <p>同一個 GitHub endpoint，<code>curl GET</code> 可以、<code>python3 GET</code> 不行、<code>curl POST</code> 不行，清楚區分 binary 與 method/path。</p>
-      </div>
-      <div class="spotlight">
-        <span class="kicker">Compare</span>
-        <h3>對照 gVisor</h3>
-        <p>gVisor 組保留了 L7 與 hot-reload，但失去了這一頁看到的 Landlock filesystem enforcement；Kata 組則更早卡在 privileged 相容性。三頁一起看，才不會把 runtime 差異講錯。</p>
-        <p class="evidence-note"><a href="lab-gvisor.html">查看 gVisor 對照 →</a> · <a href="lab-kata.html">查看 Kata 對照 →</a></p>
-      </div>
-      <div class="spotlight">
-        <span class="kicker">FUSE</span>
-        <h3>remote mount 基線成立</h3>
-        <p>普通 privileged Pod 已可在這套 `runc` 基線上用 <code>sshfs</code> 把叢集內遠端目錄掛到 <code>/mnt/remote</code>，並成功讀檔與卸載。這代表下一步若 OpenShell sandbox 失敗，問題會集中在 sandbox 權限、helper binary 或 policy，而不是 Azure / k3s / FUSE 本身。</p>
-        <p class="evidence-note"><a href="https://github.com/hwchiu/openqq/blob/main/testing/fuse-runc-baseline-2026-06-05.md" target="_blank">查看 FUSE 基線報告 →</a></p>
-      </div>
-      <div class="spotlight">
-        <span class="kicker">CSI</span>
-        <h3>Azure File 可直接掛進 Sandbox</h3>
-        <p>同一顆 Azure File-backed `PVC` 已成功同時掛進普通 Pod 與 `Sandbox`。Pod 先寫入、Sandbox 讀取並追加、Pod 再次讀回，證明 `CSI-backed filesystem` 可以直接進入 sandbox，不必依賴 `sshfs in sandbox`。</p>
-        <p class="evidence-note"><a href="https://github.com/hwchiu/openqq/blob/main/testing/azurefile-csi-validation-2026-06-06.md" target="_blank">查看 Azure File CSI 驗證 →</a></p>
+      <div class="hero-side">
+        <div class="note-box">
+          <h3>這頁要回答什麼</h3>
+          <ul>
+            <li>OpenShell 自己提供哪些能力</li>
+            <li>哪些不是 Kubernetes 原生就有</li>
+            <li>CSI / FUSE 在基準組是否能工作</li>
+          </ul>
+        </div>
       </div>
     </div>
-    <p class="evidence-note" style="margin-top:16px;">runc 基準組的 OpenShell 特性驗證報告：<a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-sandbox-validation-2026-06-03.md" target="_blank">openshell-sandbox-validation-2026-06-03.md</a></p>
-  </section>
-
-  <section class="section">
-    <h2 class="section-title">Sandbox 建立完整呼叫鏈</h2>
-    <div class="pipeline">
-      <div class="pipe-step"><strong>CLI</strong><br><span class="dim">openshell sandbox create</span></div>
-      <div class="pipe-step"><strong>Gateway</strong><br><span class="dim">control plane，接受請求</span></div>
-      <div class="pipe-step"><strong>k8s Driver</strong><br><span class="dim">建立 Sandbox CR（注入 Supervisor）</span></div>
-      <div class="pipe-step"><strong>agent-sandbox controller</strong><br><span class="dim">建立 Pod / Service / PVC</span></div>
-      <div class="pipe-step"><strong>Supervisor</strong><br><span class="dim">拉政策、套 Landlock / netns</span></div>
-      <div class="pipe-step"><strong>agent child</strong><br><span class="dim">受 policy 保護地執行</span></div>
+    <div class="metrics">
+      <div class="metric"><strong>7/7</strong><span>黑箱驗證通過</span></div>
+      <div class="metric"><strong>Landlock</strong><span>/tmp 可寫、/var/tmp 拒絕</span></div>
+      <div class="metric"><strong>L7</strong><span>GET 放行、POST 拒絕、python3 拒絕</span></div>
+      <div class="metric"><strong>FUSE</strong><span>sshfs baseline 通過</span></div>
+      <div class="metric"><strong>CSI</strong><span>Azure File 進入 Sandbox</span></div>
     </div>
   </section>
 
   <section class="section">
-    <h2 class="section-title">五層架構堆疊</h2>
-    <div class="layer-stack">
-      <div class="layer">
-        <div class="layer-label"><span class="tag azure">Layer 5</span></div>
-        <div class="layer-body"><strong>☁️ Azure Infrastructure</strong><br><span class="dim">Terraform 管理 VM、VNet、NSG</span></div>
+    <div class="section-head">
+      <div>
+        <div class="section-tag">Core Results</div>
+        <h2 class="section-title">基準組最重要的五件事</h2>
       </div>
-      <div class="layer">
-        <div class="layer-label"><span class="tag k3s">Layer 4</span></div>
-        <div class="layer-body"><strong>⚙️ k3s Cluster</strong><br><span class="dim">3 節點、containerd、Flannel CNI</span></div>
-      </div>
-      <div class="layer">
-        <div class="layer-label"><span class="tag os">Layer 3</span></div>
-        <div class="layer-body"><strong>📦 Agent-Sandbox Pod</strong><br><span class="dim">openshell-sandbox 容器，含 Supervisor 二進位</span></div>
-      </div>
-      <div class="layer">
-        <div class="layer-label"><span class="tag warn">Layer 2</span></div>
-        <div class="layer-body"><strong>🔒 OpenShell Gateway</strong><br><span class="dim">gRPC 端點，提供政策與推理路由給 Supervisor</span></div>
-      </div>
-      <div class="layer">
-        <div class="layer-label" style="background:var(--accent);color:#fff;">Layer 1</div>
-        <div class="layer-body"><strong>🧠 Supervisor（openshell-sandbox 二進位）</strong><br><span class="dim">套用 Landlock、建立 netns、代理所有出口流量、執行 L7 政策</span></div>
-      </div>
+    </div>
+    <div class="story-grid">
+      <article class="story-card"><h3>Filesystem policy 成立</h3><p>`/tmp` 可寫、`/var/tmp` 被拒絕、根目錄列舉被拒。這是 OpenShell 在 runc 路徑真正成立的代表性能力。</p></article>
+      <article class="story-card"><h3>L7 控制完整</h3><p>同一個 endpoint，`curl GET` 可以，`python3 GET` 不行，`curl POST` 也不行。這證明 binary 與 method/path 都有被判斷。</p></article>
+      <article class="story-card"><h3>Policy 可熱重載</h3><p>Pod UID 不變，代表新政策不是靠重建 Pod 才生效。這是 OpenShell control plane 的核心價值之一。</p></article>
+      <article class="story-card"><h3>FUSE baseline 成立</h3><p>普通 privileged Pod 已可在這條路徑上用 `sshfs` 掛遠端目錄，說明底層 k3s + runc 本身沒有擋住 FUSE。</p></article>
+      <article class="story-card"><h3>Azure File CSI 成立</h3><p>同一顆 RWX PVC 已成功被普通 Pod 和 Sandbox 共享讀寫，證明 CSI-backed filesystem 可以直接進入 Sandbox。</p></article>
+      <article class="story-card"><h3>限制也已釐清</h3><p>OpenShell-managed sandbox 若要寫入新掛載路徑，還是要把路徑加入 `filesystem_policy.read_write`，並重建 sandbox。</p></article>
     </div>
   </section>
 
   <section class="section">
-    <h2 class="section-title">請求流程</h2>
-    <div class="pipeline">
-      <div class="pipe-step"><strong>Agent CLI</strong><br><span class="dim">在 sandbox 內執行 curl / python</span></div>
-      <div class="pipe-step"><strong>Proxy</strong><br><span class="dim">10.200.0.1:3128</span></div>
-      <div class="pipe-step"><strong>Supervisor</strong><br><span class="dim">L7 政策判斷</span></div>
-      <div class="pipe-step"><strong>netns</strong><br><span class="dim">sandbox-8dbef1f1</span></div>
-      <div class="pipe-step"><strong>結果</strong><br><span class="dim">ALLOWED / DENIED</span></div>
+    <div class="section-head">
+      <div>
+        <div class="section-tag">Readouts</div>
+        <h2 class="section-title">重點讀值</h2>
+      </div>
     </div>
-    <p class="callout">所有出口流量都必須經過 Proxy（<code>10.200.0.1:3128</code>），Supervisor 在此執行 L7 政策判斷後決定放行或拒絕。</p>
-  </section>
-</div>
-
-<!-- ══════════════════ 4. 維運差異 ══════════════════ -->
-<div id="tab-ops" class="tab-panel">
-
-  <section class="section">
-    <h2 class="section-title">對 Kubernetes 原生使用者：導入 OpenShell 會有什麼不同？</h2>
-    <p>
-      如果你習慣用 <code>kubectl apply</code>、NetworkPolicy、PodSecurityAdmission 管理工作負載，
-      導入 OpenShell 後有幾個面向會和你的既有經驗產生明顯落差。
-      以下依影響程度列出，並附上本 lab 的實際證據。
-    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>面向</th><th>狀態</th><th>證據</th></tr></thead>
+        <tbody>
+          <tr><td>Landlock</td><td><span class="tag green">成立</span></td><td>`/var/tmp` 被拒絕，log 顯示 Landlock sandbox available</td></tr>
+          <tr><td>L7</td><td><span class="tag green">成立</span></td><td>GET allowed / POST denied / python denied</td></tr>
+          <tr><td>Policy hot-reload</td><td><span class="tag green">成立</span></td><td>更新 policy 前後 Pod UID 相同</td></tr>
+          <tr><td>FUSE baseline</td><td><span class="tag green">成立</span></td><td>普通 Pod 內 `sshfs` mount 成功</td></tr>
+          <tr><td>Azure File CSI</td><td><span class="tag green">成立</span></td><td>Pod 與 Sandbox 對同一檔案互相讀寫</td></tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <section class="section">
-    <h2 class="section-title">1. 雙控制平面：kubectl 之外多了一個 openshell CLI</h2>
-    <p>k8s 原生的操作習慣是「<strong>一切都是 YAML，一切都走 API Server</strong>」。引入 OpenShell 後：</p>
-    <div class="cards-4" style="margin-top:12px;">
-      <div class="card" style="border-top:3px solid var(--accent-4);">
-        <div class="card-title">kubectl（仍然存在）</div>
-        <ul style="font-size:13px;padding-left:16px;margin:8px 0;">
-          <li>查看 Sandbox CR / Pod / Service</li>
-          <li>讀 container logs（<code>kubectl logs</code>）</li>
-          <li>存取 k8s RBAC、ConfigMap 等</li>
-        </ul>
-        <p style="font-size:12px;color:var(--muted);">但你<strong>不該直接用 kubectl 刪 Sandbox</strong>——應該走 OpenShell CLI 確保 Gateway 狀態一致。</p>
-      </div>
-      <div class="card" style="border-top:3px solid var(--accent);">
-        <div class="card-title">openshell CLI（新增）</div>
-        <ul style="font-size:13px;padding-left:16px;margin:8px 0;">
-          <li><code>openshell sandbox create / delete / list</code></li>
-          <li><code>openshell policy apply / get</code></li>
-          <li><code>openshell sandbox exec</code>（進入受保護 shell）</li>
-        </ul>
-        <p style="font-size:12px;color:var(--muted);">Gateway 維護 sandbox session 狀態；繞過 CLI 直接改 k8s 資源會讓 Gateway 與 k8s 進入不一致。</p>
+    <div class="section-head">
+      <div>
+        <div class="section-tag">Primary Sources</div>
+        <h2 class="section-title">直接證據入口</h2>
       </div>
     </div>
-    <p class="callout" style="margin-top:16px;">
-      ⚠️ 這意味著你的 GitOps 流程（ArgoCD / Flux）需要重新思考：<br>
-      <strong>哪些資源走 kubectl apply？哪些要走 OpenShell CLI？</strong><br>
-      OpenShell 自己建立的 Sandbox CR 帶有 <code>openshell.ai/managed-by: openshell</code> annotation，
-      不應被 GitOps 工具覆蓋。
-    </p>
-  </section>
-
-  <section class="section">
-    <h2 class="section-title">2. SecurityContext 的現實衝擊</h2>
-    <p>這是影響最大、也最容易踩雷的地方。OpenShell Supervisor 需要在 Pod 內建立 network namespace（veth pair、iptables），這要求較高的 Linux capabilities。</p>
-    <p><strong>本 lab 實際觀測到的 securityContext：</strong></p>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> testing/raw/architecture-evidence/proof-auto-sandbox.yaml（securityContext 節錄）</div>
-      <pre><span class="log-ocsf">securityContext:
-  privileged: true
-  runAsUser: 0
-  capabilities:
-    add:
-      - SYS_ADMIN
-      - NET_ADMIN
-      - SYS_PTRACE
-      - SYSLOG</span></pre>
-    </div>
-    <table class="data-table" style="margin-top:16px;">
-      <thead><tr><th>影響項目</th><th>說明</th><th>本 lab 狀態</th></tr></thead>
-      <tbody>
-        <tr>
-          <td><strong>Pod Security Admission（PSA）</strong></td>
-          <td><code>privileged: true</code> 在 <code>restricted</code> / <code>baseline</code> namespace 下會被拒絕，只有 <code>privileged</code> namespace 才放行</td>
-          <td><span class="tag warn">openshell namespace 需設為 privileged</span></td>
-        </tr>
-        <tr>
-          <td><strong>OPA / Gatekeeper / Kyverno</strong></td>
-          <td>常見 policy 禁止 <code>privileged: true</code> 或 <code>runAsUser: 0</code>，OpenShell sandbox 會觸發這些規則</td>
-          <td><span class="tag warn">需要明確加入 exemption</span></td>
-        </tr>
-        <tr>
-          <td><strong>雲端 managed k8s（EKS / GKE / AKS）</strong></td>
-          <td>部分平台預設開啟 PSA 或節點層級安全加固，privileged Pod 可能需要額外 node pool 設定</td>
-          <td><span class="tag" style="background:#ddd;color:#666;">未測試</span></td>
-        </tr>
-        <tr>
-          <td><strong>k3s（本 lab）</strong></td>
-          <td>containerd 預設不支援 Pod 內 mount namespace 操作，netns 建立失敗。需要 privileged workaround</td>
-          <td><span class="tag green">已解決（patcher）</span></td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3 style="margin-top:20px;">k3s 的特殊 workaround：sandbox-patcher</h3>
-    <p>因為 OpenShell 建立 Sandbox CR 時不會預設加上 <code>privileged: true</code>，本 lab 需要一個 sidecar 腳本持續 patch：</p>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> k8s/openshell-sandbox-patcher.yaml（核心邏輯）</div>
-      <pre><span class="dim"># 持續監看 Sandbox CR，一旦 privileged != true 就 patch</span>
-<span class="log-ocsf">patch='[{"op":"add","path":"/spec/podTemplate/spec/containers/0/securityContext/privileged","value":true}]'
-kubectl patch sandbox "${name}" --type json -p="${patch}"
-
-# 如果 Pod 已建立但沒有 privileged，刪掉讓 controller 重建
-kubectl delete pod "${name}" --ignore-not-found --wait=false</span></pre>
-    </div>
-    <p style="font-size:13px;color:var(--muted);">💡 這個 patcher 是 lab 環境的 workaround，不是 OpenShell 正式提供的元件。在正式環境中應由 MutatingWebhook 或節點配置解決。</p>
-  </section>
-
-  <section class="section">
-    <h2 class="section-title">3. 網路模型：NetworkPolicy 在這裡不管用</h2>
-    <p>k8s 原生的出口控制通常靠 NetworkPolicy（CNI 實作）。OpenShell 的網路隔離走完全不同的路：</p>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> Supervisor 啟動時的 netns 建立（來自 sandbox-logs.txt）</div>
-      <pre><span class="log-ocsf">CONFIG:CREATING  Creating network namespace [ns:sandbox-8dbef1f1 host_veth:veth-h-8dbef1f1 sandbox_veth:veth-s-8dbef1f1]
-CONFIG:CREATED   Network namespace created [ns:sandbox-8dbef1f1 host_ip:10.200.0.1 sandbox_ip:10.200.0.2]
-CONFIG:INSTALLED Bypass detection rules installed [ns:sandbox-8dbef1f1]
-NET:LISTEN       10.200.0.1:3128</span>   <span class="dim"># ← Supervisor 自己起的 CONNECT proxy</span></pre>
-    </div>
-    <table class="data-table" style="margin-top:12px;">
-      <thead><tr><th>能力</th><th>k8s NetworkPolicy</th><th>OpenShell Supervisor</th></tr></thead>
-      <tbody>
-        <tr><td>作用範圍</td><td>Pod 到 Pod 之間（東西向）</td><td>Pod 內 agent 到外部（南北向 egress）</td></tr>
-        <tr><td>隔離機制</td><td>CNI（iptables / eBPF）</td><td>Pod 內獨立 Linux network namespace + veth</td></tr>
-        <tr><td>L7 感知（HTTP method/path）</td><td><span class="tag" style="background:#ddd;color:#666;">✗</span></td><td><span class="tag green">✓ CONNECT Proxy</span></td></tr>
-        <tr><td>預設 deny all egress</td><td>需要明確寫 policy</td><td><span class="tag green">預設行為，不寫 = 全封鎖</span></td></tr>
-        <tr><td>變更方式</td><td><code>kubectl apply</code> NetworkPolicy YAML</td><td><code>openshell policy apply</code>（熱重載）</td></tr>
-        <tr><td>與 Calico / Cilium 的關係</td><td>CNI 本身的 feature</td><td>互不影響，但兩套規則都會生效</td></tr>
-      </tbody>
-    </table>
-    <p class="callout" style="margin-top:12px;">
-      ⚠️ 如果你同時有 NetworkPolicy + OpenShell policy，<strong>兩者都要放行流量才能連通</strong>。
-      NetworkPolicy 在 Pod 層控制進出，OpenShell 在 Pod 內的 netns 層控制 agent 的行為。
-    </p>
-  </section>
-
-  <section class="section">
-    <h2 class="section-title">4. 雙重認證：k8s SA Token + OpenShell JWT</h2>
-    <p>k8s 原生的 Pod 認證靠 ServiceAccount token（自動掛載）。OpenShell 多了一層自己的 JWT：</p>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> Supervisor 啟動認證流程（來自 sandbox-logs.txt）</div>
-      <pre><span class="dim">Fetching sandbox policy via gRPC</span> <span class="log-ocsf">endpoint=http://openshell.openshell.svc.cluster.local:8080</span>
-<span class="log-ocsf">exchanging K8s ServiceAccount token for sandbox JWT</span> <span class="dim">endpoint=http://openshell.openshell.svc.cluster.local:8080</span></pre>
-    </div>
-    <p>注意 Sandbox CR 中：</p>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span></div>
-      <pre><span class="log-ocsf">automountServiceAccountToken: false</span>   <span class="dim"># ← agent 的 SA token 預設關閉</span>
-<span class="dim">volumeMounts:
-  - mountPath: /var/run/secrets/openshell
-    name: openshell-sa-token              # ← 只有 openshell bootstrap SA token</span></pre>
-    </div>
-    <table class="data-table" style="margin-top:12px;">
-      <thead><tr><th>面向</th><th>說明</th></tr></thead>
-      <tbody>
-        <tr><td>agent 無法直接存取 k8s API</td><td><code>automountServiceAccountToken: false</code>，agent 拿不到 SA token，無法呼叫 k8s API Server</td></tr>
-        <tr><td>Supervisor 本身用 bootstrap SA 換 JWT</td><td>這個 JWT 是 OpenShell Gateway 簽發，只用於 Supervisor ↔ Gateway 通訊</td></tr>
-        <tr><td>k8s RBAC 仍然需要</td><td>openshell controller 本身仍需要 k8s RBAC 來建立 Pod / Service / Sandbox；需要獨立規劃 ServiceAccount + Role</td></tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section class="section">
-    <h2 class="section-title">5. Observability：OCSF 結構化日誌，不是一般 container log</h2>
-    <p><code>kubectl logs &lt;sandbox-pod&gt;</code> 輸出的是 OCSF 格式的結構化事件，不是你熟悉的應用 log：</p>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> kubectl logs proof-auto-1780439554（節錄）</div>
-      <pre><span class="dim">[1780439796.224] [sandbox] [OCSF ]</span> <span class="ok">CONFIG:ENABLED</span>  <span class="dim">[INFO] TLS termination enabled: ephemeral CA generated</span>
-<span class="dim">[1780439796.224] [sandbox] [OCSF ]</span> <span class="ok">CONFIG:CREATING</span> <span class="dim">[INFO] Creating network namespace [ns:sandbox-8dbef1f1 ...]</span>
-<span class="dim">[1780439815.123] [sandbox] [OCSF ]</span> <span class="log-warn">NET:OPEN</span>        <span class="dim">[INFO] openshell.openshell.svc.cluster.local:8080</span>
-<span class="dim">[1780439822.456] [sandbox] [OCSF ]</span> <span class="ok">HTTP:GET</span>        <span class="dim">ALLOWED  https://api.anthropic.com/v1/messages</span>
-<span class="dim">[1780439823.789] [sandbox] [OCSF ]</span> <span class="log-deny">HTTP:POST</span>       <span class="dim">DENIED   https://evil.example.com/exfil</span></pre>
-    </div>
-    <table class="data-table" style="margin-top:12px;">
-      <thead><tr><th>項目</th><th>k8s 原生</th><th>OpenShell</th></tr></thead>
-      <tbody>
-        <tr><td>log 格式</td><td>應用自定義（text / JSON）</td><td>OCSF 固定結構：timestamp, category, severity, message</td></tr>
-        <tr><td>log 來源</td><td>應用 stdout/stderr</td><td>Supervisor stdout（包含所有安全事件）</td></tr>
-        <tr><td>agent 本身的 stdout</td><td>直接可見</td><td>混在 Supervisor log 裡，需要過濾 <code>[PROC:]</code> 事件</td></tr>
-        <tr><td>Prometheus metrics</td><td>應用自己 expose</td><td>目前版本未見 metrics endpoint（本 lab 未觀測到）</td></tr>
-        <tr><td>Event 類型</td><td>N/A</td><td>CONFIG / NET / HTTP / PROC / LIFECYCLE / SSH 等分類</td></tr>
-      </tbody>
-    </table>
-    <p style="font-size:13px;color:var(--muted);margin-top:8px;">
-      💡 如果你有 ELK / Loki / Splunk，需要為 OCSF 格式加 parser。
-      <code>[OCSF ]</code> 開頭的行是安全審計事件，其餘是 Supervisor 自身的 operational log。
-    </p>
-  </section>
-
-  <section class="section">
-    <h2 class="section-title">6. 偵錯（Debug）困難點</h2>
-    <p>進入 sandbox 後的環境與一般 container 不同，以下是常見的混淆點：</p>
-    <table class="data-table">
-      <thead><tr><th>場景</th><th>一般 container</th><th>OpenShell sandbox</th></tr></thead>
-      <tbody>
-        <tr>
-          <td><code>kubectl exec</code> 進入 Pod</td>
-          <td>直接拿到 sh/bash</td>
-          <td>進入的是 Supervisor 管理的環境，binary allowlist 生效，<code>curl</code> 等可能不在白名單</td>
-        </tr>
-        <tr>
-          <td>查網路連線</td>
-          <td><code>ss -t</code> / <code>netstat</code></td>
-          <td>需在 sandbox netns 內查（<code>ip netns exec sandbox-XXXX ss -t</code>），從 host 上看</td>
-        </tr>
-        <tr>
-          <td>抓封包</td>
-          <td><code>tcpdump -i eth0</code></td>
-          <td>需抓 veth-h-XXXX 介面（host side），或在 sandbox netns 內抓 veth-s-XXXX</td>
-        </tr>
-        <tr>
-          <td>policy 不生效</td>
-          <td>N/A</td>
-          <td>確認 Supervisor 是否從 Gateway 拿到 policy（看 <code>CONFIG:LOADED</code> log），或退回 local disk policy</td>
-        </tr>
-        <tr>
-          <td>Pod 起不來</td>
-          <td>看 <code>kubectl describe pod</code></td>
-          <td>先確認 <code>privileged: true</code> 是否已 patch；看 Supervisor 啟動階段的 <code>CONFIG:CREATING</code> / <code>CONFIG:ENABLED</code></td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section class="section">
-    <h2 class="section-title">7. 已知限制與本 Lab 的特殊處理</h2>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> k3s 環境的已知問題</div>
-      <pre><span class="log-deny">Network namespace creation failed and proxy mode requires isolation
-mount --make-shared /run/netns failed: Permission denied</span>
-<span class="dim">→ 原因：k3s containerd 預設不允許 Pod 內做 mount namespace 操作
-→ 解決：sandbox pod 設為 privileged: true（透過 patcher）</span>
-
-<span class="log-warn">runtime cgroup pids.max is unavailable (No such file or directory)</span>
-<span class="dim">→ 原因：k3s 的 cgroup 設定不完整，缺少 pids subsystem
-→ 影響：無法對 agent child process 施加 PID 數量上限
-→ 嚴重性：低，但表示 PID exhaustion 防禦缺失</span></pre>
-    </div>
-    <table class="data-table" style="margin-top:12px;">
-      <thead><tr><th>問題</th><th>影響</th><th>正式環境建議</th></tr></thead>
-      <tbody>
-        <tr>
-          <td>privileged workaround</td>
-          <td>安全邊界降低；違反 PSA restricted</td>
-          <td>在支援 netns 的節點上（如 Kata 之外的標準 k8s）應不需要；或用 MutatingWebhook 統一處理</td>
-        </tr>
-        <tr>
-          <td>cgroup pids.max 不可用</td>
-          <td>無 PID 上限防護</td>
-          <td>使用完整 cgroup v2 的節點（Ubuntu 22.04+ 預設）</td>
-        </tr>
-        <tr>
-          <td>policy local fallback</td>
-          <td>Gateway 下線時仍使用 image 內的 policy.yaml</td>
-          <td>確保 image 內的 fallback policy 足夠保守（deny all 為佳）</td>
-        </tr>
-        <tr>
-          <td>TLS policy deprecation warning</td>
-          <td><code>tls: terminate</code> 已棄用，改自動 TLS</td>
-          <td>更新 policy 改用 <code>tls: skip</code>（若不需 TLS 終止）</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-</div>
-
-<!-- ══════════════════ 5. 實驗結果 ══════════════════ -->
-<div id="tab-exp" class="tab-panel">
-  <section class="section">
-    <h2 class="section-title">7 項驗證實驗</h2>
-
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">01</span>
-        <div><strong>預設出口封鎖</strong><span class="tag warn" style="margin-left:10px;">Network</span></div>
-        <span class="tag green">✓ 通過</span>
-      </div>
-      <div class="exp-body">
-        <p>在尚未套用任何政策的情況下，所有出口連線應被封鎖。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> default-egress.txt</div>
-          <pre><span class="cmd">$ curl -v --max-time 10 https://api.github.com/zen</span>
-<span class="deny">curl: (56) CONNECT tunnel failed, response 403</span></pre>
-        </div>
-        <p>HTTP CONNECT 通道被 Proxy 以 <code>403</code> 拒絕，出口封鎖確認有效。</p>
-      </div>
-    </div>
-
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">02</span>
-        <div><strong>Landlock 檔案系統沙箱</strong><span class="tag os" style="margin-left:10px;">Filesystem</span></div>
-        <span class="tag green">✓ 通過</span>
-      </div>
-      <div class="exp-body">
-        <p>驗證 Landlock 正確允許 <code>/tmp</code> 寫入，並拒絕 <code>/var/tmp</code> 及根目錄列舉。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> filesystem.txt</div>
-          <pre><span class="ok">TMP_OK</span>
-<span class="deny">touch: cannot touch '/var/tmp/verify-deny': Permission denied</span>
-<span class="ok">VARTMP_DENIED</span></pre>
-        </div>
-        <div class="terminal" style="margin-top:8px;">
-          <div class="terminal-header"><span></span><span></span><span></span> static-baseline.txt</div>
-          <pre><span class="deny">ls: cannot open directory '/': Permission denied</span></pre>
-        </div>
-        <p>Landlock ABI v4 可用，實際套用 V2，規則 9 條，跳過 1 條（cgroup 不可用）。</p>
-      </div>
-    </div>
-
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">03</span>
-        <div><strong>政策放行 — curl GET</strong><span class="tag green" style="margin-left:10px;">L7 Policy</span></div>
-        <span class="tag green">✓ 通過</span>
-      </div>
-      <div class="exp-body">
-        <p>設定政策允許 <code>api.github.com</code> 的 HTTPS GET，驗證放行後可正常取得回應。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> curl-get.txt</div>
-          <pre><span class="ok">Avoid administrative distraction.</span></pre>
-        </div>
-        <p>GitHub API <code>/zen</code> 端點回傳格言，確認 GET 請求通過。</p>
-      </div>
-    </div>
-
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">04</span>
-        <div><strong>政策封鎖 — python3 GET</strong><span class="tag warn" style="margin-left:10px;">L7 Policy</span></div>
-        <span class="tag green">✓ 通過</span>
-      </div>
-      <div class="exp-body">
-        <p>政策僅允許 <code>curl</code> agent，python3 的 HTTP 請求應被 L7 層拒絕。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> python-get.txt</div>
-          <pre><span class="log-warn">urllib.error.URLError: &lt;urlopen error&gt;</span>
-<span class="deny">  &lt;HTTP Error 403: Forbidden&gt;</span></pre>
-        </div>
-        <p>Proxy 回傳 <code>403 Forbidden</code>，python3 請求被 L7 政策封鎖。</p>
-      </div>
-    </div>
-
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">05</span>
-        <div><strong>政策封鎖 — curl POST</strong><span class="tag warn" style="margin-left:10px;">L7 Policy</span></div>
-        <span class="tag green">✓ 通過</span>
-      </div>
-      <div class="exp-body">
-        <p>即使 GET 被放行，POST 方法應被 L7 政策拒絕並回傳結構化錯誤。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> curl-post.txt</div>
-          <pre><span class="log-ocsf">{
-  "error": "policy_denied",
-  "layer": "l7",
-  "method": "POST",
-  ...
-}</span></pre>
-        </div>
-        <p>Supervisor 回傳結構化 JSON 拒絕訊息，HTTP 方法層級的管控正常運作。</p>
-      </div>
-    </div>
-
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">06</span>
-        <div><strong>政策熱重載</strong><span class="tag azure" style="margin-left:10px;">Lifecycle</span></div>
-        <span class="tag green">✓ 通過</span>
-      </div>
-      <div class="exp-body">
-        <p>更新政策後，Supervisor 應在不重啟 Pod 的情況下套用新政策，Pod UID 應維持不變。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> pod_uid_before.txt / pod_uid_after.txt</div>
-          <pre><span class="ok">f9698053-7ec0-4656-a7c7-8c025e66ebdc</span>  <span class="dim">← 更新前</span>
-<span class="ok">f9698053-7ec0-4656-a7c7-8c025e66ebdc</span>  <span class="dim">← 更新後（相同）</span></pre>
-        </div>
-        <p>兩次查詢 Pod UID 完全相同，確認熱重載不會造成 Pod 重啟。</p>
-      </div>
-    </div>
-
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">07</span>
-        <div><strong>k3s privileged 工作繞過</strong><span class="tag k3s" style="margin-left:10px;">Platform</span></div>
-        <span class="tag green">✓ 通過</span>
-      </div>
-      <div class="exp-body">
-        <p>k3s + containerd 不允許在 Sandbox CR 建立 netns，需自動加上 <code>privileged: true</code>。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> 錯誤原因</div>
-          <pre><span class="deny">mount --make-shared /run/netns failed: Permission denied</span></pre>
-        </div>
-        <div class="terminal" style="margin-top:8px;">
-          <div class="terminal-header"><span></span><span></span><span></span> 解決方式</div>
-          <pre><span class="cmd">$ kubectl apply -f k8s/openshell-sandbox-patcher.yaml</span>
-<span class="ok">daemonset.apps/sandbox-patcher created</span>
-<span class="dim"># DaemonSet 監聽新建的 Sandbox CR，自動 patch privileged: true</span></pre>
-        </div>
-        <p>部署 DaemonSet patcher 後，所有新 Sandbox CR 自動取得必要權限。</p>
-      </div>
-    </div>
-
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">F1</span>
-        <div><strong>FUSE remote mount 基線</strong><span class="tag azure" style="margin-left:10px;">Supplement</span></div>
-        <span class="tag green">✓ 通過</span>
-      </div>
-      <div class="exp-body">
-        <p>這不是 OpenShell policy 黑箱測試，而是補充用來驗證 `runc` 基線本身是否支援 FUSE。方法是在 `fuse-lab` namespace 內先起一個 SSH server，再用普通 privileged Pod 透過 <code>sshfs</code> 掛載遠端目錄。</p>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> sshfs-baseline.log</div>
-          <pre><span class="cmd">$ sshfs fuseuser@sshfs-server.fuse-lab.svc.cluster.local:/data/export /mnt/remote ...</span>
-<span class="ok">-rw-r--r-- 1 ubuntu ubuntu   12 ... hello.txt</span>
-<span class="ok">server-file</span>
-<span class="ok">fuseuser@sshfs-server.fuse-lab.svc.cluster.local:/data/export on /mnt/remote type fuse.sshfs (...)</span>
-<span class="ok">$ fusermount3 -u /mnt/remote</span></pre>
-        </div>
-        <p>這組結果證明 Azure `k3s + containerd + runc` 上的 FUSE 基本路徑成立。接下來若要驗證 OpenShell sandbox，可把問題聚焦在 `/dev/fuse`、helper binaries 與 sandbox 網路模型，而不是重複懷疑底層叢集。</p>
-        <p class="evidence-note"><a href="https://github.com/hwchiu/openqq/blob/main/testing/fuse-runc-baseline-2026-06-05.md" target="_blank">runc 基線報告</a> · <a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-fuse-validation-2026-06-05.md" target="_blank">OpenShell FUSE 報告</a></p>
-        <p style="font-size:13px;color:var(--muted);margin-top:10px;">最新結果：自訂 `amd64` sandbox image 已成功把 <code>/dev/fuse</code>、<code>sshfs</code>、<code>fusermount3</code> 帶進 OpenShell sandbox，但對本實驗的 SSH endpoint 仍然無法建立連線。普通 Pod 對同一個 `ClusterIP` / `PodIP` / `NodePort` 路徑可以成功，因此阻塞點已收斂到 OpenShell sandbox 的網路可達性模型，而不是 FUSE binary 本身。</p>
-      </div>
-    </div>
-
-    <div class="experiment">
-      <div class="exp-header">
-        <span class="exp-num">F2</span>
-        <div><strong>Azure File CSI 掛載基線</strong><span class="tag azure" style="margin-left:10px;">Supplement</span></div>
-        <span class="tag green">✓ 通過</span>
-      </div>
-      <div class="exp-body">
-        <p>這組實驗改走更正式的 Kubernetes 儲存路徑：官方 <code>azurefile-csi-driver</code> + Azure File share + `RWX PVC`。同一顆 `PVC` 被同時掛進普通 Pod 與 `Sandbox`，目標是證明 `CSI-backed filesystem` 可以直接進入 sandbox。</p>
-        <table class="result-table">
-          <tr><td>普通 Pod 掛載 Azure File PVC</td><td><span class="tag green">PASS</span></td></tr>
-          <tr><td>`Sandbox` 掛載同一顆 Azure File PVC</td><td><span class="tag green">PASS</span></td></tr>
-          <tr><td>Pod 與 Sandbox 共用同一份 `proof.txt`</td><td><span class="tag green">PASS</span></td></tr>
-        </table>
-        <div class="terminal">
-          <div class="terminal-header"><span></span><span></span><span></span> Azure File mount</div>
-          <pre><span class="log-ok">//stopenqq06001115.file.core.windows.net/openshell-csi-share on /mnt/azurefile type cifs</span></pre>
-        </div>
-        <div class="terminal" style="margin-top:8px;">
-          <div class="terminal-header"><span></span><span></span><span></span> 最終 proof.txt</div>
-          <pre><span class="log-ocsf">from-pod
-from-sandbox</span></pre>
-        </div>
-        <p>這證明 Azure File CSI-backed PVC 已可直接進入 `Sandbox` 的 filesystem。就這個需求來看，Azure File 這條路比 `sshfs in sandbox` 更穩，也更接近正式方案。</p>
-        <p style="font-size:13px;color:var(--muted);margin-top:10px;">但這裡要切清楚：這次成功的是 `agent-sandbox` / `Sandbox` CR 直接掛載 PVC，不等於 OpenShell-managed sandbox 對新掛載路徑自動可寫。在目前 `runc + OpenShell` 組合下，若要把 Azure File 掛到像 <code>/mnt/azurefile</code> 這種新路徑，仍需把該路徑加入 <code>filesystem_policy.read_write</code>，並重建 sandbox 讓 Landlock 規則重新套用。</p>
-        <p class="evidence-note"><a href="https://github.com/hwchiu/openqq/blob/main/testing/azurefile-csi-validation-2026-06-06.md" target="_blank">Azure File CSI 驗證報告</a> · <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/azurefile-csi-lab.md" target="_blank">Runbook</a></p>
-      </div>
+    <div class="evidence-list">
+      <div class="evidence-item"><div><strong>OpenShell runc 驗證報告</strong><small>完整 7 項黑箱實驗與解讀</small></div><a class="section-link" href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-sandbox-validation-2026-06-03.md" target="_blank">Open</a></div>
+      <div class="evidence-item"><div><strong>FUSE runc baseline</strong><small>證明底層 k3s + runc 可跑 sshfs mount</small></div><a class="section-link" href="https://github.com/hwchiu/openqq/blob/main/testing/fuse-runc-baseline-2026-06-05.md" target="_blank">Open</a></div>
+      <div class="evidence-item"><div><strong>Azure File CSI 驗證</strong><small>證明 RWX PVC 已可進 Sandbox</small></div><a class="section-link" href="https://github.com/hwchiu/openqq/blob/main/testing/azurefile-csi-validation-2026-06-06.md" target="_blank">Open</a></div>
+      <div class="evidence-item"><div><strong>OpenShell FUSE 驗證</strong><small>聚焦於為什麼 sshfs in sandbox 最終仍卡住</small></div><a class="section-link" href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-fuse-validation-2026-06-05.md" target="_blank">Open</a></div>
     </div>
   </section>
-</div>
-
-<!-- ══════════════════ 5. 日誌分析 ══════════════════ -->
-<div id="tab-logs" class="tab-panel">
-  <section class="section">
-    <h2 class="section-title">Supervisor 啟動完整日誌解析</h2>
-    <p>以下為 <code>sandbox-logs.txt</code> 的逐段解說，涵蓋 Supervisor 從啟動到政策熱重載的完整生命週期。</p>
-
-    <h3>① 啟動與政策拉取</h3>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> sandbox-logs.txt — 啟動段</div>
-      <pre><span class="log-info">[1780439795.994] Starting sandbox command=["sleep", "infinity"]</span>
-<span class="log-info">[1780439795.994] Fetching sandbox policy via gRPC endpoint=http://openshell.openshell.svc.cluster.local:8080</span>
-<span class="log-ocsf">[1780439796.042] CONFIG:DISCOVERY [INFO] Server returned no policy; attempting local discovery</span>
-<span class="log-ocsf">[1780439796.043] CONFIG:LOADED [INFO] Loaded sandbox policy from container disk [path:/etc/openshell/policy.yaml]</span></pre>
-    </div>
-    <p class="callout">Gateway 未回傳政策時，Supervisor 自動 fallback 至 <code>/etc/openshell/policy.yaml</code>，確保服務不中斷。</p>
-
-    <h3>② 網路命名空間建立</h3>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> sandbox-logs.txt — netns 段</div>
-      <pre><span class="log-ocsf">[1780439796.224] CONFIG:CREATING [INFO] Creating network namespace [ns:sandbox-8dbef1f1 host_veth:veth-h-8dbef1f1 sandbox_veth:veth-s-8dbef1f1]</span>
-<span class="log-ocsf">[1780439796.241] CONFIG:CREATED  [INFO] Network namespace created [ns:sandbox-8dbef1f1 host_ip:10.200.0.1 sandbox_ip:10.200.0.2]</span>
-<span class="log-ocsf">[1780439796.252] CONFIG:INSTALLED [INFO] Bypass detection rules installed [ns:sandbox-8dbef1f1]</span>
-<span class="log-ocsf">[1780439796.272] NET:LISTEN      [INFO] 10.200.0.1:3128</span></pre>
-    </div>
-
-    <h3>③ Landlock 套用</h3>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> sandbox-logs.txt — Landlock 段</div>
-      <pre><span class="log-ocsf">[1780439796.273] CONFIG:PROBED   [INFO] Landlock filesystem sandbox available [abi:v4 compat:BestEffort ro:7 rw:3]</span>
-<span class="log-ocsf">[1780439796.273] CONFIG:APPLYING [INFO] Applying Landlock filesystem sandbox [abi:V2 compat:BestEffort ro:7 rw:3]</span>
-<span class="log-ocsf">[1780439796.273] CONFIG:BUILT    [INFO] Landlock ruleset built [rules_applied:9 skipped:1]</span></pre>
-    </div>
-    <p>核心支援 Landlock v4，實際套用 v2 相容模式，建立 9 條規則（1 條因 cgroup 不可用跳過）。</p>
-
-    <h3>④ 請求被拒（政策更新前）</h3>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> sandbox-logs.txt — DENIED 段</div>
-      <pre><span class="deny">[...] NET:DENIED [INFO] https://api.github.com:443 [agent:curl method:CONNECT]</span></pre>
-    </div>
-
-    <h3>⑤ 政策熱重載</h3>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> sandbox-logs.txt — 熱重載段</div>
-      <pre><span class="log-ocsf">[...] CONFIG:RELOADED [INFO] Policy hot-reload successful
-        [old_revision:9859... → new_revision:1086...]</span></pre>
-    </div>
-    <p class="callout">revision hash 改變代表政策確實更新，且全程不重啟 Pod。</p>
-
-    <h3>⑥ 請求放行（政策更新後）</h3>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> sandbox-logs.txt — ALLOWED 段</div>
-      <pre><span class="ok">[...] NET:ALLOWED [INFO] https://api.github.com:443 [agent:curl method:GET]</span>
-<span class="deny">[...] NET:DENIED  [INFO] https://api.github.com:443 [agent:python3 method:GET]</span>
-<span class="deny">[...] NET:DENIED  [INFO] https://api.github.com:443 [agent:curl method:POST]</span></pre>
-    </div>
-    <p>同一端點，curl GET 放行；python3 GET 和 curl POST 均被拒絕，L7 政策細粒度管控正常運作。</p>
-  </section>
-</div>
-
-<!-- ══════════════════ 6. 重現步驟 ══════════════════ -->
-<div id="tab-repro" class="tab-panel">
-  <section class="section">
-    <h2 class="section-title">如何重現這個實驗</h2>
-    <p>以下步驟假設你已安裝 <strong>Terraform</strong>、<strong>Azure CLI</strong> 並已登入 Azure 帳號。</p>
-
-    <div class="timeline">
-      <div class="tl-item">
-        <div class="tl-marker">1</div>
-        <div class="tl-content">
-          <strong>Clone 並設定環境</strong>
-          <div class="terminal" style="margin-top:8px;">
-            <pre><span class="cmd">$ git clone https://github.com/hwchiu/openqq.git &amp;&amp; cd openqq</span>
-<span class="cmd">$ cp terraform/terraform.tfvars.example terraform/terraform.tfvars</span>
-<span class="dim"># 編輯 terraform.tfvars 填入 Azure subscription_id</span></pre>
-          </div>
-        </div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-marker">2</div>
-        <div class="tl-content">
-          <strong>建立 Azure 基礎設施</strong>
-          <div class="terminal" style="margin-top:8px;">
-            <pre><span class="cmd">$ make infra-up</span>
-<span class="dim"># 約 3–5 分鐘，建立 VM、VNet、NSG</span></pre>
-          </div>
-        </div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-marker">3</div>
-        <div class="tl-content">
-          <strong>安裝 k3s 叢集與 OpenShell</strong>
-          <div class="terminal" style="margin-top:8px;">
-            <pre><span class="cmd">$ make k3s-install</span>
-<span class="cmd">$ make openshell-install</span>
-<span class="cmd">$ bash scripts/install-openshell-sandbox-patcher.sh</span>
-<span class="dim"># patcher 解決 k3s + containerd 的 netns 問題</span></pre>
-          </div>
-        </div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-marker">4</div>
-        <div class="tl-content">
-          <strong>執行完整驗證</strong>
-          <div class="terminal" style="margin-top:8px;">
-            <pre><span class="cmd">$ make verify</span>
-<span class="ok"># 所有 7 項實驗輸出儲存至 testing/raw/verify-&lt;timestamp&gt;/</span></pre>
-          </div>
-        </div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-marker">5</div>
-        <div class="tl-content">
-          <strong>清理資源</strong>
-          <div class="terminal" style="margin-top:8px;">
-            <pre><span class="cmd">$ make infra-down</span>
-<span class="dim"># 銷毀所有 Azure 資源，避免計費</span></pre>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- ══════════════════ 7. 相關文件 ══════════════════ -->
-<div id="tab-docs" class="tab-panel">
-  <section class="section">
-    <h2 class="section-title">原始實驗證據</h2>
-    <table class="data-table">
-      <thead><tr><th>檔案</th><th>對應實驗</th><th>重要內容</th></tr></thead>
-      <tbody>
-        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/default-egress.txt" target="_blank">default-egress.txt</a></td><td>實驗 1</td><td><code>curl: (56) CONNECT tunnel failed, response 403</code></td></tr>
-        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/filesystem.txt" target="_blank">filesystem.txt</a></td><td>實驗 2</td><td><code>TMP_OK</code> / <code>VARTMP_DENIED</code></td></tr>
-        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/static-baseline.txt" target="_blank">static-baseline.txt</a></td><td>實驗 2</td><td><code>ls: cannot open directory '/': Permission denied</code></td></tr>
-        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/curl-get.txt" target="_blank">curl-get.txt</a></td><td>實驗 3</td><td><code>Avoid administrative distraction.</code></td></tr>
-        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/python-get.txt" target="_blank">python-get.txt</a></td><td>實驗 4</td><td>URLError: HTTP 403 Forbidden</td></tr>
-        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/curl-post.txt" target="_blank">curl-post.txt</a></td><td>實驗 5</td><td><code>{"error":"policy_denied","layer":"l7",...}</code></td></tr>
-        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/pod_uid_before.txt" target="_blank">pod_uid_before.txt</a></td><td>實驗 6</td><td><code>f9698053-7ec0-4656-a7c7-8c025e66ebdc</code></td></tr>
-        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/pod_uid_after.txt" target="_blank">pod_uid_after.txt</a></td><td>實驗 6</td><td><code>f9698053-7ec0-4656-a7c7-8c025e66ebdc</code>（相同）</td></tr>
-        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/sandbox-logs.txt" target="_blank">sandbox-logs.txt</a></td><td>實驗 1–6</td><td>89 行完整 OCSF Supervisor 日誌</td></tr>
-        <tr><td><a href="https://github.com/hwchiu/openqq/blob/main/testing/raw/verify-1780439786/policy-set.txt" target="_blank">policy-set.txt</a></td><td>實驗 3–5</td><td>驗證時套用的政策內容</td></tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section class="section">
-    <h2 class="section-title">重要原始碼</h2>
-    <div class="cards-4">
-      <div class="card">
-        <div class="card-title">🔧 基礎設施</div>
-        <p><a href="https://github.com/hwchiu/openqq/tree/main/terraform" target="_blank">terraform/</a> — Azure VM、VNet 定義</p>
-        <p><a href="https://github.com/hwchiu/openqq/blob/main/Makefile" target="_blank">Makefile</a> — 一鍵操作入口</p>
-      </div>
-      <div class="card">
-        <div class="card-title">☸️ Kubernetes</div>
-        <p><a href="https://github.com/hwchiu/openqq/blob/main/k8s/openshell-sandbox-patcher.yaml" target="_blank">sandbox-patcher.yaml</a> — k3s 相容性修補</p>
-        <p><a href="https://github.com/hwchiu/openqq/tree/main/k8s" target="_blank">k8s/</a> — 所有 K8s 清單</p>
-      </div>
-      <div class="card">
-        <div class="card-title">🧪 測試腳本</div>
-        <p><a href="https://github.com/hwchiu/openqq/tree/main/testing" target="_blank">testing/</a> — 驗證腳本與原始輸出</p>
-        <p><a href="https://github.com/hwchiu/openqq/tree/main/scripts" target="_blank">scripts/</a> — 安裝輔助腳本</p>
-      </div>
-      <div class="card">
-        <div class="card-title">📖 README</div>
-        <p><a href="https://github.com/hwchiu/openqq/blob/main/README.md" target="_blank">README.md</a> — 專案說明與快速開始</p>
-      </div>
-    </div>
-  </section>
-
 </main>
-
-<script>
-function showTab(id, btn) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  if (btn) btn.classList.add('active');
-}
-</script>
 </body>
 </html>
