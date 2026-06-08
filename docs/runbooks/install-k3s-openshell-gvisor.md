@@ -1,77 +1,44 @@
 # Install Path: K3s + OpenShell + gVisor
 
-這條路線的重點不是功能完整，而是獨立驗證：
+這條路線驗證 OpenShell 在 `runsc` runtime 上保留與退化哪些能力。
 
-- gVisor 作為 runtime 時
-- OpenShell 還剩下哪些能力
-- 哪些能力會退化
-
-## 目標
-
-- 建立 `k3s + containerd`
-- 安裝 gVisor / `RuntimeClass gvisor`
-- 安裝 OpenShell
-- 套用 gVisor 專用 patcher
-- 驗證 L7 仍成立、filesystem policy 退化
-
-## 安裝流程
-
-1. 建立 K3s 叢集
+## 最短路徑
 
 ```bash
-make tf-init
-make tf-plan
-make tf-apply
-./scripts/fetch-kubeconfig.sh
+./scripts/install-k3s-openshell-gvisor.sh
 ```
 
-2. 安裝 gVisor
+## 它會做什麼
 
-```bash
-make gvisor-install
-make gvisor-verify
-```
+1. 套用 `terraform/stacks/k3s-openshell-gvisor`
+2. 抓回 kubeconfig 到 `generated/stacks/k3s-openshell-gvisor/kubeconfig`
+3. 等三個節點都 `Ready`
+4. 驗證 `RuntimeClass/gvisor`
+5. 安裝 OpenShell，但跳過預設 patcher
+6. 套用 `gvisor` 專用 patcher
+7. 執行 OpenShell runtime 驗證
 
-3. 安裝 OpenShell
+## 對應 Terraform Root
 
-```bash
-make openshell-install
-make openshell-patcher-gvisor
-```
+- `terraform/stacks/k3s-openshell-gvisor`
 
-4. 執行 OpenShell 驗證
+## 對應腳本
 
-```bash
-make openshell-verify
-```
-
-## 預期結果
-
-- OpenShell sandbox 能建立
-- `curl GET` allowed
-- `python3 GET` denied
-- `curl POST` denied
-- 但 filesystem policy 不再成立
-
-## 必須知道的限制
-
-根據本 repo 已驗證結果：
-
-- `landlock_create_ruleset` 在 gVisor 路徑回 `ENOSYS`
-- 所以 `filesystem_policy` 會退化
-- 這不是安裝錯誤，而是實際 runtime 相容性限制
-
-## Repo 內關鍵檔案
-
-- `scripts/install-gvisor.sh`
+- `scripts/install-k3s-openshell-gvisor.sh`
+- `scripts/install-openshell-stack.sh`
 - `scripts/install-openshell-sandbox-patcher-gvisor.sh`
+- `scripts/verify-gvisor-runtime.sh`
 - `scripts/verify-openshell-runtime.sh`
-- `k8s/gvisor-runtimeclass.yaml`
-- `k8s/openshell-sandbox-patcher-gvisor.yaml`
-- `docs/lab-gvisor.html`
+
+## 已知結果
+
+- `network / L7 / hot-reload` 可驗證
+- `filesystem_policy` 在 gVisor 路徑退化
 
 ## 清理
 
 ```bash
-make tf-destroy
+./scripts/destroy-comparison-matrix.sh
+# 或單獨 destroy
+source ./scripts/lib-stack.sh && terraform_destroy_stack k3s-openshell-gvisor
 ```

@@ -1,76 +1,43 @@
 # Install Path: K3s + OpenShell + runc
 
-這是目前 repo 中最完整、最穩定的安裝主線。
+這是目前最完整、最穩的 OpenShell 主線。
 
-## 目標
-
-- 建立 `k3s + containerd/runc`
-- 安裝 `agent-sandbox`
-- 安裝 `OpenShell`
-- 套用 k3s 相容性 patcher
-- 驗證 OpenShell sandbox、L7、filesystem policy
-
-## 適用場景
-
-- 你要完整驗證 OpenShell 核心能力
-- 你需要目前最接近正式可落地的路線
-- 你要使用本 repo 已完成的 FUSE / CSI / policy 測試
-
-## 安裝流程
-
-1. 建立 K3s 叢集
+## 最短路徑
 
 ```bash
-make tf-init
-make tf-plan
-make tf-apply
-./scripts/fetch-kubeconfig.sh
-kubectl --kubeconfig generated/kubeconfig get nodes -o wide
+./scripts/install-k3s-openshell-runc.sh
 ```
 
-2. 安裝 OpenShell stack
+## 它會做什麼
 
-```bash
-make openshell-install
-```
+1. 套用 `terraform/stacks/k3s-openshell-runc`
+2. 抓回 kubeconfig 到 `generated/stacks/k3s-openshell-runc/kubeconfig`
+3. 等三個節點都 `Ready`
+4. 安裝 `agent-sandbox`
+5. 安裝 OpenShell Helm chart
+6. 套用預設 `runc` patcher
+7. 執行 OpenShell runtime 驗證
 
-這一步會：
+## 對應 Terraform Root
 
-- 安裝 OpenShell gateway
-- 安裝 Agent Sandbox controller / CRD
-- 安裝預設 patcher
+- `terraform/stacks/k3s-openshell-runc`
 
-3. 驗證 OpenShell runtime
+## 對應腳本
 
-```bash
-make openshell-verify
-```
-
-## 驗證成功條件
-
-- `kubectl -n openshell get pods` 全部 `Running`
-- OpenShell sandbox 可建立
-- `curl GET` allowed
-- `python3 GET` denied
-- `curl POST` denied
-- `/tmp` 可寫、`/var/tmp` denied
-
-## Repo 內關鍵檔案
-
+- `scripts/install-k3s-openshell-runc.sh`
 - `scripts/install-openshell-stack.sh`
 - `scripts/install-openshell-sandbox-patcher.sh`
 - `scripts/verify-openshell-runtime.sh`
-- `k8s/openshell-values.yaml`
-- `k8s/openshell-sandbox-patcher.yaml`
-- `docs/lab.html`
 
-## 後續可接的延伸
+## 輸出位置
 
-- `docs/runbooks/fuse-lab.md`
-- `docs/runbooks/azurefile-csi-lab.md`
+- kubeconfig: `generated/stacks/k3s-openshell-runc/kubeconfig`
+- raw runtime evidence: `testing/raw/verify-*`
 
 ## 清理
 
 ```bash
-make tf-destroy
+./scripts/destroy-comparison-matrix.sh
+# 或單獨 destroy
+source ./scripts/lib-stack.sh && terraform_destroy_stack k3s-openshell-runc
 ```

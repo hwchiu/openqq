@@ -27,18 +27,14 @@
     <div class="hero-grid">
       <div>
         <div class="eyebrow">Installation Catalog / Independent Paths</div>
-        <h1>把安裝路線<br>徹底拆開</h1>
-        <p class="lead">這一頁不再混合實驗、設計、結論與部署。它只做一件事：把目前 repo 支援的安裝路線拆成四條獨立 path，讓你可以根據目標直接選，不必再從報告頁反推安裝順序。</p>
+        <h1>四套環境<br>直接裝起來</h1>
+        <p class="lead">這一頁只回答部署問題。Repo 現在同時提供四個獨立 Terraform root，加上四支對應的 installation script。最極端的情況下，你可以用一條 matrix 腳本把四套環境一起建立起來做比較。</p>
       </div>
       <div class="hero-side">
         <div class="note-box">
-          <h3>四條獨立路線</h3>
-          <ul>
-            <li>K3s + gVisor</li>
-            <li>K3s + OpenShell + runc</li>
-            <li>K3s + OpenShell + gVisor</li>
-            <li>K3s + KubeArmor + runc</li>
-          </ul>
+          <h3>一鍵入口</h3>
+          <pre class="terminal"><code>./scripts/install-comparison-matrix.sh</code></pre>
+          <p>每套環境各自擁有獨立 state、resource group 與 kubeconfig。</p>
         </div>
       </div>
     </div>
@@ -56,22 +52,41 @@
         <div class="runtime-kicker">Path 01</div>
         <h3>K3s + gVisor</h3>
         <p>只驗證 runsc 與 RuntimeClass，不混 OpenShell。</p>
+        <pre class="terminal"><code>./scripts/install-k3s-gvisor.sh</code></pre>
       </a>
       <a class="runtime-card runc" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-runc.md" target="_blank">
         <div class="runtime-kicker">Path 02</div>
         <h3>K3s + OpenShell + runc</h3>
         <p>目前最穩的完整主線，含 OpenShell 核心能力。</p>
+        <pre class="terminal"><code>./scripts/install-k3s-openshell-runc.sh</code></pre>
       </a>
       <a class="runtime-card gvisor" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-gvisor.md" target="_blank">
         <div class="runtime-kicker">Path 03</div>
         <h3>K3s + OpenShell + gVisor</h3>
         <p>獨立驗證 OpenShell 在 runsc 路徑下保留與退化的能力。</p>
+        <pre class="terminal"><code>./scripts/install-k3s-openshell-gvisor.sh</code></pre>
       </a>
       <a class="runtime-card kata" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-kubearmor-runc.md" target="_blank">
         <div class="runtime-kicker">Path 04</div>
         <h3>K3s + KubeArmor + runc</h3>
         <p>和 OpenShell 無關的 runtime security 對照線。</p>
+        <pre class="terminal"><code>./scripts/install-k3s-kubearmor-runc.sh</code></pre>
       </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-tag">Matrix</div>
+        <h2 class="section-title">Comparison Matrix</h2>
+      </div>
+    </div>
+    <div class="spotlight-card">
+      <p>如果你的目標不是單條路線，而是同時保留四套獨立環境做比較，直接使用 matrix 入口。清理時也用對應的 destroy 腳本回收全部 Azure 資源。</p>
+      <pre class="terminal"><code>./scripts/install-comparison-matrix.sh
+./scripts/destroy-comparison-matrix.sh</code></pre>
+      <p><a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-comparison-matrix.md" target="_blank">閱讀完整 matrix runbook →</a></p>
     </div>
   </section>
 </main>

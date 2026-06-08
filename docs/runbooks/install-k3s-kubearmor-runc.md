@@ -1,69 +1,33 @@
 # Install Path: K3s + KubeArmor + runc
 
-這條路線和 OpenShell 無關，是獨立的 runtime security / policy 驗證線。
+這條路線是 OpenShell 之外的獨立 runtime security 對照線。
 
-## 目標
-
-- 建立 `k3s + containerd/runc`
-- 安裝 KubeArmor operator
-- 啟用 namespace visibility
-- 套用最小化檔案規則驗證
-- 驗證 telemetry / block 行為
-
-## 適用場景
-
-- 你要比較 OpenShell 與 KubeArmor 的能力邊界
-- 你要一條不依賴 OpenShell 的 runtime security 路線
-- 你想驗證 KubeArmor on K3s with runc
-
-## 安裝流程
-
-1. 建立 K3s 叢集
+## 最短路徑
 
 ```bash
-make tf-init
-make tf-plan
-make tf-apply
-./scripts/fetch-kubeconfig.sh
+./scripts/install-k3s-kubearmor-runc.sh
 ```
 
-2. 安裝 KubeArmor operator
+## 它會做什麼
 
-```bash
-helm repo add kubearmor https://kubearmor.github.io/charts
-helm repo update kubearmor
-helm --kubeconfig generated/kubeconfig upgrade --install kubearmor-operator kubearmor/kubearmor-operator -n kubearmor --create-namespace
-kubectl --kubeconfig generated/kubeconfig apply -f https://raw.githubusercontent.com/kubearmor/KubeArmor/main/pkg/KubeArmorOperator/config/samples/sample-config.yml
-```
+1. 套用 `terraform/stacks/k3s-kubearmor-runc`
+2. 抓回 kubeconfig 到 `generated/stacks/k3s-kubearmor-runc/kubeconfig`
+3. 等三個節點都 `Ready`
+4. 依官方 Helm 路徑安裝 KubeArmor operator
+5. 套用 sample config、namespace visibility 與 demo policy
+6. 嘗試讀取 service account token，確認 block policy 是否生效
 
-3. 建立測試 workload
+## 對應 Terraform Root
 
-```bash
-kubectl --kubeconfig generated/kubeconfig apply -f k8s/kubearmor-demo-nginx.yaml
-kubectl --kubeconfig generated/kubeconfig rollout status deploy/kubearmor-demo -n default
-```
+- `terraform/stacks/k3s-kubearmor-runc`
 
-4. 啟用 namespace visibility
+## 對應腳本
 
-```bash
-kubectl --kubeconfig generated/kubeconfig annotate ns default kubearmor-visibility="process,file,network" --overwrite
-```
+- `scripts/install-k3s-kubearmor-runc.sh`
+- `scripts/install-kubearmor-stack.sh`
+- `scripts/verify-kubearmor-runtime.sh`
 
-5. 套用測試 policy
-
-```bash
-kubectl --kubeconfig generated/kubeconfig apply -f k8s/kubearmor-audit-etc-nginx.yaml
-kubectl --kubeconfig generated/kubeconfig apply -f k8s/kubearmor-block-sa-token.yaml
-```
-
-## 驗證方式
-
-- 進入 `kubearmor-demo` Pod
-- 嘗試讀取 `/run/secrets/kubernetes.io/serviceaccount/token`
-- 預期 `Permission denied`
-- 觀察 KubeArmor log / telemetry
-
-## Repo 內關鍵檔案
+## 對應 K8s Manifests
 
 - `k8s/kubearmor-demo-nginx.yaml`
 - `k8s/kubearmor-audit-etc-nginx.yaml`
@@ -72,5 +36,7 @@ kubectl --kubeconfig generated/kubeconfig apply -f k8s/kubearmor-block-sa-token.
 ## 清理
 
 ```bash
-make tf-destroy
+./scripts/destroy-comparison-matrix.sh
+# 或單獨 destroy
+source ./scripts/lib-stack.sh && terraform_destroy_stack k3s-kubearmor-runc
 ```

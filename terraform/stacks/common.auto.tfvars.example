@@ -1,0 +1,5 @@
+subscription_id = "00000000-0000-0000-0000-000000000000"
+tenant_id       = "00000000-0000-0000-0000-000000000000"
+location        = "eastus"
+admin_username  = "azureuser"
+ssh_public_key  = "ssh-ed25519 AAAA... user@example"

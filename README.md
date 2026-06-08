@@ -1,60 +1,38 @@
-# Azure VM + Kubernetes + NVIDIA Sandbox Plan
+# OpenShell Runtime Lab on Azure
 
-This repository contains the planning and handoff material for:
+This repository now contains repeatable Azure lab assets for four independent Kubernetes security environments:
 
-1. Creating Azure VMs
-2. Building a Kubernetes cluster on those VMs
-3. Installing the NVIDIA software stack required to test a sandbox environment
+1. `k3s + gVisor`
+2. `k3s + OpenShell + runc`
+3. `k3s + OpenShell + gVisor`
+4. `k3s + KubeArmor + runc`
 
-Start with [docs/azure-connectivity-checklist.md](/Users/hwchiu/hwchiu/openqq/docs/azure-connectivity-checklist.md), then continue to [docs/implementation-plan.md](/Users/hwchiu/hwchiu/openqq/docs/implementation-plan.md) and [docs/information-needed.md](/Users/hwchiu/hwchiu/openqq/docs/information-needed.md).
+## Fast entry points
 
-## Current status
+1. Site index: [docs/index.html](/Users/hwchiu/hwchiu/openqq/docs/index.html)
+2. Install catalog: [docs/installs.html](/Users/hwchiu/hwchiu/openqq/docs/installs.html)
+3. Comparison matrix runbook: [docs/runbooks/install-comparison-matrix.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-comparison-matrix.md)
+4. Terraform stacks: `terraform/stacks/`
+5. One-shot installer: [scripts/install-comparison-matrix.sh](/Users/hwchiu/hwchiu/openqq/scripts/install-comparison-matrix.sh)
+6. One-shot destroy: [scripts/destroy-comparison-matrix.sh](/Users/hwchiu/hwchiu/openqq/scripts/destroy-comparison-matrix.sh)
 
-This repo currently contains planning plus implementation scaffolding. No infrastructure code has been applied yet.
+## Install paths
 
-## First gate
+1. [docs/runbooks/install-k3s-gvisor.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-gvisor.md)
+2. [docs/runbooks/install-k3s-openshell-runc.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-openshell-runc.md)
+3. [docs/runbooks/install-k3s-openshell-gvisor.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-openshell-gvisor.md)
+4. [docs/runbooks/install-k3s-kubearmor-runc.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-kubearmor-runc.md)
 
-Do not start provisioning until Azure connectivity and authorization are verified.
+## Shared Azure inputs
 
-Use [docs/azure-connectivity-checklist.md](/Users/hwchiu/hwchiu/openqq/docs/azure-connectivity-checklist.md) first.
+Provide shared Azure values in one of these ways:
 
-## Preferred control path
+1. `terraform/stacks/common.auto.tfvars`
+2. Environment variables such as `AZURE_SUBSCRIPTION_ID`, `AZURE_TENANT_ID`, and `AZURE_SSH_PUBLIC_KEY_PATH`
+3. Existing `terraform/terraform.tfvars`
 
-Prefer Azure MCP for discovery, validation, and provisioning orchestration if an Azure MCP server is configured in the runtime where the next model will execute.
+## Notes
 
-Use Azure CLI only as a fallback when Azure MCP is unavailable.
-
-## Scaffolded entry points
-
-1. [env/azure.env.example](/Users/hwchiu/hwchiu/openqq/env/azure.env.example)
-2. [scripts/check-azure-connectivity.sh](/Users/hwchiu/hwchiu/openqq/scripts/check-azure-connectivity.sh)
-3. [scripts/create-k3s-cluster.sh](/Users/hwchiu/hwchiu/openqq/scripts/create-k3s-cluster.sh)
-4. [scripts/fetch-kubeconfig.sh](/Users/hwchiu/hwchiu/openqq/scripts/fetch-kubeconfig.sh)
-5. [scripts/kubectl-status.sh](/Users/hwchiu/hwchiu/openqq/scripts/kubectl-status.sh)
-6. [docs/runbooks/preflight.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/preflight.md)
-7. [terraform/README.md](/Users/hwchiu/hwchiu/openqq/terraform/README.md)
-8. [k8s/README.md](/Users/hwchiu/hwchiu/openqq/k8s/README.md)
-9. [docs/openshell-compatibility.md](/Users/hwchiu/hwchiu/openqq/docs/openshell-compatibility.md)
-10. [docs/runbooks/terraform-k3s.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/terraform-k3s.md)
-11. [testing/openshell-sandbox-validation-2026-06-03.md](/Users/hwchiu/hwchiu/openqq/testing/openshell-sandbox-validation-2026-06-03.md)
-12. [docs/openshell-architecture.md](/Users/hwchiu/hwchiu/openqq/docs/openshell-architecture.md)
-13. [docs/openshell-vs-sandbox.md](/Users/hwchiu/hwchiu/openqq/docs/openshell-vs-sandbox.md)
-14. [testing/openshell-architecture-evidence-2026-06-03.md](/Users/hwchiu/hwchiu/openqq/testing/openshell-architecture-evidence-2026-06-03.md)
-15. [docs/index.html](/Users/hwchiu/hwchiu/openqq/docs/index.html)
-16. [docs/installs.html](/Users/hwchiu/hwchiu/openqq/docs/installs.html)
-17. [docs/runbooks/install-k3s-gvisor.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-gvisor.md)
-18. [docs/runbooks/install-k3s-openshell-runc.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-openshell-runc.md)
-19. [docs/runbooks/install-k3s-openshell-gvisor.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-openshell-gvisor.md)
-20. [docs/runbooks/install-k3s-kubearmor-runc.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-kubearmor-runc.md)
-
-## Important ambiguity
-
-The phrase `openshell from NVIDIA` is ambiguous. Before implementation, the next agent should confirm the exact NVIDIA product, for example:
-
-- `NVIDIA GPU Operator`
-- `NVIDIA Container Toolkit`
-- `NVIDIA vGPU / driver stack`
-- `NVIDIA AI Enterprise / NIM / NeMo / other sandbox workload`
-- `OpenShift` instead of `openshell`
-
-That decision is called out in the docs because it changes the VM type, OS image, Kubernetes setup, and installation steps.
+- Each stack has its own Terraform root and state file.
+- Each stack writes kubeconfig under `generated/stacks/<stack-name>/kubeconfig`.
+- The matrix installer creates the four environments serially through one command so they can coexist safely.
