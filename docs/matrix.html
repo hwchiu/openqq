@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comparison Matrix · OpenShell Lab</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="page topbar-row">
+    <div class="brand-group">
+      <a href="index.html" class="toplink">← Home</a>
+      <span class="brand"><span class="brand-mark"></span>OpenShell Lab</span>
+    </div>
+    <nav class="site-nav">
+      <a href="installs.html" class="chip">Installs</a>
+      <a href="report.html" class="chip">Report</a>
+      <a href="lab.html" class="chip green">runc</a>
+      <a href="lab-gvisor.html" class="chip amber">gVisor</a>
+      <a href="lab-kata.html" class="chip blue">Kata</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow">Comparison Matrix / Four Environments / Shared Test Language</div>
+        <h1>四套環境<br>用同一份測試語言比較</h1>
+        <p class="lead">這頁不再讓每個 runtime 各寫各的故事。它把四套安裝路線拉回同一個 matrix：同一批 test case、同一批 status、同一批證據入口。這才是之後能持續維護的技術文件骨架。</p>
+        <div class="hero-actions">
+          <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-comparison-matrix.md" target="_blank">看 matrix runbook</a>
+          <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/testing/matrix/catalog.json" target="_blank">看 test catalog</a>
+        </div>
+      </div>
+      <div class="hero-side">
+        <div class="note-box">
+          <h3>標準流程</h3>
+          <pre class="terminal"><code>./scripts/install-comparison-matrix.sh
+PUBLISH_RESULTS=true ./scripts/run-comparison-matrix-tests.sh</code></pre>
+        </div>
+        <div class="note-box">
+          <h3>狀態語言</h3>
+          <ul>
+            <li><strong>PASS</strong>: 測試成立</li>
+            <li><strong>DEGRADED</strong>: 功能存在，但有已知退化</li>
+            <li><strong>PENDING</strong>: 腳本已準備，但還沒發佈最新實測</li>
+            <li><strong>N/A</strong>: 該環境不適用</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="metrics" id="matrix-metrics"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-tag">Environments</div>
+        <h2 class="section-title">四套環境的定位</h2>
+      </div>
+    </div>
+    <div class="runtime-grid" id="stack-grid"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-tag">Tests</div>
+        <h2 class="section-title">共用測試矩陣</h2>
+        <p class="section-intro">每一列都是一個標準化案例，每一欄都是一套獨立環境。格子的顏色代表狀態，文字代表目前已發佈的最短結論。</p>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="matrix-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-tag">Evidence</div>
+        <h2 class="section-title">證據與更新機制</h2>
+      </div>
+    </div>
+    <div class="link-grid">
+      <a class="link-card" href="https://github.com/hwchiu/openqq/blob/main/testing/matrix/README.md" target="_blank"><h3>Matrix README</h3><p>說明 catalog、results 與 pages data 的資料流。</p></a>
+      <a class="link-card" href="https://github.com/hwchiu/openqq/blob/main/scripts/run-comparison-matrix-tests.sh" target="_blank"><h3>Matrix Runner</h3><p>同一支腳本依序對四套 kubeconfig 執行同一批測試。</p></a>
+      <a class="link-card" href="https://github.com/hwchiu/openqq/tree/main/testing/results/latest" target="_blank"><h3>Latest Results</h3><p>最新 runner 輸出的結果檔。若尚未重新執行，會看到 pending。</p></a>
+      <a class="link-card" href="https://github.com/hwchiu/openqq/tree/main/testing" target="_blank"><h3>Historical Evidence</h3><p>保留原本的原始實驗證據，作為 matrix 之外的深度材料。</p></a>
+    </div>
+  </section>
+</main>
+
+<script>
+const statusLabel = {
+  pass: 'PASS',
+  fail: 'FAIL',
+  degraded: 'DEGRADED',
+  pending: 'PENDING',
+  na: 'N/A'
+};
+
+const statusClass = {
+  pass: 'status-pass',
+  fail: 'status-fail',
+  degraded: 'status-degraded',
+  pending: 'status-pending',
+  na: 'status-na'
+};
+
+fetch('data/comparison-matrix.json')
+  .then((response) => response.json())
+  .then((data) => {
+    renderMetrics(data);
+    renderStacks(data);
+    renderTable(data);
+  })
+  .catch((error) => {
+    document.getElementById('matrix-table').outerHTML = `<div class="note-box"><h3>Matrix data failed to load</h3><p>${error}</p></div>`;
+  });
+
+function renderMetrics(data) {
+  const metrics = document.getElementById('matrix-metrics');
+  const stacks = data.stacks.length;
+  const tests = data.tests.length;
+  const published = Object.values(data.results).flatMap((stack) => Object.values(stack));
+  const passCount = published.filter((item) => item.status === 'pass').length;
+  const degradedCount = published.filter((item) => item.status === 'degraded').length;
+  metrics.innerHTML = [
+    `<div class="metric"><strong>${stacks}</strong><span>獨立環境</span></div>`,
+    `<div class="metric"><strong>${tests}</strong><span>標準測試案例</span></div>`,
+    `<div class="metric"><strong>${passCount}</strong><span>目前已發佈 PASS</span></div>`,
+    `<div class="metric"><strong>${degradedCount}</strong><span>已定位 DEGRADED</span></div>`,
+    `<div class="metric"><strong>${data.generatedAt.slice(0, 10)}</strong><span>目前頁面資料日期</span></div>`
+  ].join('');
+}
+
+function renderStacks(data) {
+  const grid = document.getElementById('stack-grid');
+  grid.innerHTML = data.stacks.map((stack) => `
+    <article class="runtime-card ${stack.runtime === 'gvisor' ? 'gvisor' : stack.runtime === 'runc' ? 'runc' : 'kata'}">
+      <div class="runtime-kicker">${stack.id}</div>
+      <h3>${stack.title}</h3>
+      <p>runtime: <strong>${stack.runtime}</strong></p>
+      <p>control plane: <strong>${stack.controlPlane}</strong></p>
+      <pre class="terminal"><code>${stack.installScript}</code></pre>
+      <p><a href="https://github.com/hwchiu/openqq/blob/main/${stack.runbook}" target="_blank">看安裝 runbook →</a></p>
+    </article>
+  `).join('');
+}
+
+function renderTable(data) {
+  const thead = document.querySelector('#matrix-table thead');
+  const tbody = document.querySelector('#matrix-table tbody');
+  thead.innerHTML = `<tr><th>Test Case</th>${data.stacks.map((stack) => `<th>${stack.title}</th>`).join('')}</tr>`;
+  tbody.innerHTML = data.tests.map((test) => {
+    const cells = data.stacks.map((stack) => {
+      const result = data.results[stack.id][test.id];
+      const badge = `<span class="status-badge ${statusClass[result.status] || 'status-pending'}">${statusLabel[result.status] || result.status}</span>`;
+      const evidence = result.evidencePath ? `<div class="mini-link"><a href="https://github.com/hwchiu/openqq/blob/main/${result.evidencePath}" target="_blank">evidence</a></div>` : '';
+      return `<td><div class="matrix-cell">${badge}<p>${result.summary}</p>${evidence}</div></td>`;
+    }).join('');
+    return `<tr><td><strong>${test.title}</strong><div class="matrix-goal">${test.goal}</div></td>${cells}</tr>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

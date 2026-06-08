@@ -1,0 +1,84 @@
+{
+  "generatedAt": "2026-06-08T00:00:00Z",
+  "source": "published-historical-evidence",
+  "stacks": [
+    {
+      "id": "k3s-gvisor",
+      "title": "K3s + gVisor",
+      "family": "baseline",
+      "runtime": "gvisor",
+      "controlPlane": "none",
+      "installScript": "./scripts/install-k3s-gvisor.sh",
+      "runbook": "docs/runbooks/install-k3s-gvisor.md"
+    },
+    {
+      "id": "k3s-openshell-runc",
+      "title": "K3s + OpenShell + runc",
+      "family": "openshell",
+      "runtime": "runc",
+      "controlPlane": "openshell",
+      "installScript": "./scripts/install-k3s-openshell-runc.sh",
+      "runbook": "docs/runbooks/install-k3s-openshell-runc.md"
+    },
+    {
+      "id": "k3s-openshell-gvisor",
+      "title": "K3s + OpenShell + gVisor",
+      "family": "openshell",
+      "runtime": "gvisor",
+      "controlPlane": "openshell",
+      "installScript": "./scripts/install-k3s-openshell-gvisor.sh",
+      "runbook": "docs/runbooks/install-k3s-openshell-gvisor.md"
+    },
+    {
+      "id": "k3s-kubearmor-runc",
+      "title": "K3s + KubeArmor + runc",
+      "family": "kubearmor",
+      "runtime": "runc",
+      "controlPlane": "kubearmor",
+      "installScript": "./scripts/install-k3s-kubearmor-runc.sh",
+      "runbook": "docs/runbooks/install-k3s-kubearmor-runc.md"
+    }
+  ],
+  "tests": [
+    {"id":"nodes-ready","title":"Three nodes Ready","category":"baseline","goal":"確認三節點叢集基線可用"},
+    {"id":"baseline-pod","title":"Baseline pod execution","category":"baseline","goal":"確認叢集能建立最小工作負載"},
+    {"id":"gvisor-runtime","title":"gVisor RuntimeClass probe","category":"runtime","goal":"驗證 runsc 真的在執行，而不是只有 YAML 存在"},
+    {"id":"openshell-control-plane","title":"OpenShell control plane ready","category":"control-plane","goal":"確認 agent-sandbox 與 OpenShell gateway 已穩定"},
+    {"id":"openshell-guardrails","title":"OpenShell guardrails","category":"security","goal":"測試 egress / L7 / filesystem policy 是否成立或退化"},
+    {"id":"kubearmor-sa-block","title":"KubeArmor blocks SA token read","category":"security","goal":"確認 KubeArmor policy 確實阻擋 service account token"}
+  ],
+  "results": {
+    "k3s-gvisor": {
+      "nodes-ready": {"status":"pass","summary":"Historical validation showed 3 Ready nodes on the gVisor runtime baseline.","evidencePath":"docs/lab-gvisor.html"},
+      "baseline-pod": {"status":"pass","summary":"Published gVisor probe pod completed successfully.","evidencePath":"testing/openshell-gvisor-validation-2026-06-03.md"},
+      "gvisor-runtime": {"status":"pass","summary":"runsc probe reported a gVisor guest kernel.","evidencePath":"testing/openshell-gvisor-validation-2026-06-03.md"},
+      "openshell-control-plane": {"status":"na","summary":"This baseline path does not install OpenShell."},
+      "openshell-guardrails": {"status":"na","summary":"This baseline path does not install OpenShell."},
+      "kubearmor-sa-block": {"status":"na","summary":"This baseline path does not install KubeArmor."}
+    },
+    "k3s-openshell-runc": {
+      "nodes-ready": {"status":"pass","summary":"Terraform-built runc cluster reached 3 Ready nodes.","evidencePath":"testing/openshell-sandbox-validation-2026-06-03.md"},
+      "baseline-pod": {"status":"pass","summary":"Baseline workload execution succeeded during repeated OpenShell lab runs.","evidencePath":"testing/fuse-runc-baseline-2026-06-05.md"},
+      "gvisor-runtime": {"status":"na","summary":"This path uses runc, not gVisor."},
+      "openshell-control-plane": {"status":"pass","summary":"agent-sandbox and OpenShell control plane both reached Running state.","evidencePath":"testing/openshell-sandbox-validation-2026-06-03.md"},
+      "openshell-guardrails": {"status":"pass","summary":"L7 guardrails and filesystem policy both held under runc.","evidencePath":"testing/openshell-sandbox-validation-2026-06-03.md"},
+      "kubearmor-sa-block": {"status":"na","summary":"This path does not install KubeArmor."}
+    },
+    "k3s-openshell-gvisor": {
+      "nodes-ready": {"status":"pass","summary":"gVisor-enabled OpenShell cluster reached 3 Ready nodes.","evidencePath":"testing/openshell-gvisor-validation-2026-06-03.md"},
+      "baseline-pod": {"status":"pass","summary":"Runtime probe and supporting pods completed on the gVisor path.","evidencePath":"testing/openshell-gvisor-validation-2026-06-03.md"},
+      "gvisor-runtime": {"status":"pass","summary":"runsc probe reported a gVisor guest kernel.","evidencePath":"testing/openshell-gvisor-validation-2026-06-03.md"},
+      "openshell-control-plane": {"status":"pass","summary":"OpenShell control plane was reachable after gVisor-specific patching.","evidencePath":"testing/openshell-gvisor-validation-2026-06-03.md"},
+      "openshell-guardrails": {"status":"degraded","summary":"L7 guardrails held, but filesystem policy degraded because Landlock returned ENOSYS under gVisor.","evidencePath":"testing/landlock-gvisor-root-cause-2026-06-03.md"},
+      "kubearmor-sa-block": {"status":"na","summary":"This path does not install KubeArmor."}
+    },
+    "k3s-kubearmor-runc": {
+      "nodes-ready": {"status":"pending","summary":"Install path exists, but the four-way matrix has not yet been re-run live on Azure."},
+      "baseline-pod": {"status":"pending","summary":"Pending first live run through the new matrix runner."},
+      "gvisor-runtime": {"status":"na","summary":"This path uses runc, not gVisor."},
+      "openshell-control-plane": {"status":"na","summary":"This path does not install OpenShell."},
+      "openshell-guardrails": {"status":"na","summary":"This path does not install OpenShell."},
+      "kubearmor-sa-block": {"status":"pending","summary":"KubeArmor install assets are ready, but the live policy verification has not been published yet."}
+    }
+  }
+}

@@ -15,6 +15,7 @@
     </div>
     <nav class="site-nav">
       <a href="installs.html" class="chip">Install Paths</a>
+      <a href="matrix.html" class="chip">Matrix</a>
       <a href="report.html" class="chip">Report</a>
       <a href="lab.html" class="chip green">runc</a>
       <a href="lab-gvisor.html" class="chip amber">gVisor</a>
@@ -32,6 +33,7 @@
         <p class="lead">這個 repo 現在不再只是一個 OpenShell 報告站，而是一個把多條安裝線與驗證線拆開的 lab。你可以直接選獨立路線：`k3s + gVisor`、`k3s + OpenShell + runc`、`k3s + OpenShell + gVisor`、`k3s + KubeArmor + runc`。</p>
         <div class="hero-actions">
           <a href="installs.html" class="hero-action">先看安裝路線</a>
+          <a href="matrix.html" class="hero-action">看共用測試矩陣</a>
           <a href="report.html" class="hero-action">看決策摘要</a>
         </div>
       </div>
@@ -40,6 +42,7 @@
           <h3>這個站現在分兩部分</h3>
           <ul>
             <li>Install Paths：告訴你怎麼搭起不同組合</li>
+            <li>Matrix：告訴你四套環境用哪些共用測試被比較</li>
             <li>Lab Pages：告訴你每條組合實際驗證出了什麼</li>
           </ul>
         </div>
@@ -72,6 +75,22 @@
       <a class="runtime-card runc" href="installs.html"><div class="runtime-kicker">Path 02</div><h3>K3s + OpenShell + runc</h3><p>目前最穩定、最完整的 OpenShell 主線。</p></a>
       <a class="runtime-card gvisor" href="installs.html"><div class="runtime-kicker">Path 03</div><h3>K3s + OpenShell + gVisor</h3><p>看 runtime 邊界升級後，OpenShell 剩下哪些能力。</p></a>
       <a class="runtime-card kata" href="installs.html"><div class="runtime-kicker">Path 04</div><h3>K3s + KubeArmor + runc</h3><p>和 OpenShell 無關的獨立 runtime security 對照路線。</p></a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-tag">Matrix</div>
+        <h2 class="section-title">先看共用比較語言</h2>
+        <p class="section-intro">這個 repo 下一步的重心不是再多寫四篇獨立報告，而是用同一份 test catalog 把四套環境拉到同一張表上。</p>
+      </div>
+      <a class="section-link" href="matrix.html">Open comparison matrix</a>
+    </div>
+    <div class="spotlight-card">
+      <p>目前已經有標準 test catalog、matrix runner、發佈用 JSON，以及 GitHub Pages 的比較頁。未來只要重跑 `install-comparison-matrix.sh` 與 `run-comparison-matrix-tests.sh`，網站就能更新成新的四環境比較結果。</p>
+      <pre class="terminal"><code>./scripts/install-comparison-matrix.sh
+PUBLISH_RESULTS=true ./scripts/run-comparison-matrix-tests.sh</code></pre>
     </div>
   </section>
 

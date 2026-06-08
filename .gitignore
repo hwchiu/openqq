@@ -19,3 +19,7 @@ generated/
 kubeconfig
 kubeconfig.raw
 *.kubeconfig
+
+# Local comparison-matrix runner outputs
+/testing/results/latest/*
+!/testing/results/latest/README.md
