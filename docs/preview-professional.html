@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>四套架構比較技術參考 · Professional Redesign</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    // Tailwind dark mode config + simple theme switcher for preview
+    function initTheme() {
+      const saved = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = saved || (prefersDark ? 'dark' : 'light');
+      setTheme(theme, false);
+    }
+    function setTheme(mode, save = true) {
+      const html = document.documentElement;
+      if (mode === 'dark') {
+        html.classList.add('dark');
+        if (save) localStorage.setItem('theme', 'dark');
+      } else {
+        html.classList.remove('dark');
+        if (save) localStorage.setItem('theme', 'light');
+      }
+      updateThemeUI(mode);
+    }
+    function updateThemeUI(mode) {
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.remove('bg-slate-900', 'text-white', 'dark:bg-white', 'dark:text-slate-900');
+        btn.classList.add('text-slate-600', 'hover:bg-slate-100', 'dark:text-slate-400', 'dark:hover:bg-slate-800');
+        if ((mode === 'light' && btn.dataset.theme === 'light') || (mode === 'dark' && btn.dataset.theme === 'dark')) {
+          btn.classList.remove('text-slate-600', 'hover:bg-slate-100', 'dark:text-slate-400', 'dark:hover:bg-slate-800');
+          btn.classList.add('bg-slate-900', 'text-white', 'dark:bg-white', 'dark:text-slate-900');
+        }
+      });
+    }
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+    });
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+    
+    :root {
+      --accent: #0f172a;
+    }
+    
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    
+    .font-display {
+      font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+    }
+
+    .tech-table {
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    
+    .tech-table th {
+      background: #0f172a;
+      color: #f1f5f9;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    .dark .tech-table th {
+      background: #1e2937;
+      color: #e2e8f0;
+      border-bottom-color: #475569;
+    }
+    
+    .tech-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+      font-size: 0.925rem;
+    }
+    .dark .tech-table td {
+      border-bottom-color: #334155;
+    }
+    
+    .tech-table tr:hover td {
+      background: #f8fafc;
+    }
+    .dark .tech-table tr:hover td {
+      background: #1e2937;
+    }
+    
+    .section-header {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+    .dark .section-header {
+      color: #e2e8f0;
+    }
+
+    .prose {
+      max-width: 75ch;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 10px;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .nav-active {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .metric {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .reference-card {
+      transition: box-shadow 0.1s ease;
+    }
+    
+    .reference-card:hover {
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+    }
+    .dark .reference-card {
+      background-color: #1e2937;
+      border-color: #334155;
+    }
+
+    .toc-link {
+      transition: all 0.1s ease;
+    }
+    
+    .toc-link:hover {
+      color: #0f172a;
+      padding-left: 4px;
+    }
+    .dark .toc-link {
+      color: #94a3b8;
+    }
+    .dark .toc-link:hover {
+      color: #e2e8f0;
+    }
+
+    .data-table-container {
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .dark .data-table-container {
+      box-shadow: none;
+      border-color: #334155;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-200">
+  <!-- Top Navigation -->
+  <nav class="border-b border-slate-200 bg-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex h-14 items-center justify-between">
+        <div class="flex items-center gap-x-8">
+          <div class="flex items-center gap-x-3">
+            <div class="h-8 w-8 rounded bg-slate-900 flex items-center justify-center">
+              <span class="text-white text-sm font-bold tracking-tighter">OSL</span>
+            </div>
+            <div>
+              <span class="font-semibold tracking-tight text-xl">OpenShell Lab</span>
+            </div>
+          </div>
+          
+          <div class="hidden md:flex items-center gap-x-6 text-sm">
+            <a href="index.html" class="text-slate-600 hover:text-slate-900">首頁</a>
+            <a href="#" class="text-slate-600 hover:text-slate-900">安裝路徑</a>
+            <a href="#" class="nav-active">比較參考</a>
+            <a href="#" class="text-slate-600 hover:text-slate-900">Runbooks</a>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-x-3">
+          <div class="hidden sm:flex items-center gap-x-2 text-xs px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 font-mono dark:bg-slate-800 dark:text-slate-400">
+            <i class="fa-solid fa-book mr-1.5"></i>
+            <span>INTERNAL TECHNICAL REFERENCE</span>
+          </div>
+
+          <!-- Light / Dark background toggle -->
+          <div class="flex items-center gap-x-1 text-xs border border-slate-300 dark:border-slate-700 rounded-lg p-0.5 bg-white dark:bg-slate-900">
+            <button data-theme="light" onclick="setTheme('light')" class="theme-btn px-2.5 py-1 rounded text-sm font-medium transition-colors">Light</button>
+            <button data-theme="dark" onclick="setTheme('dark')" class="theme-btn px-2.5 py-1 rounded text-sm font-medium transition-colors">Dark</button>
+          </div>
+
+          <a href="https://github.com/hwchiu/openqq" target="_blank"
+             class="flex items-center gap-x-2 px-3 py-1.5 text-sm border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300">
+            <i class="fa-brands fa-github"></i>
+            <span class="hidden sm:inline">GitHub</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-6 pt-8 pb-16">
+    <!-- Focused document container - clean white card on subtle background for professional reference feel -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-8 lg:p-10 shadow-sm dark:bg-slate-900 dark:border-slate-700 dark:shadow-none">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-y-4 mb-10">
+      <div>
+        <div class="inline-flex items-center gap-x-2 text-xs font-semibold tracking-[0.125em] text-slate-500 mb-3">
+          <span class="px-2.5 py-1 bg-slate-200 rounded">TECHNICAL REFERENCE</span>
+          <span>v2026.06</span>
+        </div>
+        <h1 class="font-display text-5xl tracking-tighter font-semibold text-slate-900 leading-none">
+          四套 Kubernetes 安全執行環境<br>比較技術參考
+        </h1>
+        <p class="mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">
+          讓我們清楚理解四套架構的差異、方便進行並排比較，並能直接追溯實驗步驟與原始證據。
+        </p>
+      </div>
+      
+      <div class="flex flex-col items-start md:items-end gap-y-1 text-sm">
+        <div class="flex items-center gap-x-2 text-emerald-600">
+          <i class="fa-solid fa-check-circle"></i>
+          <span class="font-medium">4 套獨立環境已驗證</span>
+        </div>
+        <div class="text-slate-500 text-xs">最後更新：2026-06-08 · 基於實際 Azure k3s 叢集</div>
+      </div>
+    </div>
+
+    <!-- Quick Facts -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+      <div class="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
+        <div class="text-xs text-slate-500 font-medium dark:text-slate-400">主要路線</div>
+        <div class="mt-1 text-2xl font-semibold tracking-tight dark:text-white">k3s + OpenShell + runc</div>
+        <div class="text-emerald-600 text-sm mt-1">功能最完整</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
+        <div class="text-xs text-slate-500 font-medium dark:text-slate-400">對照路線</div>
+        <div class="mt-1 text-2xl font-semibold tracking-tight dark:text-white">OpenShell + gVisor</div>
+        <div class="text-amber-600 text-sm mt-1">Filesystem 能力退化</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
+        <div class="text-xs text-slate-500 font-medium dark:text-slate-400">獨立安全路線</div>
+        <div class="mt-1 text-2xl font-semibold tracking-tight dark:text-white">KubeArmor + runc</div>
+        <div class="text-blue-600 text-sm mt-1">LSM 層保護</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
+        <div class="text-xs text-slate-500 font-medium dark:text-slate-400">Baseline</div>
+        <div class="mt-1 text-2xl font-semibold tracking-tight dark:text-white">純 k3s + gVisor</div>
+        <div class="text-slate-600 text-sm mt-1 dark:text-slate-400">無額外 agent 控制平面</div>
+      </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="mb-8 flex flex-col lg:flex-row gap-8">
+      <div class="lg:w-64 shrink-0">
+        <div class="sticky top-20">
+          <div class="text-xs font-semibold text-slate-500 tracking-widest mb-3 px-1">目錄</div>
+          <nav class="space-y-1 text-sm">
+            <a href="#overview" class="toc-link block py-1 text-slate-600 hover:text-slate-900">1. 快速概覽與比較矩陣</a>
+            <a href="#architecture" class="toc-link block py-1 text-slate-600 hover:text-slate-900">2. 架構模型</a>
+            <a href="#differences" class="toc-link block py-1 text-slate-600 hover:text-slate-900">3. 差異分析</a>
+            <a href="#process" class="toc-link block py-1 text-slate-600 hover:text-slate-900">4. 實驗過程與可重現性</a>
+            <a href="#decision" class="toc-link block py-1 text-slate-600 hover:text-slate-900">5. 決策指南</a>
+            <a href="#limitations" class="toc-link block py-1 text-slate-600 hover:text-slate-900">6. 限制與後續</a>
+          </nav>
+          <div class="mt-6 text-[10px] text-slate-400 border-l-2 border-slate-200 pl-3">
+            所有結論均來自實際 Azure 叢集驗證<br>
+            附原始報告與 log 連結
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="flex-1 min-w-0 space-y-12">
+
+        <!-- 1. 快速概覽 -->
+        <section id="overview">
+          <div class="flex items-baseline gap-x-3 mb-4">
+            <span class="font-mono text-xs text-slate-400">01</span>
+            <h2 class="section-header">快速概覽與比較矩陣</h2>
+          </div>
+          <p class="text-slate-600 max-w-prose">四套環境建立在相同 k3s + agent-sandbox 基礎上，核心差異在於「誰負責執行環境的行為治理」。</p>
+
+          <div class="mt-6 data-table-container">
+            <table class="tech-table w-full text-sm">
+              <thead>
+                <tr>
+                  <th class="w-52">維度</th>
+                  <th>k3s-gvisor<br><span class="font-normal text-[10px] opacity-70">Baseline</span></th>
+                  <th>k3s-openshell-runc<br><span class="font-normal text-[10px] opacity-70">主推</span></th>
+                  <th>k3s-openshell-gvisor<br><span class="font-normal text-[10px] opacity-70">對照</span></th>
+                  <th>k3s-kubearmor-runc<br><span class="font-normal text-[10px] opacity-70">獨立路線</span></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr>
+                  <td class="font-medium text-slate-700">Process 執行身分</td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">普通 container</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">sandbox 使用者</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">sandbox 使用者</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">普通 container</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium text-slate-700">Filesystem 隔離</td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">Verified (Landlock)</span></td>
+                  <td><span class="status-pill bg-amber-100 text-amber-700">Degraded (ENOSYS)</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium text-slate-700">預設 Egress</td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">放行</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">拒絕</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">拒絕</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">放行</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium text-slate-700">L7 method/path 控制</td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">Verified</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">Verified</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium text-slate-700">政策熱更新</td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">Verified</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">Verified</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium text-slate-700">SA Token 保護</td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
+                  <td><span class="status-pill bg-blue-100 text-blue-700">Verified</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium text-slate-700">Kernel 邊界</td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">gVisor guest kernel</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">runc</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">gVisor guest kernel</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">runc</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-2 text-xs text-slate-500">狀態定義與現有 comparison matrix 一致。Verified = 實測成立；Degraded = 功能存在但退化。</p>
+        </section>
+
+        <!-- 2. 架構模型 -->
+        <section id="architecture">
+          <div class="flex items-baseline gap-x-3 mb-4">
+            <span class="font-mono text-xs text-slate-400">02</span>
+            <h2 class="section-header">架構模型</h2>
+          </div>
+          
+          <div class="prose text-slate-600">
+            <p>四套環境共享以下基礎層：</p>
+            <ul class="list-disc pl-5 space-y-1 mt-3">
+              <li>Azure VM + Terraform 管理</li>
+              <li>k3s + containerd</li>
+              <li>agent-sandbox CRD + controller（負責 Pod / Service / PVC 承載）</li>
+            </ul>
+            <p class="mt-4">差異發生在「執行環境治理層」：</p>
+          </div>
+
+          <div class="mt-6 grid md:grid-cols-2 gap-4">
+            <div class="reference-card bg-white border border-slate-200 rounded-xl p-5">
+              <div class="font-semibold text-sm text-slate-500 mb-2">OpenShell 路線</div>
+              <div class="font-semibold text-lg tracking-tight">Gateway + Supervisor 模型</div>
+              <div class="mt-3 text-sm text-slate-600 space-y-2">
+                <div>• Gateway（openshell-0）負責 control plane 與 policy 版本控管</div>
+                <div>• Supervisor 跑在每個 sandbox Pod 內，負責本地 Landlock、netns proxy、binary allowlist、L7 過濾</div>
+                <div>• sandbox 與 gateway 維持長連線 session</div>
+              </div>
+            </div>
+            
+            <div class="reference-card bg-white border border-slate-200 rounded-xl p-5">
+              <div class="font-semibold text-sm text-slate-500 mb-2">gVisor 路線</div>
+              <div class="font-semibold text-lg tracking-tight">Userspace Kernel 邊界</div>
+              <div class="mt-3 text-sm text-slate-600 space-y-2">
+                <div>• runsc 提供獨立 guest kernel</div>
+                <div>• syscall 層隔離，但 Landlock 等 Linux 安全機制在目前版本不可用</div>
+                <div>• OpenShell 的 network/L7 能力仍可運作</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. 差異分析 -->
+        <section id="differences">
+          <div class="flex items-baseline gap-x-3 mb-4">
+            <span class="font-mono text-xs text-slate-400">03</span>
+            <h2 class="section-header">差異分析</h2>
+          </div>
+
+          <div class="space-y-6">
+            <!-- Filesystem example -->
+            <div>
+              <h3 class="font-semibold text-lg tracking-tight mb-2">Filesystem 隔離</h3>
+              <p class="text-slate-600 mb-4">OpenShell 在 runc 路徑上透過 supervisor + Landlock 實現細粒度靜態檔案系統政策。gVisor 目前會讓 landlock_create_ruleset 直接回 ENOSYS。</p>
+              
+              <div class="data-table-container">
+                <table class="tech-table w-full text-sm">
+                  <thead>
+                    <tr>
+                      <th>行為</th>
+                      <th>gVisor</th>
+                      <th>OpenShell + runc</th>
+                      <th>OpenShell + gVisor</th>
+                      <th>KubeArmor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium">ls /</td>
+                      <td>可執行</td>
+                      <td class="text-red-600 font-medium">拒絕</td>
+                      <td>可執行</td>
+                      <td>可執行</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">/var/tmp 寫入</td>
+                      <td>允許</td>
+                      <td class="text-red-600 font-medium">拒絕</td>
+                      <td>允許</td>
+                      <td>允許</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">靜態 policy 生效</td>
+                      <td>—</td>
+                      <td class="text-emerald-600 font-medium">成立</td>
+                      <td class="text-amber-600 font-medium">退化</td>
+                      <td>—</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="mt-2 text-xs flex gap-x-4 text-slate-500">
+                <div>證據：<a href="testing/landlock-gvisor-root-cause-2026-06-03.md" class="underline">landlock root cause</a></div>
+                <div><a href="testing/openshell-sandbox-validation-2026-06-03.md" class="underline">sandbox validation</a></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. 實驗過程 -->
+        <section id="process">
+          <div class="flex items-baseline gap-x-3 mb-4">
+            <span class="font-mono text-xs text-slate-400">04</span>
+            <h2 class="section-header">實驗過程與可重現性</h2>
+          </div>
+          
+          <div class="bg-white border border-slate-200 rounded-xl p-6 text-sm">
+            <div class="grid md:grid-cols-2 gap-x-8 gap-y-6">
+              <div>
+                <div class="font-semibold mb-2 text-slate-700">統一建置</div>
+                <div class="font-mono text-xs bg-slate-900 text-slate-100 p-3 rounded">./scripts/install-comparison-matrix.sh</div>
+                <p class="text-xs text-slate-500 mt-2">一次建立四套獨立環境（各自的 Terraform state、VNet、kubeconfig）。</p>
+              </div>
+              <div>
+                <div class="font-semibold mb-2 text-slate-700">測試與發佈</div>
+                <div class="font-mono text-xs bg-slate-900 text-slate-100 p-3 rounded">PUBLISH_RESULTS=true ./scripts/run-comparison-matrix-tests.sh</div>
+                <p class="text-xs text-slate-500 mt-2">使用 <code>testing/matrix/catalog.json</code> 驅動，結果發佈至 <code>docs/data/comparison-matrix.json</code>。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="pt-6 border-t text-xs text-slate-400">
+          本文件為專業技術參考 redesign 預覽版本。所有結論來自實際執行之 Azure 叢集驗證，非理論推測。
+        </div>
+      </div>
+    </div>
+  </div>
+
+    </div>
+    <!-- /document container -->
+
+  <footer class="max-w-7xl mx-auto px-6 py-10 text-center text-xs text-slate-400">
+    OpenShell Lab — Professional Technical Reference Preview<br>
+    <span class="text-[10px]">Body: subtle cool gray · Content: crisp white card with thin border. Pure professional reference aesthetic.</span>
+  </footer>
+
+  <script>
+    // Tailwind script for any dynamic bits if needed later
+    console.log('%c[Professional Preview] Clean technical reference style loaded', 'color:#64748b');
+  </script>
+</body>
+</html>
