@@ -377,7 +377,7 @@
                   <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
                   <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
                   <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
-                  <td><span class="status-pill bg-blue-100 text-blue-700">Verified（KubeArmor）</span></td>
+                  <td><span class="status-pill bg-blue-100 text-blue-700">Verified（KubeArmor, 06-08 hardening）</span></td>
                 </tr>
                 <tr>
                   <td class="font-medium text-slate-700">Kernel / Userspace 邊界</td>
@@ -386,11 +386,91 @@
                   <td><span class="status-pill bg-emerald-100 text-emerald-700">Strong（gVisor guest kernel）</span></td>
                   <td><span class="status-pill bg-slate-100 text-slate-600">Baseline（runc）</span></td>
                 </tr>
+                <tr>
+                  <td class="font-medium text-slate-700">Istio control plane</td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium text-slate-700">Istio sidecar smoke</td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium text-slate-700">Istio gVisor sidecar</td>
+                  <td><span class="status-pill bg-red-100 text-red-700">FAIL（iptables nat）</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
+                  <td><span class="status-pill bg-red-100 text-red-700">FAIL（iptables nat）</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium text-slate-700">KubeArmor file block</td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
+                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS（06-08）</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium text-slate-700">KubeArmor process block</td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
+                  <td><span class="status-pill bg-red-100 text-red-700">FAIL（06-08）</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium text-slate-700">KubeArmor network block</td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
+                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
+                  <td><span class="status-pill bg-red-100 text-red-700">FAIL（06-08）</span></td>
+                </tr>
               </tbody>
             </table>
           </div>
           <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">資料來源：docs/data/comparison-matrix.json + testing/ 驗證報告（2026-06-03 sandbox / gvisor / landlock）。狀態定義與現有 matrix 一致。</p>
           <p class="mt-2 text-xs text-slate-500">狀態定義與現有 comparison matrix 一致。Verified = 實測成立；Degraded = 功能存在但退化。</p>
+
+          <div class="mt-6">
+            <h3 class="font-semibold text-lg tracking-tight mb-2">2026-06-08 Live Rerun &amp; Hardening Updates</h3>
+            <p class="text-slate-600 dark:text-slate-300 mb-3">2026-06-08 重新建立四套環境後執行 live matrix rerun（含新增 Istio 疊加測試），並對 KubeArmor 進行 root cause 修正與 agentic scenario 擴充驗證。</p>
+
+            <div class="grid md:grid-cols-2 gap-4 text-sm">
+              <div class="reference-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+                <div class="font-semibold mb-1">KubeArmor Hardening (06-08)</div>
+                <ul class="list-disc pl-5 space-y-1 text-xs">
+                  <li>Root cause: install timing + annotateExisting=false 導致既有 workload 未被正確處理。</li>
+                  <li>修正: install script 加入 --wait + annotateExisting=true，調整 workload 建立順序。</li>
+                  <li>結果: clean rebuild 後 <code>kubearmor-sa-block</code> 從 FAIL → PASS。</li>
+                  <li>證據: <a href="../testing/kubearmor-hardening-2026-06-08.md" class="underline">kubearmor-hardening-2026-06-08.md</a></li>
+                </ul>
+              </div>
+              <div class="reference-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+                <div class="font-semibold mb-1">Agentic Scenarios (KubeArmor)</div>
+                <ul class="list-disc pl-5 space-y-1 text-xs">
+                  <li>File/secret guardrails 穩定（PASS）。</li>
+                  <li>Process / network / shell escape / egress 多數 FAIL 或 DEGRADED。</li>
+                  <li>AppArmor profile 已包含規則，但 runtime 行為仍有差距。</li>
+                  <li>適合保護 secret/file read，不適合全面防 agent self-extension。</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="mt-3 text-xs">
+              <div class="font-medium">Istio 疊加影響</div>
+              <ul class="list-disc pl-5 text-xs mt-1">
+                <li>control-plane &amp; sidecar-smoke: 四套全部 PASS。</li>
+                <li>gVisor sidecar: FAIL（iptables nat 無法初始化 in guest kernel）。</li>
+                <li>OpenShell + runc / KubeArmor + runc 的 guardrails 在 Istio 後仍維持 PASS。</li>
+                <li>詳細: <a href="../testing/istio-impact-2026-06-08.md" class="underline">istio-impact-2026-06-08.md</a></li>
+              </ul>
+            </div>
+
+            <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">完整 live 報告：<a href="../testing/comparison-matrix-live-2026-06-08.md" class="underline">comparison-matrix-live-2026-06-08.md</a> + KubeArmor 擴充 <a href="../testing/kubearmor-agentic-scenarios-2026-06-08.md" class="underline">kubearmor-agentic-scenarios-2026-06-08.md</a>。</p>
+          </div>
         </section>
 
         <!-- 2. 架構模型 -->
