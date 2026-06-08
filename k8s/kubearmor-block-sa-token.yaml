@@ -1,0 +1,14 @@
+apiVersion: security.kubearmor.com/v1
+kind: KubeArmorPolicy
+metadata:
+  name: block-service-account-token
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: kubearmor-demo
+  file:
+    matchDirectories:
+      - dir: /run/secrets/kubernetes.io/serviceaccount/
+        recursive: true
+  action: Block

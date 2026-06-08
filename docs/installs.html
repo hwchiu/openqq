@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installation Paths · OpenShell Lab</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="page topbar-row">
+    <div class="brand-group">
+      <a href="index.html" class="toplink">← Home</a>
+      <span class="brand"><span class="brand-mark"></span>OpenShell Lab</span>
+    </div>
+    <nav class="site-nav">
+      <a href="report.html" class="chip">Report</a>
+      <a href="lab.html" class="chip green">runc</a>
+      <a href="lab-gvisor.html" class="chip amber">gVisor</a>
+      <a href="lab-kata.html" class="chip blue">Kata</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow">Installation Catalog / Independent Paths</div>
+        <h1>把安裝路線<br>徹底拆開</h1>
+        <p class="lead">這一頁不再混合實驗、設計、結論與部署。它只做一件事：把目前 repo 支援的安裝路線拆成四條獨立 path，讓你可以根據目標直接選，不必再從報告頁反推安裝順序。</p>
+      </div>
+      <div class="hero-side">
+        <div class="note-box">
+          <h3>四條獨立路線</h3>
+          <ul>
+            <li>K3s + gVisor</li>
+            <li>K3s + OpenShell + runc</li>
+            <li>K3s + OpenShell + gVisor</li>
+            <li>K3s + KubeArmor + runc</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-tag">Install Paths</div>
+        <h2 class="section-title">四條獨立安裝線</h2>
+      </div>
+    </div>
+    <div class="runtime-grid">
+      <a class="runtime-card gvisor" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-gvisor.md" target="_blank">
+        <div class="runtime-kicker">Path 01</div>
+        <h3>K3s + gVisor</h3>
+        <p>只驗證 runsc 與 RuntimeClass，不混 OpenShell。</p>
+      </a>
+      <a class="runtime-card runc" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-runc.md" target="_blank">
+        <div class="runtime-kicker">Path 02</div>
+        <h3>K3s + OpenShell + runc</h3>
+        <p>目前最穩的完整主線，含 OpenShell 核心能力。</p>
+      </a>
+      <a class="runtime-card gvisor" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-gvisor.md" target="_blank">
+        <div class="runtime-kicker">Path 03</div>
+        <h3>K3s + OpenShell + gVisor</h3>
+        <p>獨立驗證 OpenShell 在 runsc 路徑下保留與退化的能力。</p>
+      </a>
+      <a class="runtime-card kata" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-kubearmor-runc.md" target="_blank">
+        <div class="runtime-kicker">Path 04</div>
+        <h3>K3s + KubeArmor + runc</h3>
+        <p>和 OpenShell 無關的 runtime security 對照線。</p>
+      </a>
+    </div>
+  </section>
+</main>
+</body>
+</html>

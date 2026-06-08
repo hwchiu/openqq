@@ -41,6 +41,11 @@ Use Azure CLI only as a fallback when Azure MCP is unavailable.
 13. [docs/openshell-vs-sandbox.md](/Users/hwchiu/hwchiu/openqq/docs/openshell-vs-sandbox.md)
 14. [testing/openshell-architecture-evidence-2026-06-03.md](/Users/hwchiu/hwchiu/openqq/testing/openshell-architecture-evidence-2026-06-03.md)
 15. [docs/index.html](/Users/hwchiu/hwchiu/openqq/docs/index.html)
+16. [docs/installs.html](/Users/hwchiu/hwchiu/openqq/docs/installs.html)
+17. [docs/runbooks/install-k3s-gvisor.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-gvisor.md)
+18. [docs/runbooks/install-k3s-openshell-runc.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-openshell-runc.md)
+19. [docs/runbooks/install-k3s-openshell-gvisor.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-openshell-gvisor.md)
+20. [docs/runbooks/install-k3s-kubearmor-runc.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-kubearmor-runc.md)
 
 ## Important ambiguity
 
