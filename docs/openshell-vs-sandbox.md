@@ -1,5 +1,7 @@
 # OpenShell、OpenShell Sandbox、Agent Sandbox 差異說明
 
+> **注意**：這份內容已整合到新的專業技術參考文件。請優先閱讀 [四套架構比較技術參考](../comparison-four-stacks.html)（支援 Light/Dark，高對比工程師風格）。本文作為歷史補充。
+
 這三個詞很容易混在一起，但它們其實不是同一層的東西。
 
 ## 先講最短版

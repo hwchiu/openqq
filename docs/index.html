@@ -14,12 +14,12 @@
       <span class="chip">Azure / K3s / Runtime Security</span>
     </div>
     <nav class="site-nav">
+      <a href="comparison-four-stacks.html" class="chip">Technical Reference</a>
       <a href="installs.html" class="chip">Install Paths</a>
       <a href="matrix.html" class="chip">Matrix</a>
       <a href="report.html" class="chip">Report</a>
       <a href="lab.html" class="chip green">runc</a>
       <a href="lab-gvisor.html" class="chip amber">gVisor</a>
-      <a href="lab-kata.html" class="chip blue">Kata</a>
     </nav>
   </div>
 </header>
@@ -30,11 +30,11 @@
       <div>
         <div class="eyebrow">Independent Runtime / Sandbox / Security Lab</div>
         <h1>不要再把<br>OpenShell、gVisor、KubeArmor<br>混成一團</h1>
-        <p class="lead">這個 repo 現在不再只是一個 OpenShell 報告站，而是一個把多條安裝線與驗證線拆開的 lab。你可以直接選獨立路線：`k3s + gVisor`、`k3s + OpenShell + runc`、`k3s + OpenShell + gVisor`、`k3s + KubeArmor + runc`。</p>
+        <p class="lead">這個 repo 現在是專業的 runtime security lab 文件站。核心入口是<strong>四套架構比較技術參考</strong>（全新專業風格，支援 Light/Dark，高對比工程師閱讀）。你可以直接選獨立路線：`k3s + gVisor`、`k3s + OpenShell + runc`、`k3s + OpenShell + gVisor`、`k3s + KubeArmor + runc`。</p>
         <div class="hero-actions">
+          <a href="comparison-four-stacks.html" class="hero-action">四套架構比較技術參考（推薦）</a>
           <a href="installs.html" class="hero-action">先看安裝路線</a>
           <a href="matrix.html" class="hero-action">看共用測試矩陣</a>
-          <a href="report.html" class="hero-action">看決策摘要</a>
         </div>
       </div>
       <div class="hero-side">
@@ -48,7 +48,7 @@
         </div>
         <div class="note-box">
           <h3>目前最穩主線</h3>
-          <p><strong>k3s + OpenShell + runc</strong> 仍是功能最完整的落地路線。其餘路徑則用來做隔離邊界、退化與對照驗證。</p>
+          <p><strong>2026-06-08 live rerun 後，k3s + OpenShell + runc</strong> 仍是功能最完整的落地路線。`OpenShell + gVisor` 被確認為 `DEGRADED`，`KubeArmor + runc` 目前在 SA token block 案例上是 `FAIL`。</p>
         </div>
       </div>
     </div>

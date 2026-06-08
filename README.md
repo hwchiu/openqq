@@ -9,6 +9,10 @@ This repository now contains repeatable Azure lab assets for four independent Ku
 
 ## Fast entry points
 
+**New primary technical reference (professional style, Light/Dark, high contrast):** [docs/comparison-four-stacks.html](/Users/hwchiu/hwchiu/openqq/docs/comparison-four-stacks.html) — 四套 Kubernetes 安全執行環境比較技術參考
+
+(The old playful docs style has been replaced for the main reference; other pages link to it.)
+
 1. Site index: [docs/index.html](/Users/hwchiu/hwchiu/openqq/docs/index.html)
 2. Install catalog: [docs/installs.html](/Users/hwchiu/hwchiu/openqq/docs/installs.html)
 3. Comparison matrix runbook: [docs/runbooks/install-comparison-matrix.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-comparison-matrix.md)

@@ -38,7 +38,7 @@
       <div class="hero-side">
         <div class="note-box">
           <h3>最短結論</h3>
-          <p><strong>現在能正式落地的是 runc + OpenShell。</strong> gVisor 是明確的隔離支線，但會失去 filesystem policy。Kata 目前還是 blocker analysis，不是部署路線。</p>
+          <p><strong>2026-06-08 的四環境 live rerun 仍然指向 runc + OpenShell。</strong> gVisor 是明確的隔離支線，但會失去 filesystem policy。KubeArmor 這輪沒有擋住 service account token read，所以目前不能宣稱它已完成這個案例。</p>
         </div>
         <div class="note-box">
           <h3>判斷基準</h3>
@@ -120,6 +120,7 @@
       <a class="link-card" href="lab.html"><h3>runc Lab</h3><p>看完整基準組與 CSI / FUSE 的落地結果。</p></a>
       <a class="link-card" href="lab-gvisor.html"><h3>gVisor Lab</h3><p>看 runsc 保留什麼、失去什麼，以及為什麼。</p></a>
       <a class="link-card" href="lab-kata.html"><h3>Kata Lab</h3><p>看 privileged blocker 如何被縮到最小矩陣。</p></a>
+      <a class="link-card" href="matrix.html"><h3>Comparison Matrix</h3><p>看 2026-06-08 live rerun 的四環境共用測試結果。</p></a>
       <a class="link-card" href="https://github.com/hwchiu/openqq/tree/main/testing" target="_blank"><h3>Testing Folder</h3><p>直接看 raw output、markdown 結論與原始證據。</p></a>
     </div>
   </section>
