@@ -1,0 +1,34 @@
+Name:                   agent-sandbox-controller
+Namespace:              agent-sandbox-system
+CreationTimestamp:      Wed, 10 Jun 2026 01:13:52 +0800
+Labels:                 app=agent-sandbox-controller
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               app=agent-sandbox-controller
+Replicas:               1 desired | 1 updated | 1 total | 0 available | 1 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:           app=agent-sandbox-controller
+  Service Account:  agent-sandbox-controller
+  Containers:
+   agent-sandbox-controller:
+    Image:       registry.k8s.io/agent-sandbox/agent-sandbox-controller:v0.4.6
+    Ports:       8080/TCP, 8081/TCP
+    Host Ports:  0/TCP, 0/TCP
+    Args:
+      --leader-elect=true
+    Environment:  <none>
+    Mounts:       <none>
+  Volumes:        <none>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      False   MinimumReplicasUnavailable
+  Progressing    True    ReplicaSetUpdated
+OldReplicaSets:  <none>
+NewReplicaSet:   agent-sandbox-controller-858946cd5b (1/1 replicas created)
+Events:
+  Type    Reason             Age    From                   Message
+  ----    ------             ----   ----                   -------
+  Normal  ScalingReplicaSet  5m26s  deployment-controller  Scaled up replica set agent-sandbox-controller-858946cd5b from 0 to 1

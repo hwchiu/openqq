@@ -1,0 +1,7 @@
+NAMESPACE              NAME                                        READY   STATUS              RESTARTS   AGE     IP       NODE   NOMINATED NODE   READINESS GATES
+agent-sandbox-system   agent-sandbox-controller-858946cd5b-wnm4t   0/1     ContainerCreating   0          5m27s   <none>   cp-0   <none>           <none>
+kube-system            coredns-7896679cc-qc7vj                     0/1     ContainerCreating   0          5m37s   <none>   cp-0   <none>           <none>
+kube-system            helm-install-traefik-cfskd                  0/1     ContainerCreating   0          5m38s   <none>   cp-0   <none>           <none>
+kube-system            helm-install-traefik-crd-tkh45              0/1     ContainerCreating   0          5m38s   <none>   cp-0   <none>           <none>
+kube-system            local-path-provisioner-578895bd58-l8b9s     0/1     ContainerCreating   0          5m37s   <none>   cp-0   <none>           <none>
+kube-system            metrics-server-7b9c9c4b9c-n4x9z             0/1     ContainerCreating   0          5m37s   <none>   cp-0   <none>           <none>

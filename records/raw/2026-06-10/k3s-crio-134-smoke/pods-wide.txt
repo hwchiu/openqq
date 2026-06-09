@@ -1,0 +1,6 @@
+NAMESPACE     NAME                                      READY   STATUS              RESTARTS   AGE     IP       NODE   NOMINATED NODE   READINESS GATES
+kube-system   coredns-7896679cc-54vq4                   0/1     ContainerCreating   0          8m23s   <none>   cp-0   <none>           <none>
+kube-system   helm-install-traefik-crd-kjf2w            0/1     ContainerCreating   0          8m24s   <none>   cp-0   <none>           <none>
+kube-system   helm-install-traefik-nvrfm                0/1     ContainerCreating   0          8m24s   <none>   cp-0   <none>           <none>
+kube-system   local-path-provisioner-578895bd58-wrs4v   0/1     ContainerCreating   0          8m23s   <none>   cp-0   <none>           <none>
+kube-system   metrics-server-7b9c9c4b9c-7lsv8           0/1     ContainerCreating   0          8m23s   <none>   cp-0   <none>           <none>

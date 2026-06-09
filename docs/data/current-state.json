@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-06-10T00:21:40+08:00",
+  "generatedAt": "2026-06-10T01:40:00+08:00",
   "recommendation": {
-    "title": "目前沒有最終定版推薦，需要在新模型下重建驗證",
-    "summary": "舊測試紀錄已被清理，未來官方閱讀入口改由 GitHub Pages 持續更新同一套 current analysis，而不是累積一堆 run 報告。",
-    "detail": "在新模型下，每個候選方案都必須在 K8s 1.31 + CRI-O 1.31 與 K8s 1.34 + CRI-O 1.34 上，以明確宣告的 guardrail / policy / config 重新驗證。",
-    "currentCall": "初步偏向 OpenShell + CRI-O，正式推薦待 scenario 重跑",
+    "title": "目前暫定主推薦仍是 OpenShell + CRI-O，但 1.34 與 scenario 家族仍待完成",
+    "summary": "GitHub Pages 現在已開始反映正式 current analysis。plain CRI-O 對照組在兩條正式基線上都已出現同型態的 baseline workload failure；OpenShell + CRI-O 在 1.34/1.34 卡在 bootstrap；gVisor 1.34 則走得更遠，但 worker-side runtime verify 仍失敗。",
+    "detail": "在新模型下，每個候選方案都必須在 K8s 1.31 + CRI-O 1.31 與 K8s 1.34 + CRI-O 1.34 上，以明確宣告的 guardrail / policy / config 重新驗證；節點 Ready 不等於 solution 成功。",
+    "currentCall": "目前仍偏向 OpenShell + CRI-O，但 plain CRI-O 已在 1.31 與 1.34 兩條基線上重現 baseline pod 與 Istio control plane 失敗；OpenShell + CRI-O 在 1.34/1.34 出現 bootstrap blocked；gVisor 在 1.34/1.34 則出現 worker-side runtime verify failure",
     "solutionId": "openshell-crio",
     "solutionLabel": "OpenShell + CRI-O",
-    "why": "在現有存活的 1.31 + CRI-O 1.31 環境中，OpenShell + CRI-O 已確認 baseline、Istio control plane 與 OpenShell control plane 皆正常，但完整 scenario 還沒重跑。"
+    "why": "在現有存活的 1.31 + CRI-O 1.31 環境中，OpenShell + CRI-O 已確認 baseline、Istio control plane 與 OpenShell control plane 皆正常；相對地，plain CRI-O 對照組已被新實測證明在 1.31 與 1.34 兩條基線上都存在 CNI bandwidth plugin panic。OpenShell + CRI-O 在 1.34/1.34 目前也因相同底層 workload failure 導致 controller bootstrap blocked，因此推薦仍是暫定，不是正式定案。"
   },
   "overview": {
     "blockedCandidates": 0,
-    "blockedSummary": "目前主要狀態不是 solution 失敗，而是測試模型與閱讀入口正在重建中。"
+    "blockedSummary": "目前已有多個明確 solution failure 被寫回：plain CRI-O 在 K8s 1.31 + CRI-O 1.31 與 K8s 1.34 + CRI-O 1.34 上，節點雖然 Ready，但 baseline pod 與 Istio control plane 都因 CNI bandwidth plugin panic 而失敗；OpenShell + CRI-O 在 1.34/1.34 因同一底層問題導致 controller bootstrap 被阻塞；gVisor 在 1.34/1.34 則在 worker-side runtime verify 重現相同型態的 pod sandbox failure。"
   },
   "methodology": [
     "Raw archive 全部保留，供追溯與除錯，不再直接作為遠端閱讀主入口。",
@@ -120,50 +120,50 @@
       "id": "cri-o",
       "label": "K8s + CRI-O",
       "category": "Candidate Solution",
-      "currentCall": "待正式重建",
-      "summary": "作為最基礎的對照組，代表沒有額外 sandbox solution 時的行為與風險面。",
-      "interpretation": "這條路線主要價值是提供 baseline comparison，不是預設會成為最終推薦。若它在 compatibility 最好，但 protection 太弱，仍不適合 agentic AI sandbox。",
+      "currentCall": "兩條正式基線都已觀察到 workload failure",
+      "summary": "作為最基礎的對照組，它現在已經提供了非常明確的訊號：節點可 Ready，但實際 workload sandbox 建立在 1.31 與 1.34 兩條基線上都會失敗。",
+      "interpretation": "這條路線主要價值是提供 baseline comparison，不是預設會成為最終推薦。最新實測已顯示，plain CRI-O 不只 protection 較弱，連 baseline compatibility 都可能在跨基線上一致出問題。",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
-          "status": "NOT_TESTED",
-          "note": "新分析模型下尚未寫回正式 current-state。"
+          "status": "FAIL",
+          "note": "2026-06-10 新實測：nodes-ready PASS，但 baseline-pod 與 istio-control-plane FAIL。control plane log 與 events 顯示 CNI bandwidth plugin 在建立 pod sandbox 時 panic。"
         },
         "k8s-1.34-crio-1.34": {
-          "status": "NOT_TESTED",
-          "note": "下一代平台基線尚未完成正式重跑。"
+          "status": "FAIL",
+          "note": "2026-06-10 新實測：節點版本已確認為 v1.34.1+k3s1 / cri-o://1.34.9。nodes-ready PASS，但 baseline-pod 與 istio-control-plane 再次 FAIL。events、describe 與 k3s journal 都顯示 CNI bandwidth plugin 在建立 pod sandbox 時 panic。"
         }
       },
       "dimensionRead": [
         "Protection：預期作為對照組，不會是最強防護路線。",
-        "Compatibility：理論上應較高，但需重新驗證 Istio 與 agentic workload 行為。",
-        "Ops：通常成本較低，但不能因此忽略 protection 弱點。"
+        "Compatibility：1.31 與 1.34 兩條基線都已證明不能只看 nodes Ready。baseline workload 與 Istio control plane 都可能因 runtime / CNI 問題失敗。",
+        "Ops：即使理論上成本較低，只要要額外追查跨基線重現的 CNI panic，維運負擔就不是低成本。"
       ],
       "scenarioRead": [
         "要用來衡量沒有額外 guardrail 時，filesystem / network / privilege 面會缺多少。",
-        "如果這條路線連正式 baseline 都不穩，代表平台本身就有問題。"
+        "最新結果已證明，如果這條路線在兩條正式基線上都連 baseline workload 不穩，後續 scenario 就沒有比較基礎。"
       ]
     },
     {
       "id": "openshell-crio",
       "label": "K8s + OpenShell + CRI-O",
       "category": "Candidate Solution",
-      "currentCall": "最有機會成為主推薦",
-      "summary": "在新模型下，它暫時被視為最有希望成為主推薦的候選，但仍需在兩條基線上重新完成正式 scenario 驗證。",
-      "interpretation": "這條路線的重點不是只看它能不能擋，而是它能不能在 agentic workload、Istio 與日常維運條件下，持續維持可用且精準的 guardrail。",
+      "currentCall": "仍是暫定主推薦，但 1.34 基線目前 blocked",
+      "summary": "在新模型下，它暫時仍是最有希望成為主推薦的候選，但 1.34/1.34 已先遇到 bootstrap blocked，不能再把它視為單純未測。",
+      "interpretation": "這條路線的重點不是只看它能不能擋，而是它能不能在 agentic workload、Istio 與日常維運條件下，持續維持可用且精準的 guardrail。1.34/1.34 的最新結果顯示，它也可能被底層 runtime / CNI 問題拖住。",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
           "status": "PASS",
           "note": "2026-06-10 初步實測：nodes-ready、baseline-pod、istio-control-plane、openshell-control-plane 全部 PASS。"
         },
         "k8s-1.34-crio-1.34": {
-          "status": "NOT_TESTED",
-          "note": "需要驗證升級後 bootstrap、Istio 與 agentic scenarios 是否仍成立。"
+          "status": "BLOCKED",
+          "note": "2026-06-10 新實測：節點版本已確認為 v1.34.1+k3s1 / cri-o://1.34.9，nodes-ready PASS。但 agent-sandbox-controller rollout timeout，pod 與 k3s journal 顯示底層仍因 CNI bandwidth plugin panic 導致 pod sandbox 建立失敗，後續 OpenShell 驗證被 bootstrap failure 阻塞。"
         }
       },
       "dimensionRead": [
         "Protection：關鍵在 explicit OpenShell policy 是否能精準表達 allowed / blocked。",
-        "Compatibility：1.31 + 1.31 上已初步證明 baseline 與 Istio / OpenShell control plane 可運作，但完整 agentic workflow 尚未正式重跑。",
-        "Ops：policy authoring、觀測與除錯成本都要記錄。"
+        "Compatibility：1.31 + 1.31 上已初步證明 baseline 與 Istio / OpenShell control plane 可運作，但 1.34 + 1.34 現在已被 bootstrap failure 阻塞，完整 agentic workflow 尚未成立。",
+        "Ops：policy authoring、觀測與除錯成本都要記錄；如果底層問題會直接卡住 controller rollout，這會實質拉高維運風險。"
       ],
       "scenarioRead": [
         "Workspace 與 network 應是最重要的 allowed-path 驗證。",
@@ -174,27 +174,27 @@
       "id": "gvisor",
       "label": "K8s + gVisor",
       "category": "Candidate Solution",
-      "currentCall": "高風險候選",
-      "summary": "這條路線代表純 runtime sandbox 候選，重點是看 protection 是否帶來可接受的 compatibility 與 ops 成本。",
-      "interpretation": "如果 gVisor 類路線在 install/bootstrap 或 Istio 疊加時持續產生 BLOCKED，這會直接拖累 compatibility 與 operational complexity，而不是只算成單一技術瑕疵。",
+      "currentCall": "高風險候選，1.34 基線已觀察到 runtime 驗證失敗",
+      "summary": "這條路線代表純 runtime sandbox 候選，重點是看 protection 是否帶來可接受的 compatibility 與 ops 成本。1.34/1.34 的最新重跑顯示，它雖然比 plain CRI-O 更能把 control plane 拉起來，但 gVisor runtime 自己仍會失敗。",
+      "interpretation": "如果 gVisor 類路線在 install/bootstrap、runtime verify 或 Istio 疊加時持續產生 FAIL / BLOCKED，這會直接拖累 compatibility 與 operational complexity，而不是只算成單一技術瑕疵。",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
           "status": "PASS",
           "note": "2026-06-10 初步實測：nodes-ready、baseline-pod、istio-control-plane 皆 PASS；gVisor 專屬 scenario 尚未重跑。"
         },
         "k8s-1.34-crio-1.34": {
-          "status": "NOT_TESTED",
-          "note": "需要重新確認 runtimeClass、Istio 組合與 bootstrap 穩定度。"
+          "status": "FAIL",
+          "note": "2026-06-10 新實測：節點版本已確認為 v1.34.1+k3s1 / cri-o://1.34.9。control-plane workloads 多數可 Running，但 gvisor RuntimeClass verify pod 在 worker 上 timeout。手動保留的 pod describe、events 與 k3s journal 都顯示 worker-side pod sandbox 仍因 CNI bandwidth plugin panic 而失敗。"
         }
       },
       "dimensionRead": [
         "Protection：預期較強，但不能用想像代替 scenario 驗證。",
-        "Compatibility：Istio、一般 workload 與 agentic 工具鏈是主要風險點。",
-        "Ops：runtime 調整與故障分析成本可能偏高。"
+        "Compatibility：Istio、一般 workload 與 agentic 工具鏈是主要風險點；1.34 + 1.34 已證明即使 control-plane workload 可起來，worker-side gVisor workload 仍可能失敗。",
+        "Ops：runtime 調整與故障分析成本可能偏高，尤其當 failure 落在 worker-side sandbox / CNI 交界。"
       ],
       "scenarioRead": [
         "gVisor 不是只看 runtime probe，而要看真實 agentic workload 下的 allowed / blocked 行為。",
-        "與 Istio 疊加的結果尤其重要。"
+        "與 Istio 疊加的結果尤其重要；但在 1.34 + 1.34 上，連 runtime verify 本身都還沒乾淨成功。"
       ]
     },
     {

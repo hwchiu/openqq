@@ -1,0 +1,7 @@
+{
+  "status": "fail",
+  "summary": "Istio control plane not ready",
+  "details": {
+    "readyReplicas": 0
+  }
+}
