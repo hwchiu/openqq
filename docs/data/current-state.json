@@ -1,0 +1,282 @@
+{
+  "generatedAt": "2026-06-10T00:21:40+08:00",
+  "recommendation": {
+    "title": "目前沒有最終定版推薦，需要在新模型下重建驗證",
+    "summary": "舊測試紀錄已被清理，未來官方閱讀入口改由 GitHub Pages 持續更新同一套 current analysis，而不是累積一堆 run 報告。",
+    "detail": "在新模型下，每個候選方案都必須在 K8s 1.31 + CRI-O 1.31 與 K8s 1.34 + CRI-O 1.34 上，以明確宣告的 guardrail / policy / config 重新驗證。",
+    "currentCall": "初步偏向 OpenShell + CRI-O，正式推薦待 scenario 重跑",
+    "solutionId": "openshell-crio",
+    "solutionLabel": "OpenShell + CRI-O",
+    "why": "在現有存活的 1.31 + CRI-O 1.31 環境中，OpenShell + CRI-O 已確認 baseline、Istio control plane 與 OpenShell control plane 皆正常，但完整 scenario 還沒重跑。"
+  },
+  "overview": {
+    "blockedCandidates": 0,
+    "blockedSummary": "目前主要狀態不是 solution 失敗，而是測試模型與閱讀入口正在重建中。"
+  },
+  "methodology": [
+    "Raw archive 全部保留，供追溯與除錯，不再直接作為遠端閱讀主入口。",
+    "Current state data 代表目前最新官方狀態，而不是單次 run 的完整歷史。",
+    "GitHub Pages 固定更新同一套分析頁面，首頁先回答現在該選誰，再往下拆 baseline、solution 與 scenario。",
+    "所有候選都必須在明確宣告的 guardrail / policy / config 下比較，不用 default behavior 當成成功依據。",
+    "Install / bootstrap 失敗本身就是有效負面結果，後續 scenario 要標記為 BLOCKED，而不是 N/A。"
+  ],
+  "outputModel": [
+    {
+      "title": "Raw archive",
+      "path": "testing/raw/...",
+      "body": "保存歷史原始輸出、命令結果、log 與結構化 artifacts，主要用途是追溯與除錯。"
+    },
+    {
+      "title": "Current state data",
+      "path": "docs/data/current-state.json",
+      "body": "保存目前官方判讀需要的最新狀態資料，供 Pages 直接讀取。"
+    },
+    {
+      "title": "Pages analysis",
+      "path": "docs/*.html",
+      "body": "作為遠端閱讀入口，持續更新同一套分析頁，而不是為每次 run 生一份新報告。"
+    }
+  ],
+  "baselines": [
+    {
+      "id": "k8s-1.31-crio-1.31",
+      "label": "K8s 1.31 + CRI-O 1.31",
+      "summary": "這是目前已存在最多歷史驗證脈絡的基線，但舊紀錄已退場，必須用新模型重新整理。",
+      "highlights": [
+        "未來所有 solution 都要在這條基線上重新跑",
+        "Istio 與 agentic AI scenarios 要納入正式比較",
+        "不再用舊 testing 文件直接當官方結論"
+      ]
+    },
+    {
+      "id": "k8s-1.34-crio-1.34",
+      "label": "K8s 1.34 + CRI-O 1.34",
+      "summary": "這是新的對照平台世代，未來要和 1.31/1.31 並行維護，而不是混成單一版本故事。",
+      "highlights": [
+        "代表下一代平台基線",
+        "安裝與 bootstrap 成本需要獨立判讀",
+        "任何 blocked 都要被正式記錄"
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "baseline",
+      "name": "Baseline",
+      "focus": "叢集健康、基本 workload、DNS、service、storage 等最低可用性驗證。",
+      "currentRead": [
+        "未來所有候選都要先過 baseline readiness，後面 scenario 才有意義。",
+        "Provision / Install / Baseline 要和 Scenario Results 分層報告。"
+      ]
+    },
+    {
+      "id": "service-mesh",
+      "name": "Service Mesh",
+      "focus": "Istio control plane、sidecar injection、in-mesh traffic 與 sandbox 疊加相容性。",
+      "currentRead": [
+        "Istio 不是額外加分項，而是 agentic workload 常見現實條件。",
+        "任何 solution + Istio 組合失敗都要直接算進 compatibility。"
+      ]
+    },
+    {
+      "id": "filesystem",
+      "name": "Filesystem Guardrails",
+      "focus": "workspace 寫入、受保護路徑阻擋、敏感檔案讀取與 volume 行為。",
+      "currentRead": [
+        "Allowed 與 Blocked 行為要一起驗證。",
+        "agentic workload 最關鍵的是可工作的 workspace + 受保護的系統範圍。"
+      ]
+    },
+    {
+      "id": "network",
+      "name": "Network Guardrails",
+      "focus": "外部 API、內部 service、egress、DNS 與長連線能力。",
+      "currentRead": [
+        "只測封鎖不夠，還要驗證允許的 API 路徑不被破壞。",
+        "blocked egress 失敗是 protection 問題，allowed egress 失敗是 compatibility 問題。"
+      ]
+    },
+    {
+      "id": "privilege",
+      "name": "Privilege Surface",
+      "focus": "service account token、secret、hostPath、runtime socket、capabilities 與提權面。",
+      "currentRead": [
+        "install/bootstrap 時的高權限需求也要算進 operational complexity。",
+        "此類 scenario 直接影響 protection 維度。"
+      ]
+    },
+    {
+      "id": "agentic-ai",
+      "name": "Agentic AI Scenarios",
+      "focus": "workspace、network、sensitive resource、tool execution 與 policy robustness under real workload。",
+      "currentRead": [
+        "這些不是附加測試，而是 repo 的核心決策場景。",
+        "solution 如果只能擋、不能工作，就不能成為正式推薦。"
+      ]
+    }
+  ],
+  "solutions": [
+    {
+      "id": "cri-o",
+      "label": "K8s + CRI-O",
+      "category": "Candidate Solution",
+      "currentCall": "待正式重建",
+      "summary": "作為最基礎的對照組，代表沒有額外 sandbox solution 時的行為與風險面。",
+      "interpretation": "這條路線主要價值是提供 baseline comparison，不是預設會成為最終推薦。若它在 compatibility 最好，但 protection 太弱，仍不適合 agentic AI sandbox。",
+      "baselineStatus": {
+        "k8s-1.31-crio-1.31": {
+          "status": "NOT_TESTED",
+          "note": "新分析模型下尚未寫回正式 current-state。"
+        },
+        "k8s-1.34-crio-1.34": {
+          "status": "NOT_TESTED",
+          "note": "下一代平台基線尚未完成正式重跑。"
+        }
+      },
+      "dimensionRead": [
+        "Protection：預期作為對照組，不會是最強防護路線。",
+        "Compatibility：理論上應較高，但需重新驗證 Istio 與 agentic workload 行為。",
+        "Ops：通常成本較低，但不能因此忽略 protection 弱點。"
+      ],
+      "scenarioRead": [
+        "要用來衡量沒有額外 guardrail 時，filesystem / network / privilege 面會缺多少。",
+        "如果這條路線連正式 baseline 都不穩，代表平台本身就有問題。"
+      ]
+    },
+    {
+      "id": "openshell-crio",
+      "label": "K8s + OpenShell + CRI-O",
+      "category": "Candidate Solution",
+      "currentCall": "最有機會成為主推薦",
+      "summary": "在新模型下，它暫時被視為最有希望成為主推薦的候選，但仍需在兩條基線上重新完成正式 scenario 驗證。",
+      "interpretation": "這條路線的重點不是只看它能不能擋，而是它能不能在 agentic workload、Istio 與日常維運條件下，持續維持可用且精準的 guardrail。",
+      "baselineStatus": {
+        "k8s-1.31-crio-1.31": {
+          "status": "PASS",
+          "note": "2026-06-10 初步實測：nodes-ready、baseline-pod、istio-control-plane、openshell-control-plane 全部 PASS。"
+        },
+        "k8s-1.34-crio-1.34": {
+          "status": "NOT_TESTED",
+          "note": "需要驗證升級後 bootstrap、Istio 與 agentic scenarios 是否仍成立。"
+        }
+      },
+      "dimensionRead": [
+        "Protection：關鍵在 explicit OpenShell policy 是否能精準表達 allowed / blocked。",
+        "Compatibility：1.31 + 1.31 上已初步證明 baseline 與 Istio / OpenShell control plane 可運作，但完整 agentic workflow 尚未正式重跑。",
+        "Ops：policy authoring、觀測與除錯成本都要記錄。"
+      ],
+      "scenarioRead": [
+        "Workspace 與 network 應是最重要的 allowed-path 驗證。",
+        "service account token、敏感檔案、非授權路徑寫入則是 blocked-path 驗證。"
+      ]
+    },
+    {
+      "id": "gvisor",
+      "label": "K8s + gVisor",
+      "category": "Candidate Solution",
+      "currentCall": "高風險候選",
+      "summary": "這條路線代表純 runtime sandbox 候選，重點是看 protection 是否帶來可接受的 compatibility 與 ops 成本。",
+      "interpretation": "如果 gVisor 類路線在 install/bootstrap 或 Istio 疊加時持續產生 BLOCKED，這會直接拖累 compatibility 與 operational complexity，而不是只算成單一技術瑕疵。",
+      "baselineStatus": {
+        "k8s-1.31-crio-1.31": {
+          "status": "PASS",
+          "note": "2026-06-10 初步實測：nodes-ready、baseline-pod、istio-control-plane 皆 PASS；gVisor 專屬 scenario 尚未重跑。"
+        },
+        "k8s-1.34-crio-1.34": {
+          "status": "NOT_TESTED",
+          "note": "需要重新確認 runtimeClass、Istio 組合與 bootstrap 穩定度。"
+        }
+      },
+      "dimensionRead": [
+        "Protection：預期較強，但不能用想像代替 scenario 驗證。",
+        "Compatibility：Istio、一般 workload 與 agentic 工具鏈是主要風險點。",
+        "Ops：runtime 調整與故障分析成本可能偏高。"
+      ],
+      "scenarioRead": [
+        "gVisor 不是只看 runtime probe，而要看真實 agentic workload 下的 allowed / blocked 行為。",
+        "與 Istio 疊加的結果尤其重要。"
+      ]
+    },
+    {
+      "id": "openshell-gvisor",
+      "label": "K8s + OpenShell + gVisor",
+      "category": "Candidate Solution",
+      "currentCall": "複合候選，需嚴格驗證",
+      "summary": "這是 protection 疊加最多的複合候選，同時也是最容易在 compatibility 與 ops 成本上出問題的路線。",
+      "interpretation": "這條路線不能只因為 protection 看起來強就高分，必須把 install complexity、Istio 相容性與日常維護難度一併算進去。",
+      "baselineStatus": {
+        "k8s-1.31-crio-1.31": {
+          "status": "PASS",
+          "note": "2026-06-10 初步實測：nodes-ready、baseline-pod、istio-control-plane、openshell-control-plane 皆 PASS；複合 scenario 尚未重跑。"
+        },
+        "k8s-1.34-crio-1.34": {
+          "status": "NOT_TESTED",
+          "note": "高機率是對 compatibility 與 bootstrap 要求最高的候選。"
+        }
+      },
+      "dimensionRead": [
+        "Protection：理論上最強之一，但必須被 scenario 實際證明。",
+        "Compatibility：疊加兩層機制後，allowed behavior 是否被破壞是關鍵。",
+        "Ops：安裝、升級、觀測與政策調整成本預期最高。"
+      ],
+      "scenarioRead": [
+        "最需要測 policy robustness under real workload。",
+        "如果正常 agent workflow 不穩，這條路不該成為推薦。"
+      ]
+    },
+    {
+      "id": "kubearmor",
+      "label": "K8s + CRI-O + KubeArmor",
+      "category": "Candidate Solution",
+      "currentCall": "以 explicit policy 為前提重測",
+      "summary": "這條路線未來只會在明確 scenario policy 下評估，不再用 default policy 或預設行為判成功。",
+      "interpretation": "KubeArmor 的核心評估點是 policy expressiveness、policy correctness、policy enforcement reliability，以及維運成本，不是單看預設擋不擋。",
+      "baselineStatus": {
+        "k8s-1.31-crio-1.31": {
+          "status": "PASS",
+          "note": "2026-06-10 初步實測：nodes-ready、baseline-pod、istio-control-plane 皆 PASS；KubeArmor explicit-policy scenarios 尚未重跑。"
+        },
+        "k8s-1.34-crio-1.34": {
+          "status": "NOT_TESTED",
+          "note": "需要驗證新基線是否影響 policy 表達與 enforcement 穩定度。"
+        }
+      },
+      "dimensionRead": [
+        "Protection：取決於 policy 是否真的能精準描述 scenario。",
+        "Compatibility：allowed behavior 不能因 policy 調整而大面積被破壞。",
+        "Ops：policy 數量、脆弱度與觀測品質都要列入成本。"
+      ],
+      "scenarioRead": [
+        "每個 scenario 都應該有對應的 allowed / blocked policy 驗證對。",
+        "default behavior 不再是判分依據。"
+      ]
+    },
+    {
+      "id": "istio",
+      "label": "Istio 視角",
+      "category": "Cross-cutting View",
+      "currentCall": "所有候選都應評估 mesh 疊加效果",
+      "summary": "Istio 不是獨立候選，而是跨所有 solution 的重要相容性條件，特別是 agentic workload 常見的 service mesh 現場。",
+      "interpretation": "未來任何 solution 只要在 Istio control plane、sidecar injection 或 in-mesh traffic 上不穩，都應直接影響 compatibility 判分。",
+      "baselineStatus": {
+        "k8s-1.31-crio-1.31": {
+          "status": "PASS",
+          "note": "2026-06-10 初步實測：四個現有 stack 的 istio-control-plane 皆 PASS。"
+        },
+        "k8s-1.34-crio-1.34": {
+          "status": "NOT_TESTED",
+          "note": "新平台基線上的 Istio 疊加結果需要獨立觀察。"
+        }
+      },
+      "dimensionRead": [
+        "Protection：Istio 本身不是 sandbox，但會改變 dataplane 與流量行為。",
+        "Compatibility：是所有候選的重要現實條件。",
+        "Ops：mesh 疊加會增加故障分析與 rollout 成本。"
+      ],
+      "scenarioRead": [
+        "至少要驗證 control plane、sidecar injection、in-mesh traffic。",
+        "和 sandbox 疊加後的 readiness 與 observability 要列入正式結果。"
+      ]
+    }
+  ]
+}

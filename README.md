@@ -1,53 +1,75 @@
-# OpenShell Runtime Lab on Azure
+# OpenQQ K8s Sandbox Decision Lab
 
-This repository now contains repeatable Azure lab assets for four independent Kubernetes security environments:
+This repository is a `K8s Sandbox Decision Lab` for Azure.
 
-1. `k3s + gVisor`
-2. `k3s + OpenShell + runc`
-3. `k3s + OpenShell + gVisor`
-4. `k3s + KubeArmor + runc`
+Its purpose is to compare candidate Kubernetes sandbox or runtime-guardrail solutions and answer a practical decision question:
 
-The provisioning defaults are now aligned on:
+Which solution is currently the best fit for agentic AI workloads?
 
-1. `K3s v1.31.14+k3s1`
-2. `CRI-O v1.31`
+This repo must provide:
 
-The two gVisor comparison paths keep `runsc` as the sandbox runtime, but they now layer it on top of CRI-O instead of containerd.
+1. a repeatable validation framework
+2. a continuously updated official analysis
+3. a defensible recommendation based on current evidence
+
+## Fixed baselines
+
+Every candidate must be evaluated independently on these two platform pairings:
+
+1. `K8s 1.31 + CRI-O 1.31`
+2. `K8s 1.34 + CRI-O 1.34`
+
+## Candidate solutions
+
+1. `k8s + cri-o`
+2. `k8s + OpenShell + cri-o`
+3. `k8s + gVisor`
+4. `k8s + OpenShell + gVisor`
+5. `k8s + cri-o + KubeArmor`
+
+## Decision dimensions
+
+Every recommendation must balance:
+
+1. `Isolation and protection capability`
+2. `Compatibility`
+3. `Operational complexity`
 
 ## Fast entry points
 
-**New primary technical reference (professional style, Light/Dark, high contrast):** [docs/comparison-four-stacks.html](/Users/hwchiu/hwchiu/openqq/docs/comparison-four-stacks.html) — 四套 Kubernetes 安全執行環境比較技術參考
-
-(The old playful docs style has been replaced for the main reference; other pages link to it.)
-
-1. Site index: [docs/index.html](/Users/hwchiu/hwchiu/openqq/docs/index.html)
-2. Install catalog: [docs/installs.html](/Users/hwchiu/hwchiu/openqq/docs/installs.html)
-3. Comparison matrix runbook: [docs/runbooks/install-comparison-matrix.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-comparison-matrix.md)
-4. Comparison matrix page: [docs/matrix.html](/Users/hwchiu/hwchiu/openqq/docs/matrix.html)
-5. Terraform stacks: `terraform/stacks/`
+1. Current analysis homepage: [docs/index.html](/Users/hwchiu/hwchiu/openqq/docs/index.html)
+2. Baseline matrix: [docs/matrix.html](/Users/hwchiu/hwchiu/openqq/docs/matrix.html)
+3. Scenario view: [docs/failures.html](/Users/hwchiu/hwchiu/openqq/docs/failures.html)
+4. Methodology and data model: [docs/evidence.html](/Users/hwchiu/hwchiu/openqq/docs/evidence.html)
+5. Decision Lab design spec: [docs/superpowers/specs/2026-06-09-k8s-sandbox-decision-lab-design.md](/Users/hwchiu/hwchiu/openqq/docs/superpowers/specs/2026-06-09-k8s-sandbox-decision-lab-design.md)
 6. One-shot installer: [scripts/install-comparison-matrix.sh](/Users/hwchiu/hwchiu/openqq/scripts/install-comparison-matrix.sh)
 7. One-shot test runner: [scripts/run-comparison-matrix-tests.sh](/Users/hwchiu/hwchiu/openqq/scripts/run-comparison-matrix-tests.sh)
 8. One-shot destroy: [scripts/destroy-comparison-matrix.sh](/Users/hwchiu/hwchiu/openqq/scripts/destroy-comparison-matrix.sh)
 
-## Install paths
+## Output model
 
-1. [docs/runbooks/install-k3s-gvisor.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-gvisor.md)
-2. [docs/runbooks/install-k3s-openshell-runc.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-openshell-runc.md)
-3. [docs/runbooks/install-k3s-openshell-gvisor.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-openshell-gvisor.md)
-4. [docs/runbooks/install-k3s-kubearmor-runc.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-kubearmor-runc.md)
-5. [docs/runbooks/comparison-matrix-tests.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/comparison-matrix-tests.md)
+This repo now aims for three output layers:
 
-## Shared Azure inputs
+1. `Raw archive`
+   Historical raw results kept for traceability and debugging.
 
-Provide shared Azure values in one of these ways:
+2. `Current state data`
+   Latest official machine-readable status for GitHub Pages.
 
-1. `terraform/stacks/common.auto.tfvars`
-2. Environment variables such as `AZURE_SUBSCRIPTION_ID`, `AZURE_TENANT_ID`, and `AZURE_SSH_PUBLIC_KEY_PATH`
-3. Existing `terraform/terraform.tfvars`
+3. `GitHub Pages analysis`
+   A continuously updated official reading path, not a pile of one-report-per-run pages.
+
+## Evaluation rules
+
+- Compare candidates under explicit guardrail, policy, runtime, or config declarations.
+- Do not use default behavior as the success criterion.
+- Validate both `Allowed behavior` and `Blocked behavior`.
+- Treat install/bootstrap failure as a real negative result.
+- If later scenarios cannot run because a solution failed earlier, classify them as `Blocked by solution failure`.
 
 ## Notes
 
 - Each stack has its own Terraform root and state file.
 - Each stack writes kubeconfig under `generated/stacks/<stack-name>/kubeconfig`.
-- The matrix installer creates the four environments serially through one command so they can coexist safely.
-- The matrix test runner writes publishable results to `docs/data/comparison-matrix.json`.
+- The matrix installer can still be used as the orchestration entry point.
+- The Pages site should read latest official state from `docs/data/current-state.json`.

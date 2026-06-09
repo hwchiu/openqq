@@ -1,17 +1,13 @@
 (function () {
   const CONTENT = window.OPENQQ_CONTENT || {};
-  const MATRIX_COLUMNS = [
-    ["nodesReady", "Nodes"],
-    ["istioControlPlane", "Istio CP"],
-    ["istioSidecarSmoke", "Istio Smoke"],
-    ["gvisorRuntime", "gVisor"],
-    ["istioGvisorSidecar", "Istio+gVisor"],
-    ["openshellGuardrails", "OpenShell"],
-    ["kubearmorSa", "KA SA"],
-    ["kubearmorFile", "KA File"],
-    ["kubearmorProcess", "KA Proc"],
-    ["kubearmorNetwork", "KA Net"]
-  ];
+  const SOLUTION_PAGE_MAP = {
+    "cri-o": "tracks/crio.html",
+    "openshell-crio": "tracks/openshell.html",
+    "gvisor": "tracks/gvisor.html",
+    "openshell-gvisor": "tracks/openshell-gvisor.html",
+    "kubearmor": "tracks/kubearmor.html",
+    "istio": "tracks/istio.html"
+  };
 
   function getRoot() {
     return document.body.dataset.root || ".";
@@ -21,43 +17,65 @@
     return `${getRoot()}/${path}`.replace("/./", "/");
   }
 
-  function repoLink(path) {
-    return `${CONTENT.repo.blobBase}${path}`;
-  }
-
   function pageLink(path) {
     return rootPath(path);
   }
 
-  async function loadMatrixData() {
-    const response = await fetch(rootPath("data/comparison-matrix.json"));
+  function repoLink(path) {
+    return `${CONTENT.repo.blobBase}${path}`;
+  }
+
+  async function loadCurrentState() {
+    const response = await fetch(rootPath("data/current-state.json"));
     if (!response.ok) {
-      throw new Error(`Failed to load matrix data: ${response.status}`);
+      throw new Error(`Failed to load current-state.json: ${response.status}`);
     }
     return response.json();
   }
 
-  function statusBadge(value) {
-    const lower = String(value || "N/A").toLowerCase();
-    const label = lower === "pass" ? "PASS" : lower === "fail" ? "FAIL" : "N/A";
-    const className = lower === "pass" ? "status-pass" : lower === "fail" ? "status-fail" : "status-na";
-    return `<span class="status ${className}">${label}</span>`;
+  function getStatusClass(status) {
+    switch (status) {
+      case "PASS":
+        return "status-pass";
+      case "FAIL":
+        return "status-fail";
+      case "BLOCKED":
+        return "status-blocked";
+      default:
+        return "status-not-tested";
+    }
+  }
+
+  function statusBadge(status) {
+    return `<span class="status ${getStatusClass(status)}">${status}</span>`;
+  }
+
+  function renderSectionHeader(label, title, body) {
+    return `
+      <div class="section-header">
+        <div>
+          <div class="section-label">${label}</div>
+          <h2>${title}</h2>
+          <p>${body}</p>
+        </div>
+      </div>
+    `;
   }
 
   function buildHeader() {
     const page = document.body.dataset.page;
     const nav = [
-      ["home", pageLink("index.html"), "Home"],
-      ["matrix", pageLink("matrix.html"), "Matrix"],
-      ["tracks", pageLink("tracks/openshell.html"), "Tracks"],
-      ["failures", pageLink("failures.html"), "Failures"],
-      ["evidence", pageLink("evidence.html"), "Evidence"]
+      ["home", pageLink("index.html"), CONTENT.nav.home],
+      ["matrix", pageLink("matrix.html"), CONTENT.nav.matrix],
+      ["tracks", pageLink("tracks/crio.html"), CONTENT.nav.tracks],
+      ["scenarios", pageLink("failures.html"), CONTENT.nav.scenarios],
+      ["evidence", pageLink("evidence.html"), CONTENT.nav.evidence]
     ];
     return `
       <div class="site-header-inner">
         <a class="brand" href="${pageLink("index.html")}">
-          <span class="brand-kicker">Research Portal</span>
-          <span class="brand-title">${CONTENT.header.title}</span>
+          <span class="brand-kicker">K8s Sandbox Decision Lab</span>
+          <span class="brand-title">${CONTENT.site.title}</span>
         </a>
         <nav class="site-nav" aria-label="Primary">
           ${nav
@@ -71,382 +89,355 @@
     `;
   }
 
-  function buildFooter(matrix) {
+  function buildFooter(state) {
     return `
       <div class="site-footer-inner">
-        <div>
-          Research scope: runtime, sandbox, and policy-enforcement comparisons on ${matrix.baseline.kubernetes} and ${matrix.baseline.containerRuntime}.
-        </div>
-        <div>
-          Updated ${matrix.generatedAt} · <a class="footnote-link" href="${CONTENT.repo.home}">Repository</a>
-        </div>
+        <div>GitHub Pages 只維護目前最新官方分析。歷史 raw results 另存，不再當遠端閱讀主入口。</div>
+        <div>Updated ${state.generatedAt} · <a class="footnote-link" href="${CONTENT.repo.home}">Repository</a></div>
       </div>
     `;
   }
 
-  function renderSummaryCards(cards) {
-    return cards
-      .map(
-        (card) => `
-          <article class="summary-card">
-            <div class="section-label">${card.title}</div>
-            <div class="verdict">${card.verdict}</div>
-            <p>${card.body}</p>
-            <a class="summary-link" href="${pageLink(card.href)}">${card.linkLabel}</a>
-          </article>
-        `
-      )
-      .join("");
+  function byId(id) {
+    return document.getElementById(id);
   }
 
-  function renderUnsupportedClaims(claims) {
+  function findSolution(state, solutionId) {
+    return state.solutions.find((item) => item.id === solutionId);
+  }
+
+  function renderCardGrid(cards) {
     return `
-      <ul class="claim-list">
-        ${claims
+      <div class="card-grid">
+        ${cards
           .map(
-            (item) => `
-              <li>
-                <a href="${pageLink(item.href)}">${item.claim}</a>
-              </li>
+            (card) => `
+              <article class="summary-card">
+                <div class="section-label">${card.title}</div>
+                <div class="verdict">${card.verdict}</div>
+                <p>${card.body}</p>
+                ${card.href ? `<a class="summary-link" href="${pageLink(card.href)}">${card.linkLabel}</a>` : ""}
+              </article>
             `
           )
           .join("")}
-      </ul>
-    `;
-  }
-
-  function renderMatrixTable(target, tracks, options) {
-    const columns = options.columns;
-    target.innerHTML = `
-      <div class="matrix-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Environment</th>
-              ${columns.map(([, label]) => `<th>${label}</th>`).join("")}
-            </tr>
-          </thead>
-          <tbody>
-            ${tracks
-              .map(
-                (track) => `
-                  <tr>
-                    <td class="track-cell">
-                      <strong>${track.label}</strong>
-                      <span>${track.summary}</span>
-                    </td>
-                    ${columns.map(([key]) => `<td>${statusBadge(track.results[key])}</td>`).join("")}
-                  </tr>
-                `
-              )
-              .join("")}
-          </tbody>
-        </table>
       </div>
     `;
   }
 
-  function renderEvidenceGroups(groups) {
-    return groups
-      .map(
-        (group) => `
-          <article class="evidence-group">
-            <div class="section-label">Evidence Group</div>
-            <h3>${group.title}</h3>
-            <ul class="evidence-list">
-              ${group.items
+  function renderHome(state) {
+    byId("home-hero").innerHTML = `
+      <section class="hero">
+        <div>
+          <div class="eyebrow">Current Recommendation</div>
+          <h1>${state.recommendation.title}</h1>
+          <p class="lede">${state.recommendation.summary}</p>
+          <p>${state.recommendation.detail}</p>
+        </div>
+        <div class="meta-grid">
+          <div class="meta-card"><span class="meta-label">目前結論</span><span class="meta-value">${state.recommendation.currentCall}</span></div>
+          <div class="meta-card"><span class="meta-label">暫定主候選</span><span class="meta-value">${state.recommendation.solutionLabel}</span></div>
+          <div class="meta-card"><span class="meta-label">最新更新</span><span class="meta-value">${state.generatedAt}</span></div>
+          <div class="meta-card"><span class="meta-label">閱讀模型</span><span class="meta-value">Current analysis + raw archive</span></div>
+        </div>
+      </section>
+    `;
+
+    byId("current-assessment").innerHTML =
+      renderSectionHeader("總覽", "目前官方判讀", "首頁先回答現在該選誰，再往下拆 baseline、solution 與 scenario。") +
+      renderCardGrid([
+        {
+          title: "目前推薦",
+          verdict: state.recommendation.solutionLabel,
+          body: state.recommendation.why,
+          href: SOLUTION_PAGE_MAP[state.recommendation.solutionId],
+          linkLabel: "查看 solution 判讀"
+        },
+        {
+          title: "版本基線",
+          verdict: "兩條固定配對基線",
+          body: "K8s 1.31 + CRI-O 1.31 與 K8s 1.34 + CRI-O 1.34 必須分開判讀。",
+          href: "matrix.html",
+          linkLabel: "查看基線矩陣"
+        },
+        {
+          title: "評估方式",
+          verdict: "Allowed / Blocked 都要驗證",
+          body: "所有候選都必須在明確宣告的 guardrail / policy / config 下比較。",
+          href: "evidence.html",
+          linkLabel: "查看方法與資料"
+        },
+        {
+          title: "阻塞定義",
+          verdict: `${state.overview.blockedCandidates} 個候選目前 blocked`,
+          body: state.overview.blockedSummary,
+          href: "failures.html",
+          linkLabel: "查看情境與風險"
+        }
+      ]);
+
+    byId("baseline-summary").innerHTML =
+      renderSectionHeader("Baselines", "兩條固定平台基線", "每個候選都必須在兩條完整平台配對上獨立評估。") +
+      `<div class="card-grid">
+        ${state.baselines
+          .map(
+            (baseline) => `
+              <article class="summary-card">
+                <div class="section-label">${baseline.id}</div>
+                <div class="verdict">${baseline.label}</div>
+                <p>${baseline.summary}</p>
+                <ul class="facts-list">${baseline.highlights.map((item) => `<li>${item}</li>`).join("")}</ul>
+              </article>
+            `
+          )
+          .join("")}
+      </div>`;
+
+    byId("scenario-summary").innerHTML =
+      renderSectionHeader("Scenarios", "情境族群", "不再用混亂測試紀錄閱讀 repo，而是用固定 scenario families 來組織判讀。") +
+      `<div class="card-grid">
+        ${state.scenarios
+          .map(
+            (scenario) => `
+              <article class="summary-card">
+                <div class="section-label">${scenario.id}</div>
+                <div class="verdict">${scenario.name}</div>
+                <p>${scenario.focus}</p>
+              </article>
+            `
+          )
+          .join("")}
+      </div>`;
+
+    byId("methodology-summary").innerHTML =
+      renderSectionHeader("Method", "資料與文件流程", "遠端閱讀以 Pages 為主，raw archive 為追溯層，current-state 為官方資料層。") +
+      `<article class="page-section"><ul class="claim-list">${state.methodology
+        .map((item) => `<li>${item}</li>`)
+        .join("")}</ul></article>`;
+  }
+
+  function renderMatrix(state) {
+    byId("matrix-overview").innerHTML = `
+      <section class="page-hero">
+        <div class="page-title-row">
+          <div>
+            <div class="eyebrow">Baseline View</div>
+            <h1>基線矩陣</h1>
+          </div>
+          <div class="page-tag">recommendation-first, baseline-aware</div>
+        </div>
+        <p>任何 install / bootstrap 失敗都應標為 BLOCKED，而不是 N/A。這一頁呈現目前官方狀態，不代表完整歷史 run。</p>
+      </section>
+    `;
+
+    byId("matrix-table").innerHTML = `
+      <article class="page-section">
+        <div class="matrix-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Solution</th>
+                ${state.baselines.map((baseline) => `<th>${baseline.label}</th>`).join("")}
+                <th>Drill-down</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${state.solutions
                 .map(
-                  (item) => `
-                    <li>
-                      <a href="${repoLink(item.path)}">${item.label}</a>
-                      <p>${item.note}</p>
-                    </li>
+                  (solution) => `
+                    <tr>
+                      <td class="track-cell">
+                        <strong>${solution.label}</strong>
+                        <span>${solution.summary}</span>
+                      </td>
+                      ${state.baselines
+                        .map(
+                          (baseline) => `
+                            <td>
+                              ${statusBadge(solution.baselineStatus[baseline.id].status)}
+                              <div class="status-note">${solution.baselineStatus[baseline.id].note}</div>
+                            </td>
+                          `
+                        )
+                        .join("")}
+                      <td><a class="inline-link" href="${pageLink(SOLUTION_PAGE_MAP[solution.id])}">查看</a></td>
+                    </tr>
                   `
                 )
                 .join("")}
-            </ul>
-          </article>
-        `
-      )
-      .join("");
+            </tbody>
+          </table>
+        </div>
+      </article>
+    `;
   }
 
-  function renderTrackFacts(track) {
-    return `
-      <div class="split">
-        <article class="fact-card">
-          <div class="section-label">Proven</div>
-          <h3>Supported by the current record</h3>
-          <ul class="facts-list">
-            ${track.proven.map((item) => `<li>${item}</li>`).join("")}
-          </ul>
-        </article>
-        <article class="fact-card">
-          <div class="section-label">Not Proven</div>
-          <h3>Claims that should be avoided</h3>
-          <ul class="facts-list">
-            ${track.notProven.map((item) => `<li>${item}</li>`).join("")}
-          </ul>
-        </article>
+  function renderScenarios(state) {
+    byId("failures-hero").innerHTML = `
+      <section class="page-hero">
+        <div class="page-title-row">
+          <div>
+            <div class="eyebrow">Scenario View</div>
+            <h1>情境與風險判讀</h1>
+          </div>
+          <div class="page-tag">allowed / blocked / blocked by solution failure</div>
+        </div>
+        <p>這一頁用 scenario 視角解釋未來要怎麼讀 solution 的成敗，而不是把它當單純 failures dump。</p>
+      </section>
+    `;
+
+    byId("failures-body").innerHTML = `
+      <div class="failure-grid">
+        ${state.scenarios
+          .map(
+            (scenario) => `
+              <article class="failure-card">
+                <div class="section-label">${scenario.id}</div>
+                <h3>${scenario.name}</h3>
+                <p>${scenario.focus}</p>
+                <ul class="failure-list">
+                  ${scenario.currentRead.map((item) => `<li>${item}</li>`).join("")}
+                </ul>
+              </article>
+            `
+          )
+          .join("")}
       </div>
-      <article class="track-summary">
-        <div class="section-label">Interpretation</div>
-        <p>${track.interpretation}</p>
-      </article>
+    `;
+  }
+
+  function renderEvidence(state) {
+    byId("evidence-hero").innerHTML = `
+      <section class="page-hero">
+        <div class="page-title-row">
+          <div>
+            <div class="eyebrow">Methodology</div>
+            <h1>方法、資料與更新規則</h1>
+          </div>
+          <div class="page-tag">official remote reading path</div>
+        </div>
+        <p>這裡定義資料層與官方閱讀順序，避免未來又退化回「很多 testing 文件但沒人知道哪份才是最新結論」。</p>
+      </section>
+    `;
+
+    byId("evidence-body").innerHTML = `
       <article class="page-section">
-        <div class="section-label">Related Reports</div>
+        <div class="callout">Raw archive 全保留、current-state 只保存最新官方狀態、Pages 持續更新同一份正式分析。</div>
+      </article>
+      <div class="evidence-grid">
+        ${state.outputModel
+          .map(
+            (item) => `
+              <article class="evidence-group">
+                <div class="section-label">${item.title}</div>
+                <h3>${item.path}</h3>
+                <p>${item.body}</p>
+              </article>
+            `
+          )
+          .join("")}
+      </div>
+      <article class="page-section">
+        <div class="section-label">Repo documents</div>
         <ul class="evidence-list">
-          ${track.related
-            .map(
-              (path) => `
-                <li>
-                  <a href="${repoLink(path)}">${path}</a>
-                </li>
-              `
-            )
-            .join("")}
+          <li><a href="${repoLink("README.md")}">README.md</a></li>
+          <li><a href="${repoLink("AGENTS.md")}">AGENTS.md</a></li>
+          <li><a href="${repoLink("CLAUDE.md")}">CLAUDE.md</a></li>
+          <li><a href="${repoLink("docs/runbooks/decision-lab-workflow.md")}">Decision Lab workflow</a></li>
+          <li><a href="${repoLink("docs/runbooks/experiment-design-template.md")}">Experiment design template</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-10-initial-baseline-status.md")}">Initial baseline status report</a></li>
+          <li><a href="${repoLink("docs/superpowers/specs/2026-06-09-k8s-sandbox-decision-lab-design.md")}">Decision Lab design spec</a></li>
         </ul>
       </article>
     `;
   }
 
-  function renderFailures(failures) {
-    return failures
-      .map(
-        (failure) => `
-          <article class="failure-card" id="${failure.id}">
-            <div class="section-label">${failure.verdict}</div>
-            <h3>${failure.title}</h3>
-            <p>${failure.detail}</p>
-            <ul class="failure-list">
-              ${failure.evidence
-                .map(
-                  (path) => `
-                    <li>
-                      <a href="${repoLink(path)}">${path}</a>
-                    </li>
-                  `
-                )
-                .join("")}
-            </ul>
-          </article>
-        `
-      )
-      .join("");
-  }
-
-  function setSectionHeader(id, label, title, description) {
-    const target = document.getElementById(id);
-    if (!target) {
-      return null;
-    }
-    target.innerHTML = `
-      <div class="section-header">
-        <div>
-          <div class="section-label">${label}</div>
-          <h2>${title}</h2>
-          <p>${description}</p>
-        </div>
-      </div>
-    `;
-    return target;
-  }
-
-  function renderHome(matrix) {
-    const hero = document.getElementById("research-header");
-    hero.innerHTML = `
-      <section class="hero">
-        <div>
-          <div class="eyebrow">Research Header</div>
-          <h1>${CONTENT.header.title}</h1>
-          <p class="lede">${CONTENT.header.scope}</p>
-          <p>
-            The current published record compares four environments on the same baseline and separates what is proven from what remains failed or only partially supported.
-          </p>
-        </div>
-        <div class="meta-grid">
-          <div class="meta-card"><span class="meta-label">Latest validation</span><span class="meta-value">${matrix.generatedAt}</span></div>
-          <div class="meta-card"><span class="meta-label">Kubernetes</span><span class="meta-value">${matrix.baseline.kubernetes}</span></div>
-          <div class="meta-card"><span class="meta-label">Container runtime</span><span class="meta-value">${matrix.baseline.containerRuntime}</span></div>
-          <div class="meta-card"><span class="meta-label">Istio</span><span class="meta-value">${matrix.baseline.istio}</span></div>
-        </div>
-      </section>
-    `;
-
-    const assessment = setSectionHeader(
-      "current-assessment",
-      "Current Assessment",
-      "Fast conclusions from the current record",
-      "This section is optimized for technical decision makers who need the present state before reading the supporting reports."
-    );
-    assessment.insertAdjacentHTML("beforeend", `<div class="card-grid">${renderSummaryCards(CONTENT.summaryCards)}</div>`);
-
-    const snapshot = setSectionHeader(
-      "matrix-snapshot",
-      "Capability Snapshot",
-      "High-signal matrix view",
-      "A compressed comparison of the most decision-relevant capabilities. The full table lives on the Matrix page."
-    );
-    const matrixCard = document.createElement("article");
-    matrixCard.className = "matrix-card";
-    snapshot.appendChild(matrixCard);
-    renderMatrixTable(matrixCard, matrix.tracks, {
-      columns: MATRIX_COLUMNS.filter(([key]) =>
-        ["istioSidecarSmoke", "gvisorRuntime", "istioGvisorSidecar", "openshellGuardrails", "kubearmorFile", "kubearmorProcess"].includes(key)
-      )
-    });
-    matrixCard.insertAdjacentHTML(
-      "beforeend",
-      `<p style="margin-top:14px"><a class="inline-link" href="${pageLink("matrix.html")}">Open full matrix</a></p>`
-    );
-
-    const limits = setSectionHeader(
-      "key-limits",
-      "Key Failures And Limits",
-      "Claims the current evidence does not support",
-      "Negative findings are first-class content here to keep the site aligned with the underlying reports."
-    );
-    const limitCard = document.createElement("article");
-    limitCard.className = "page-section";
-    limitCard.innerHTML = renderUnsupportedClaims(CONTENT.unsupportedClaims);
-    limits.appendChild(limitCard);
-
-    const evidence = setSectionHeader(
-      "evidence-index",
-      "Evidence Index",
-      "Direct paths into the source material",
-      "Engineers should be able to reach the supporting record in one or two clicks from the homepage."
-    );
-    evidence.insertAdjacentHTML("beforeend", `<div class="evidence-grid">${renderEvidenceGroups(CONTENT.evidenceGroups)}</div>`);
-  }
-
-  function renderMatrixPage(matrix) {
-    const overview = document.getElementById("matrix-overview");
-    overview.innerHTML = `
-      <section class="page-hero">
-        <div class="page-title-row">
-          <div>
-            <div class="eyebrow">Matrix</div>
-            <h1>Comparison matrix</h1>
-          </div>
-          <div class="page-tag">${matrix.recommendedPath}</div>
-        </div>
-        <p>
-          This page keeps the decision-facing matrix readable while preserving the exact pass, fail, and not-applicable boundaries from the 2026-06-09 rerun.
-        </p>
-      </section>
-    `;
-    const container = document.getElementById("matrix-table");
-    container.innerHTML = `
-      <article class="page-section">
-        <div class="callout">
-          Standard Istio smoke is PASS across all four routes. The active instability boundary is concentrated around gVisor workload readiness and KubeArmor process/network enforcement.
-        </div>
-      </article>
-      <article class="page-section"></article>
-    `;
-    renderMatrixTable(container.lastElementChild, matrix.tracks, { columns: MATRIX_COLUMNS });
-  }
-
-  function renderTrackPage() {
-    const slug = document.body.dataset.track;
-    const track = CONTENT.tracks.find((item) => item.slug === slug);
-    const hero = document.getElementById("track-hero");
-    const body = document.getElementById("track-body");
-    if (!track) {
-      hero.innerHTML = `<section class="page-hero"><h1>Track not found</h1></section>`;
+  function renderTrack(state) {
+    const solutionId = document.body.dataset.track;
+    const solution = findSolution(state, solutionId);
+    if (!solution) {
+      byId("track-hero").innerHTML = `<section class="page-hero"><h1>Solution not found</h1></section>`;
       return;
     }
-    hero.innerHTML = `
-      <section class="page-hero" id="${slug === "openshell" ? "openshell-gvisor" : ""}">
-        <div class="page-title-row">
-          <div>
-            <div class="eyebrow">${track.heroTag}</div>
-            <h1>${track.title}</h1>
-          </div>
-          <div class="page-tag">${track.subtitle}</div>
-        </div>
-        <p>${track.interpretation}</p>
-      </section>
-    `;
-    body.innerHTML = renderTrackFacts(track);
-  }
 
-  function renderFailuresPage() {
-    const hero = document.getElementById("failures-hero");
-    const body = document.getElementById("failures-body");
-    hero.innerHTML = `
+    byId("track-hero").innerHTML = `
       <section class="page-hero">
         <div class="page-title-row">
           <div>
-            <div class="eyebrow">Failure Catalog</div>
-            <h1>Explicit failure record</h1>
+            <div class="eyebrow">${solution.category}</div>
+            <h1>${solution.label}</h1>
           </div>
-          <div class="page-tag">Do not overclaim</div>
+          <div class="page-tag">${solution.currentCall}</div>
         </div>
-        <p>
-          This page keeps the failed cases visible and traceable. It is designed to prevent the website from drifting into promotional language.
-        </p>
+        <p>${solution.interpretation}</p>
       </section>
     `;
-    body.innerHTML = `<div class="failure-grid">${renderFailures(CONTENT.failures)}</div>`;
-  }
 
-  function renderEvidencePage() {
-    const hero = document.getElementById("evidence-hero");
-    const body = document.getElementById("evidence-body");
-    hero.innerHTML = `
-      <section class="page-hero">
-        <div class="page-title-row">
-          <div>
-            <div class="eyebrow">Evidence</div>
-            <h1>Source material and raw artifacts</h1>
-          </div>
-          <div class="page-tag">GitHub-linked</div>
-        </div>
-        <p>
-          Because GitHub Pages only publishes the content under docs, the links on this page route back to the repository source for markdown reports and raw artifacts.
-        </p>
-      </section>
-    `;
-    body.innerHTML = `
-      <article class="page-section">
-        <div class="callout">
-          Published website data comes from <a class="inline-link" href="${repoLink("docs/data/comparison-matrix.json")}">docs/data/comparison-matrix.json</a>. Supporting markdown and raw artifacts stay in the repository and are linked directly from here.
-        </div>
+    byId("track-body").innerHTML = `
+      <div class="card-grid">
+        ${state.baselines
+          .map(
+            (baseline) => `
+              <article class="summary-card">
+                <div class="section-label">${baseline.label}</div>
+                <div class="verdict">${statusBadge(solution.baselineStatus[baseline.id].status)}</div>
+                <p>${solution.baselineStatus[baseline.id].note}</p>
+              </article>
+            `
+          )
+          .join("")}
+      </div>
+      <article class="track-summary">
+        <div class="section-label">Summary</div>
+        <p>${solution.summary}</p>
       </article>
-      <div class="evidence-grid">${renderEvidenceGroups(CONTENT.evidenceGroups)}</div>
+      <div class="split">
+        <article class="fact-card">
+          <div class="section-label">Dimensions</div>
+          <ul class="facts-list">${solution.dimensionRead.map((item) => `<li>${item}</li>`).join("")}</ul>
+        </article>
+        <article class="fact-card">
+          <div class="section-label">Scenario Read</div>
+          <ul class="facts-list">${solution.scenarioRead.map((item) => `<li>${item}</li>`).join("")}</ul>
+        </article>
+      </div>
     `;
   }
 
   async function initPage() {
-    const page = document.body.dataset.page;
-    const matrix = await loadMatrixData();
-    const header = document.querySelector(".site-header");
-    const footer = document.querySelector(".site-footer");
-    header.innerHTML = buildHeader();
-    footer.innerHTML = buildFooter(matrix);
+    const state = await loadCurrentState();
+    byId("app");
+    document.querySelector(".site-header").innerHTML = buildHeader();
+    document.querySelector(".site-footer").innerHTML = buildFooter(state);
 
-    if (page === "home") {
-      renderHome(matrix);
-    } else if (page === "matrix") {
-      renderMatrixPage(matrix);
-    } else if (page === "track") {
-      renderTrackPage();
-    } else if (page === "failures") {
-      renderFailuresPage();
-    } else if (page === "evidence") {
-      renderEvidencePage();
+    switch (document.body.dataset.page) {
+      case "home":
+        renderHome(state);
+        break;
+      case "matrix":
+        renderMatrix(state);
+        break;
+      case "scenarios":
+        renderScenarios(state);
+        break;
+      case "evidence":
+        renderEvidence(state);
+        break;
+      case "track":
+        renderTrack(state);
+        break;
+      default:
+        break;
     }
   }
 
   initPage().catch((error) => {
-    const fallback = document.getElementById("app") || document.querySelector("main");
-    if (fallback) {
-      fallback.innerHTML = `
+    const app = document.getElementById("app") || document.querySelector("main");
+    if (app) {
+      app.innerHTML = `
         <section class="page-hero">
           <div class="eyebrow">Load Error</div>
-          <h1>Site bootstrap failed</h1>
+          <h1>Current analysis bootstrap failed</h1>
           <p>${error.message}</p>
         </section>
       `;
