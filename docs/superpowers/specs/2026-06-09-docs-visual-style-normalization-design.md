@@ -17,6 +17,8 @@ The user clarified that the requirement is visual normalization only. Page-speci
 
 Make every root docs page in `docs/*.html` visually follow `docs/index.html` while preserving each page's existing structure, content grouping, and purpose.
 
+The comparison language on those pages must also reflect a fair evaluation rule for capability claims: a solution should only be labeled unsupported after it has been configured with the relevant documented controls and still fails the target scenario.
+
 ## Non-Goals
 
 - Do not rewrite page information architecture to mirror `docs/index.html`
@@ -137,6 +139,8 @@ Expected CSS work:
 
 Verification must prove that the pages now use one visual system rather than a partially shared shell.
 
+The surrounding comparison copy must also avoid an unfair test framing where a platform is described as unsupported when it was never configured with the policy or control that is supposed to provide that capability.
+
 ### Automated checks
 
 Update `scripts/tests/docs-professional-shell.sh` so it still checks the shared shell, and also checks for the specific visual-normalization guardrails needed for root `docs/*.html` pages.
@@ -156,6 +160,18 @@ Inspect diffs for all root `docs/*.html` pages and confirm the work stayed withi
 - no navigation regressions
 - no runbook routing regressions
 - no structural rewrites that collapse page-specific sections into the index page layout
+- any capability language tied to filesystem isolation or policy enforcement reflects "configured and still not working" rather than "not enabled by default"
+
+### Capability-evaluation rule
+
+When these docs describe support or non-support for a control-plane or security feature, the judgment must follow this sequence:
+
+1. Apply the relevant documented configuration or policy for that product.
+2. Confirm the platform is in an enforcement-capable mode rather than a visibility-only mode.
+3. Run the target validation scenario.
+4. Only then classify the outcome as supported, degraded, or unsupported.
+
+For the current KubeArmor-related filesystem discussion, this means the docs should not imply "filesystem isolation is unsupported" if the test never applied the relevant file policy. The fair claim is either "not evaluated with policy," "policy configured but degraded," or "policy configured and unsupported."
 
 ## Risks and Mitigations
 
@@ -177,5 +193,6 @@ The work is complete when:
 
 - the root `docs/*.html` pages all visually read as one system anchored by `docs/index.html`
 - per-page layout and content remain intact
+- any capability claims around filesystem controls use the configured-capability standard above
 - the shared docs regression check passes
 - the worktree is committed with the normalization changes
