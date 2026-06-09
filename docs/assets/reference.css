@@ -212,6 +212,28 @@ body {
   color: #94a3b8;
 }
 
+.breadcrumb-link {
+  color: #475569;
+  display: inline-flex;
+  font-size: 0.9rem;
+  font-weight: 500;
+  gap: 0.4rem;
+  margin-top: 1rem;
+  text-decoration: none;
+}
+
+.breadcrumb-link:hover {
+  color: #0f172a;
+}
+
+.dark .breadcrumb-link {
+  color: #94a3b8;
+}
+
+.dark .breadcrumb-link:hover {
+  color: #f8fafc;
+}
+
 .nav-link {
   color: #475569;
   transition: color 0.15s ease;
@@ -480,6 +502,140 @@ body {
 
 .dark .section-link {
   color: #f8fafc;
+}
+
+.runbook-prose {
+  color: #334155;
+  max-width: none;
+}
+
+.dark .runbook-prose {
+  color: #cbd5e1;
+}
+
+.runbook-prose > * + * {
+  margin-top: 1rem;
+}
+
+.runbook-prose h1 {
+  color: #0f172a;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  margin-top: 0;
+}
+
+.runbook-prose h2 {
+  color: #0f172a;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-top: 2rem;
+}
+
+.runbook-prose h3 {
+  color: #0f172a;
+  font-size: 1.08rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+}
+
+.dark .runbook-prose h1,
+.dark .runbook-prose h2,
+.dark .runbook-prose h3 {
+  color: #f8fafc;
+}
+
+.runbook-prose p,
+.runbook-prose li {
+  color: inherit;
+  line-height: 1.8;
+}
+
+.runbook-prose ul,
+.runbook-prose ol {
+  padding-left: 1.25rem;
+}
+
+.runbook-prose ul {
+  list-style: disc;
+}
+
+.runbook-prose ol {
+  list-style: decimal;
+}
+
+.runbook-prose li + li {
+  margin-top: 0.35rem;
+}
+
+.runbook-prose pre {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 1rem;
+  color: #e2e8f0;
+  font-family: 'SFMono-Regular', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  margin-top: 1rem;
+  overflow-x: auto;
+  padding: 1rem 1.1rem;
+}
+
+.runbook-prose code {
+  background: rgba(148, 163, 184, 0.16);
+  border-radius: 0.35rem;
+  color: inherit;
+  font-family: 'SFMono-Regular', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.95em;
+  padding: 0.15rem 0.35rem;
+}
+
+.runbook-prose pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.runbook-prose a {
+  color: #0f172a;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 0.16rem;
+}
+
+.dark .runbook-prose a {
+  color: #e2e8f0;
+}
+
+.runbook-prose blockquote {
+  border-left: 2px solid #cbd5e1;
+  color: #64748b;
+  margin: 1rem 0;
+  padding-left: 1rem;
+}
+
+.dark .runbook-prose blockquote {
+  border-left-color: #334155;
+  color: #94a3b8;
+}
+
+.runbook-prose table {
+  border-collapse: collapse;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.runbook-prose th,
+.runbook-prose td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.75rem 0.8rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.dark .runbook-prose th,
+.dark .runbook-prose td {
+  border-bottom-color: #334155;
 }
 
 .section-header {
