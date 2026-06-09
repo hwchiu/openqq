@@ -29,7 +29,7 @@
       <div>
         <div class="eyebrow">Installation Catalog / Independent Paths</div>
         <h1>四套環境<br>直接裝起來</h1>
-        <p class="lead">這一頁只回答部署問題。Repo 現在同時提供四個獨立 Terraform root，加上四支對應的 installation script。最新基線已統一為 `K3s 1.31 + CRI-O 1.31`，而且已完成 `2026-06-09` 的四環境 live rerun。</p>
+        <p class="lead">這一頁只回答部署問題。Repo 現在同時提供四個獨立 Terraform root，加上四支對應的 installation script。最新基線已統一為 `K3s 1.31 + CRI-O 1.31`，而且已完成 `2026-06-09` 的四環境 live rerun。對 gVisor 路線，請不要把「已重建」誤讀成「bare runtime 已被證明成功」。</p>
       </div>
       <div class="hero-side">
         <div class="note-box">
@@ -88,6 +88,7 @@
       <pre class="terminal"><code>./scripts/install-comparison-matrix.sh
 ./scripts/destroy-comparison-matrix.sh</code></pre>
       <p><a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-comparison-matrix.md" target="_blank">閱讀完整 matrix runbook →</a></p>
+      <p><a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/gvisor-version-proof.md" target="_blank">看 gVisor 版本與證據鏈 →</a></p>
     </div>
   </section>
 </main>

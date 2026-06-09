@@ -11,6 +11,12 @@
 5. `OpenShell + gVisor` 在裝上 Istio 後，OpenShell guardrails 也仍是 `PASS`。
 6. `KubeArmor + runc` 在裝上 Istio 後，token/file 仍可擋，但 process/network 還是失敗。
 
+## 失敗案例入口
+
+和 Istio 疊加有關的 `FAIL` 案例，已集中整理在：
+
+- [testing/failure-catalog-2026-06-09.md](/Users/hwchiu/hwchiu/openqq/testing/failure-catalog-2026-06-09.md)
+
 ## per-stack 結果
 
 | 環境 | Istio Control Plane | 一般 Sidecar Smoke | gVisor Sidecar | 其他疊加結果 |
@@ -39,6 +45,17 @@
 - [k3s-openshell-gvisor/istio-gvisor-sidecar.json](/Users/hwchiu/hwchiu/openqq/testing/raw/comparison-matrix-live-2026-06-09/k3s-openshell-gvisor/istio-gvisor-sidecar.json)
 
 結果是 `server` 與 `client` rollout 都 timeout。這表示目前 repo 不能把 `Istio + RuntimeClass gvisor` 當成可用組合。
+
+直接失敗訊息：
+
+```text
+serverError: error: timed out waiting for the condition
+clientError: error: timed out waiting for the condition
+```
+
+更完整整理：
+
+- [testing/failure-catalog-2026-06-09.md](/Users/hwchiu/hwchiu/openqq/testing/failure-catalog-2026-06-09.md)
 
 ### OpenShell 疊加後
 

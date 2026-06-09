@@ -43,7 +43,7 @@
           <span>v2026.06.09</span>
         </div>
         <h1 class="font-display text-5xl tracking-tighter font-semibold leading-none">四套 Kubernetes 安全執行環境<br>比較技術參考</h1>
-        <p class="mt-4 max-w-3xl text-lg text-slate-700">這份文件以 `2026-06-09` 的 live rerun 為準，統一反映四套 Azure lab 在 `K3s v1.31.14+k3s1 + CRI-O 1.31.13 + Istio 1.30.1` 基線上的實測結果。</p>
+        <p class="mt-4 max-w-3xl text-lg text-slate-700">這份文件以 `2026-06-09` 的 live rerun 為準，統一反映四套 Azure lab 在 `K3s v1.31.14+k3s1 + CRI-O 1.31.13 + Istio 1.30.1` 基線上的實測結果。對 gVisor 而言，這份文件只代表「叢集已重建與測試已重跑」，不代表 bare `RuntimeClass gvisor` 已被證明成功。</p>
       </div>
       <div class="text-sm text-slate-600 space-y-1">
         <div class="flex items-center gap-x-2 text-emerald-600"><i class="fa-solid fa-check-circle"></i><span class="font-medium">4 套環境已重建並重跑驗證</span></div>
@@ -103,6 +103,7 @@
           <li>`gVisor` 路線補上 `drop_infra_ctr=false`、`/run/runsc` 與 `runsc` runtime handler。</li>
           <li>Istio smoke test 改成每次使用獨立 namespace，避免 `Terminating` namespace 污染 rerun。</li>
           <li>`gvisor-runtime` runner 改成失敗快速返回，避免整輪 matrix 卡死。</li>
+          <li>gVisor 版本與成功證據已拆成專門文件，不再把 `containerd` 時代的成功和 `CRI-O 1.31` 的失敗混在一起。</li>
         </ul>
       </div>
       <div class="bg-white border border-slate-200 rounded-2xl p-6">
@@ -110,6 +111,7 @@
         <ul class="list-disc pl-5 space-y-2 text-slate-700">
           <li>`OpenShell + runc` 仍是最穩的完整主線。</li>
           <li>`OpenShell + gVisor` 這輪不要再簡化成「一定 degraded」；Guardrails 是 PASS，但 bare runtime probe 與 gVisor+sidecar 仍 FAIL。</li>
+          <li>如果要問「到底哪個版本真的跑起來」，請直接看 `docs/runbooks/gvisor-version-proof.md`。</li>
           <li>`KubeArmor + runc` 不能只看 token block；secret/file 有效果，但 process/network 仍沒有擋住。</li>
           <li>一般 Istio sidecar injection 不等於 `RuntimeClass gvisor` + sidecar 可用，這兩件事在這輪被明確分開了。</li>
         </ul>
@@ -122,6 +124,7 @@
         <a class="underline" href="https://github.com/hwchiu/openqq/blob/main/testing/comparison-matrix-live-2026-06-09.md" target="_blank">2026-06-09 live rerun matrix report</a>
         <a class="underline" href="https://github.com/hwchiu/openqq/blob/main/testing/istio-impact-2026-06-09.md" target="_blank">2026-06-09 Istio impact report</a>
         <a class="underline" href="https://github.com/hwchiu/openqq/blob/main/testing/raw/comparison-matrix-live-2026-06-09/summary.json" target="_blank">raw summary JSON</a>
+        <a class="underline" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/gvisor-version-proof.md" target="_blank">gVisor version proof</a>
         <a class="underline" href="https://github.com/hwchiu/openqq/blob/main/docs/data/comparison-matrix.json" target="_blank">pages data JSON</a>
       </div>
     </section>

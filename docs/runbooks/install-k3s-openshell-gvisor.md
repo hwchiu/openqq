@@ -2,6 +2,21 @@
 
 這條路線驗證 OpenShell 在 `K3s 1.31 + CRI-O 1.31 + runsc` 路徑上，哪些能力保留、哪些邊界還沒打通。
 
+先講清楚：
+
+- `OpenShell + gVisor` 在 `2026-06-09` 這輪是 `PASS`
+- 但 bare `RuntimeClass gvisor` probe 同一輪仍是 `FAIL`
+- 所以不能把這條路寫成「`CRI-O 1.31` 上的 bare gVisor 已被證明成功」
+
+這條線比較精確的說法是：
+
+- `OpenShell sandbox path on gVisor + CRI-O 1.31`: 可用
+- bare `RuntimeClass gvisor` on `CRI-O 1.31`: 尚未被這個 repo 證明成功
+
+詳細版本與證據鏈：
+
+- [docs/runbooks/gvisor-version-proof.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/gvisor-version-proof.md)
+
 ## 最短路徑
 
 ```bash
@@ -31,3 +46,4 @@
 
 - [testing/comparison-matrix-live-2026-06-09.md](/Users/hwchiu/hwchiu/openqq/testing/comparison-matrix-live-2026-06-09.md)
 - [testing/istio-impact-2026-06-09.md](/Users/hwchiu/hwchiu/openqq/testing/istio-impact-2026-06-09.md)
+- [docs/runbooks/gvisor-version-proof.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/gvisor-version-proof.md)

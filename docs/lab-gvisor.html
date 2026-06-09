@@ -27,16 +27,19 @@
       <div>
         <div class="eyebrow">Isolation Branch / gVisor after 1.31 + CRI-O rerun</div>
         <h1>gVisor 現在不是單一結論</h1>
-        <p class="lead">到 `2026-06-09` 為止，這條路必須拆成兩件事看：<strong>bare gVisor workload</strong> 還不穩，但 <strong>OpenShell-on-gVisor</strong> 的 guardrails 在這輪是 PASS。文件如果還只寫「gVisor degraded」就不準確了。</p>
+        <p class="lead">到 `2026-06-09` 為止，這條路必須拆成兩件事看：<strong>bare gVisor workload</strong> 還不穩，但 <strong>OpenShell-on-gVisor</strong> 的 guardrails 在這輪是 PASS。更重要的是：這個 repo 目前<strong>不能證明</strong> bare `K3s 1.31 + CRI-O 1.31 + gVisor` 已乾淨成功。</p>
         <div class="hero-actions">
           <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/testing/comparison-matrix-live-2026-06-09.md" target="_blank">06-09 主報告</a>
           <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/testing/istio-impact-2026-06-09.md" target="_blank">06-09 Istio 報告</a>
+          <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/gvisor-version-proof.md" target="_blank">版本與證據鏈</a>
         </div>
       </div>
       <div class="hero-side">
         <div class="note-box">
           <h3>這頁的核心判讀</h3>
           <ul>
+            <li>已明確成功版本：`K3s 1.35.5 + containerd`</li>
+            <li>目前未被證明成功：`K3s 1.31 + CRI-O 1.31` bare gVisor</li>
             <li>bare `gvisor-runtime` probe: FAIL</li>
             <li>`Istio + RuntimeClass gvisor`: FAIL</li>
             <li>`OpenShell control plane`: PASS</li>
@@ -57,7 +60,7 @@
   <section class="section">
     <div class="section-head"><div><div class="section-tag">Split the Story</div><h2 class="section-title">這條路要拆成兩層</h2></div></div>
     <div class="story-grid">
-      <article class="story-card"><h3>1. 裸 `RuntimeClass gvisor`</h3><p>直接用 busybox probe 驗證 `runsc`，這輪結果是 FAIL。Pod 有被建立與啟動，但沒有得到乾淨成功結果。</p></article>
+      <article class="story-card"><h3>1. 裸 `RuntimeClass gvisor`</h3><p>直接用 busybox probe 驗證 `runsc`，這輪結果是 FAIL。Pod 有被建立與啟動，但沒有 guest kernel / `gVisor-probe-OK` 這種可引用的成功證據。</p></article>
       <article class="story-card"><h3>2. `OpenShell + gVisor`</h3><p>在 OpenShell sandbox 路徑上，control plane 與 guardrails 都通過。這代表不能再把整條 gVisor 線寫成單純退化。</p></article>
       <article class="story-card"><h3>3. `Istio + gVisor` workload</h3><p>當 workload 同時吃 `runtimeClassName: gvisor` 與 Istio sidecar 時，server/client rollout 都 timeout，這條組合目前不可用。</p></article>
     </div>
@@ -90,6 +93,7 @@
     <div class="evidence-list">
       <div class="evidence-item"><div><strong>06-09 Matrix Report</strong><small>四套環境總表與逐條判讀</small></div><a class="section-link" href="https://github.com/hwchiu/openqq/blob/main/testing/comparison-matrix-live-2026-06-09.md" target="_blank">Open</a></div>
       <div class="evidence-item"><div><strong>06-09 Istio Impact</strong><small>拆開看一般 sidecar 與 gVisor sidecar</small></div><a class="section-link" href="https://github.com/hwchiu/openqq/blob/main/testing/istio-impact-2026-06-09.md" target="_blank">Open</a></div>
+      <div class="evidence-item"><div><strong>版本與證據鏈</strong><small>哪個版本真的成功、哪個版本目前不能宣稱成功</small></div><a class="section-link" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/gvisor-version-proof.md" target="_blank">Open</a></div>
       <div class="evidence-item"><div><strong>raw summary JSON</strong><small>原始狀態資料</small></div><a class="section-link" href="https://github.com/hwchiu/openqq/blob/main/testing/raw/comparison-matrix-live-2026-06-09/summary.json" target="_blank">Open</a></div>
     </div>
   </section>

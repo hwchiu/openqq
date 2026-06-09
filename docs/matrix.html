@@ -29,7 +29,7 @@
       <div>
         <div class="eyebrow">Comparison Matrix / Four Environments / Shared Test Language</div>
         <h1>四套環境<br>用同一份測試語言比較</h1>
-        <p class="lead">這頁不再讓每個 runtime 各寫各的故事。它把四套安裝路線拉回同一個 matrix：同一批 test case、同一批 status、同一批證據入口。最新頁面資料已切到 `2026-06-09` 的 `K3s 1.31 + CRI-O 1.31` live rerun。</p>
+        <p class="lead">這頁不再讓每個 runtime 各寫各的故事。它把四套安裝路線拉回同一個 matrix：同一批 test case、同一批 status、同一批證據入口。最新頁面資料已切到 `2026-06-09` 的 `K3s 1.31 + CRI-O 1.31` live rerun；對 gVisor 而言，`FAIL` 的意思是這個 repo 目前沒有 bare runtime 成功證據。</p>
         <div class="hero-actions">
           <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-comparison-matrix.md" target="_blank">看 matrix runbook</a>
           <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/testing/matrix/catalog.json" target="_blank">看 test catalog</a>
@@ -91,6 +91,7 @@ PUBLISH_RESULTS=true ./scripts/run-comparison-matrix-tests.sh</code></pre>
     <div class="link-grid">
       <a class="link-card" href="https://github.com/hwchiu/openqq/blob/main/testing/matrix/README.md" target="_blank"><h3>Matrix README</h3><p>說明 catalog、results 與 pages data 的資料流。</p></a>
       <a class="link-card" href="https://github.com/hwchiu/openqq/blob/main/testing/comparison-matrix-live-2026-06-09.md" target="_blank"><h3>Live Rerun Report</h3><p>2026-06-09 四環境重建後的最新人工整理結論。</p></a>
+      <a class="link-card" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/gvisor-version-proof.md" target="_blank"><h3>gVisor Version Proof</h3><p>專門回答版本、成功證據與目前不能宣稱成功的地方。</p></a>
       <a class="link-card" href="https://github.com/hwchiu/openqq/blob/main/scripts/run-comparison-matrix-tests.sh" target="_blank"><h3>Matrix Runner</h3><p>同一支腳本依序對四套 kubeconfig 執行同一批測試。</p></a>
       <a class="link-card" href="https://github.com/hwchiu/openqq/tree/main/testing/results/latest" target="_blank"><h3>Latest Results</h3><p>最新 runner 輸出的結果檔。若尚未重新執行，會看到 pending。</p></a>
       <a class="link-card" href="https://github.com/hwchiu/openqq/tree/main/testing" target="_blank"><h3>Historical Evidence</h3><p>保留原本的原始實驗證據，作為 matrix 之外的深度材料。</p></a>

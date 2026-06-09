@@ -3,6 +3,7 @@
 這份 runbook 只描述四套比較環境如何安裝與重跑 Istio 驗證。最新結果請看：
 
 - [testing/istio-impact-2026-06-09.md](/Users/hwchiu/hwchiu/openqq/testing/istio-impact-2026-06-09.md)
+- [testing/failure-catalog-2026-06-09.md](/Users/hwchiu/hwchiu/openqq/testing/failure-catalog-2026-06-09.md)
 
 ## 安裝到四套環境
 

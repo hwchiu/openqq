@@ -28,7 +28,7 @@
       <div>
         <div class="eyebrow">Executive Report / 2026-06-09 Live Rerun</div>
         <h1>先分清楚哪條路是真的穩</h1>
-        <p class="lead">這頁只回答平台決策。現在的基線不是早期 `containerd`，而是 `K3s 1.31 + CRI-O 1.31 + Istio 1.30.1`。所有結論都以這輪 live rerun 為準。</p>
+        <p class="lead">這頁只回答平台決策。現在的基線不是早期 `containerd`，而是 `K3s 1.31 + CRI-O 1.31 + Istio 1.30.1`。所有結論都以這輪 live rerun 為準；對 gVisor 來說，這輪不等於 bare runtime 已被證明成功。</p>
         <div class="hero-actions">
           <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/testing/comparison-matrix-live-2026-06-09.md" target="_blank">看 06-09 主報告</a>
           <a class="hero-action" href="matrix.html">看 Matrix</a>
@@ -104,6 +104,7 @@
       <a class="link-card" href="matrix.html"><h3>Comparison Matrix</h3><p>讀 pages data 與狀態表。</p></a>
       <a class="link-card" href="lab.html"><h3>runc Lab</h3><p>完整 OpenShell 主線。</p></a>
       <a class="link-card" href="lab-gvisor.html"><h3>gVisor Lab</h3><p>拆開看 bare gVisor 與 OpenShell-on-gVisor。</p></a>
+      <a class="link-card" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/gvisor-version-proof.md" target="_blank"><h3>gVisor Version Proof</h3><p>精確回答哪個版本真的成功、哪個版本目前沒有成功證據。</p></a>
       <a class="link-card" href="https://github.com/hwchiu/openqq/blob/main/testing/comparison-matrix-live-2026-06-09.md" target="_blank"><h3>06-09 Live Report</h3><p>最完整的文字版結果。</p></a>
       <a class="link-card" href="https://github.com/hwchiu/openqq/blob/main/testing/istio-impact-2026-06-09.md" target="_blank"><h3>06-09 Istio Report</h3><p>專門看 mesh 疊加後的變化。</p></a>
     </div>

@@ -60,6 +60,24 @@
    - [network-block script](/Users/hwchiu/hwchiu/openqq/scripts/tests/kubearmor-network-block.sh)
    - 實測：`curl http://example.com` 仍回 `200 OK`
 
+## 06-09 live rerun 的明確失敗證據
+
+如果你要看不是描述，而是這輪 live rerun 真正留下的失敗輸出，直接看：
+
+- [testing/failure-catalog-2026-06-09.md](/Users/hwchiu/hwchiu/openqq/testing/failure-catalog-2026-06-09.md)
+
+這裡已經列出：
+
+1. `kubearmor-process-block`
+   - `exitCode: 0`
+   - `stdout: ""`
+   - `stderr: ""`
+   - 代表 `/usr/bin/sleep` 沒有被擋住
+2. `kubearmor-network-block`
+   - `HTTP/1.1 200 OK`
+   - `exitCode: 0`
+   - 代表 `/usr/bin/curl` 的 TCP egress 沒有被擋住
+
 ## ModelArmor-style lab
 
 詳細結果在：
