@@ -1,8 +1,0 @@
-{
-  "status": "fail",
-  "summary": "ModelArmor-style lab allowed pickle-driven code execution",
-  "details": {
-    "stdout": "72\n0\npickle-rce",
-    "stderr": ""
-  }
-}

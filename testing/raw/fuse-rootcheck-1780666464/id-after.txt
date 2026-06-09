@@ -1,3 +1,0 @@
-uid=998(sandbox) gid=998(sandbox) groups=998(sandbox)
-sandbox
-touch: cannot touch '/var/tmp/rootcheck': Permission denied

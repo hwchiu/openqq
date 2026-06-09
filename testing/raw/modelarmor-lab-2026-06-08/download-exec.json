@@ -1,8 +1,0 @@
-{
-  "status": "fail",
-  "summary": "ModelArmor-style lab allowed download-and-exec chain",
-  "details": {
-    "stdout": "payload-ok\npayload-exec",
-    "stderr": ""
-  }
-}

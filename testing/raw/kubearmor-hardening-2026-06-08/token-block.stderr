@@ -1,2 +1,0 @@
-head: cannot open '/run/secrets/kubernetes.io/serviceaccount/token' for reading: Permission denied
-command terminated with exit code 1

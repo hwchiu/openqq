@@ -1,7 +1,0 @@
-{
-  "status": "pass",
-  "summary": "KubeArmor blocked /etc/nginx/nginx.conf read",
-  "details": {
-    "stderr": "/usr/bin/cat: /etc/nginx/nginx.conf: Permission denied\ncommand terminated with exit code 1"
-  }
-}

@@ -1,2 +1,0 @@
-TMP_OK
-VARTMP_OK

@@ -1,3 +1,0 @@
-ret=-1
-errno=38
-errno_name=ENOSYS

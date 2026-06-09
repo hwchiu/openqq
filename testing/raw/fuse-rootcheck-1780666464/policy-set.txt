@@ -1,5 +1,0 @@
-Error:   × status: InvalidArgument, message: "process policy cannot be changed on a
-  │ live sandbox (applied at startup)", details: [], metadata: MetadataMap
-  │ { headers: {"content-type": "application/grpc", "date": "Fri, 05 Jun 2026
-  │ 13:34:38 GMT", "x-request-id": "3b13f6e7-e2bb-427b-ac2e-bbc89f4e0231"} }
-

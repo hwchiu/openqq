@@ -1,6 +1,0 @@
-Error:   × status: InvalidArgument, message: "policy contains unsafe content:
-  │ run_as_user must be 'sandbox', got 'root'; run_as_group must be 'sandbox',
-  │ got 'root'", details: [], metadata: MetadataMap { headers: {"content-
-  │ type": "application/grpc", "date": "Fri, 05 Jun 2026 13:35:18 GMT", "x-
-  │ request-id": "e1130835-a60e-4600-afed-9879268389b6"} }
-

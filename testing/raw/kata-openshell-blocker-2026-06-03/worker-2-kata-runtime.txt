@@ -1,5 +1,0 @@
-HOST=worker-2
-/dev/kvm
-kata-runtime  : 3.31.0
-[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.'kata']
-  runtime_type = "io.containerd.kata.v2"

@@ -1,1 +1,0 @@
-nc: getaddrinfo for host "sshfs-server.fuse-lab.svc.cluster.local" port 2222: Temporary failure in name resolution

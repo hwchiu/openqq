@@ -1,4 +1,0 @@
-version: 1
-process:
-  run_as_user: root
-  run_as_group: root

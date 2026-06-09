@@ -1,3 +1,0 @@
-TMP_OK
-touch: cannot touch '/var/tmp/verify-deny': Permission denied
-VARTMP_DENIED
