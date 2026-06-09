@@ -3,285 +3,185 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OpenShell Lab — Professional Technical Reference</title>
+  <title>OpenShell Lab — Professional Reference Portal</title>
+  <script>tailwind.config = { darkMode: 'class' };</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script>
-    // Tailwind dark mode config + theme switcher
-    function initTheme() {
-      const saved = localStorage.getItem('theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme = saved || (prefersDark ? 'dark' : 'light');
-      setTheme(theme, false);
-    }
-    function setTheme(mode, save = true) {
-      const html = document.documentElement;
-      if (mode === 'dark') {
-        html.classList.add('dark');
-        if (save) localStorage.setItem('theme', 'dark');
-      } else {
-        html.classList.remove('dark');
-        if (save) localStorage.setItem('theme', 'light');
-      }
-      updateThemeUI(mode);
-    }
-    function updateThemeUI(mode) {
-      document.querySelectorAll('.theme-btn').forEach(btn => {
-        btn.classList.remove('bg-slate-900', 'text-white', 'dark:bg-white', 'dark:text-slate-900');
-        btn.classList.add('text-slate-600', 'hover:bg-slate-100', 'dark:text-slate-400', 'dark:hover:bg-slate-800');
-        if ((mode === 'light' && btn.dataset.theme === 'light') || (mode === 'dark' && btn.dataset.theme === 'dark')) {
-          btn.classList.remove('text-slate-600', 'hover:bg-slate-100', 'dark:text-slate-400', 'dark:hover:bg-slate-800');
-          btn.classList.add('bg-slate-900', 'text-white', 'dark:bg-white', 'dark:text-slate-900');
-        }
-      });
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-      initTheme();
-    });
-  </script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
-    
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    }
-    
-    .font-display {
-      font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
-      font-weight: 600;
-      letter-spacing: -0.025em;
-    }
-
-    .tech-table {
-      border-collapse: separate;
-      border-spacing: 0;
-    }
-    
-    .tech-table th {
-      background: #0f172a;
-      color: #f1f5f9;
-      font-weight: 600;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 14px 16px;
-      text-align: left;
-      border-bottom: 1px solid #334155;
-    }
-    .dark .tech-table th {
-      background: #1e2937;
-      color: #e2e8f0;
-      border-bottom-color: #475569;
-    }
-    
-    .tech-table td {
-      padding: 14px 16px;
-      border-bottom: 1px solid #e2e8f0;
-      vertical-align: top;
-      font-size: 0.925rem;
-      color: #1e2937;
-    }
-    .dark .tech-table td {
-      border-bottom-color: #334155;
-      color: #e2e8f0;
-    }
-    
-    .tech-table tr:hover td {
-      background: #f8fafc;
-    }
-    .dark .tech-table tr:hover td {
-      background: #1e2937;
-    }
-    
-    .section-header {
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.025em;
-      color: #0f172a;
-      margin-bottom: 0.5rem;
-    }
-    .dark .section-header {
-      color: #f1f5f9;
-    }
-
-    .reference-card {
-      transition: box-shadow 0.1s ease;
-    }
-    
-    .reference-card:hover {
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
-    }
-    .dark .reference-card {
-      background-color: #1e2937;
-      border-color: #334155;
-    }
-
-    .toc-link {
-      transition: all 0.1s ease;
-      color: #475569;
-    }
-    
-    .toc-link:hover {
-      color: #0f172a;
-      padding-left: 4px;
-    }
-    .dark .toc-link {
-      color: #94a3b8;
-    }
-    .dark .toc-link:hover {
-      color: #f1f5f9;
-    }
-
-    .data-table-container {
-      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .dark .data-table-container {
-      box-shadow: none;
-      border-color: #334155;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 1px 10px;
-      border-radius: 9999px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-
-    .nav-active {
-      color: #0f172a;
-      font-weight: 600;
-    }
-    .dark .nav-active {
-      color: #f1f5f9;
-    }
-  </style>
+  <link rel="stylesheet" href="assets/reference.css">
+  <script src="assets/reference.js" defer></script>
 </head>
 <body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-  <!-- Top Navigation -->
-  <nav class="border-b border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-700 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6">
-      <div class="flex h-14 items-center justify-between">
-        <div class="flex items-center gap-x-8">
-          <div class="flex items-center gap-x-3">
-            <div class="h-8 w-8 rounded bg-slate-900 flex items-center justify-center">
-              <span class="text-white text-sm font-bold tracking-tighter">OSL</span>
-            </div>
-            <div>
-              <span class="font-semibold tracking-tight text-xl text-slate-900 dark:text-white">OpenShell Lab</span>
-            </div>
+  <nav class="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+    <div class="mx-auto flex h-14 max-w-7xl items-center justify-between gap-6 px-6">
+      <div class="flex items-center gap-8">
+        <a href="index.html" class="flex items-center gap-3">
+          <div class="flex h-8 w-8 items-center justify-center rounded bg-slate-900 dark:bg-white">
+            <span class="text-sm font-bold tracking-tighter text-white dark:text-slate-900">OSL</span>
           </div>
-          
-          <div class="hidden md:flex items-center gap-x-6 text-sm">
-            <a href="comparison-four-stacks.html" class="nav-active">Technical Reference</a>
-            <a href="installs.html" class="text-slate-600 hover:text-slate-900">Install Paths</a>
-            <a href="matrix.html" class="text-slate-600 hover:text-slate-900">Matrix</a>
-            <a href="report.html" class="text-slate-600 hover:text-slate-900">Report</a>
-          </div>
+          <span class="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">OpenShell Lab</span>
+        </a>
+        <div class="hidden items-center gap-6 text-sm md:flex">
+          <a href="index.html" class="nav-active">Overview</a>
+          <a href="comparison-four-stacks.html" class="nav-link">Technical Reference</a>
+          <a href="installs.html" class="nav-link">Install Paths</a>
+          <a href="matrix.html" class="nav-link">Matrix</a>
+          <a href="report.html" class="nav-link">Report</a>
+          <a href="lab.html" class="nav-link">Labs</a>
         </div>
-
-        <div class="flex items-center gap-x-3">
-          <div class="hidden sm:flex items-center gap-x-2 text-xs px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 font-mono dark:bg-slate-800 dark:text-slate-400">
-            <i class="fa-solid fa-book mr-1.5"></i>
-            <span>PROFESSIONAL REFERENCE</span>
-          </div>
-
-          <!-- Light / Dark toggle -->
-          <div class="flex items-center gap-x-1 text-xs border border-slate-300 dark:border-slate-700 rounded-lg p-0.5 bg-white dark:bg-slate-900">
-            <button data-theme="light" onclick="setTheme('light')" class="theme-btn px-2.5 py-1 rounded text-sm font-medium transition-colors">Light</button>
-            <button data-theme="dark" onclick="setTheme('dark')" class="theme-btn px-2.5 py-1 rounded text-sm font-medium transition-colors">Dark</button>
-          </div>
-
-          <a href="https://github.com/hwchiu/openqq" target="_blank"
-             class="flex items-center gap-x-2 px-3 py-1.5 text-sm border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300">
-            <i class="fa-brands fa-github"></i>
-            <span class="hidden sm:inline">GitHub</span>
-          </a>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="hidden items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 font-mono text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400 sm:flex">
+          <i class="fa-solid fa-book"></i>
+          <span>PROFESSIONAL REFERENCE</span>
         </div>
+        <div class="flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-0.5 text-xs dark:border-slate-700 dark:bg-slate-900">
+          <button data-theme="light" onclick="setTheme('light')" class="theme-btn rounded px-2.5 py-1 text-sm font-medium transition-colors">Light</button>
+          <button data-theme="dark" onclick="setTheme('dark')" class="theme-btn rounded px-2.5 py-1 text-sm font-medium transition-colors">Dark</button>
+        </div>
+        <a href="https://github.com/hwchiu/openqq" target="_blank" rel="noreferrer"
+          class="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+          <i class="fa-brands fa-github"></i>
+          <span class="hidden sm:inline">GitHub</span>
+        </a>
       </div>
     </div>
   </nav>
 
-  <div class="max-w-7xl mx-auto px-6 pt-8 pb-16">
-    <!-- Hero -->
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-y-4 mb-10">
-      <div>
-        <div class="inline-flex items-center gap-x-2 text-xs font-semibold tracking-[0.125em] text-slate-500 mb-3">
-          <span class="px-2.5 py-1 bg-slate-200 dark:bg-slate-800 dark:text-slate-300 rounded">PROFESSIONAL TECHNICAL REFERENCE</span>
-          <span>v2026.06</span>
-        </div>
-        <h1 class="font-display text-5xl tracking-tighter font-semibold text-slate-900 dark:text-white leading-none">
-          OpenShell Lab<br>Professional Reference
-        </h1>
-        <p class="mt-4 max-w-2xl text-lg text-slate-700 dark:text-slate-300">
-          Clean, high-contrast technical reference for the four independent Kubernetes security runtime environments.
-          Focused on verified differences, architecture, and reproducibility.
-        </p>
-        <div class="mt-6 flex flex-wrap gap-3">
-          <a href="comparison-four-stacks.html" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-semibold text-sm hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors">
-            Read the Comparison Reference
-          </a>
-          <a href="installs.html" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold text-sm hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
-            Install Paths
-          </a>
-          <a href="matrix.html" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold text-sm hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
-            Comparison Matrix
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Core Reference -->
-    <section class="mb-12">
-      <div class="mb-4">
-        <div class="text-xs font-semibold tracking-widest text-slate-500 mb-1">CORE DELIVERABLE</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">四套架構比較技術參考</h2>
-        <p class="text-slate-600 dark:text-slate-400 mt-1">The professional reference for understanding architectural differences, verified behaviors, and how to reproduce experiments across the four stacks.</p>
-      </div>
-      <a href="comparison-four-stacks.html" class="block reference-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 hover:shadow-sm transition-all">
-        <div class="flex items-start justify-between">
-          <div>
-            <div class="font-semibold text-lg text-slate-900 dark:text-white">Start here</div>
-            <div class="text-sm text-slate-600 dark:text-slate-400 mt-1">Architecture models • Side-by-side matrix • Evidence-backed differences • Decision guide • Reproducibility notes</div>
+  <main class="mx-auto max-w-7xl px-6 pt-8 pb-16">
+    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-10">
+      <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <div class="max-w-3xl">
+          <div class="mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
+            <span class="rounded bg-slate-200 px-2.5 py-1 dark:bg-slate-800 dark:text-slate-300">PROFESSIONAL REFERENCE PORTAL</span>
+            <span>v2026.06</span>
           </div>
-          <div class="text-slate-400">→</div>
+          <h1 class="font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
+            OpenShell Lab<br>Professional Reference
+          </h1>
+          <p class="mt-4 text-lg text-slate-700 dark:text-slate-300">
+            Unified entry point for the verified four-stack comparison, install paths, live matrix, executive report, and runtime deep dives. The goal is direct technical orientation, not marketing copy.
+          </p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a href="comparison-four-stacks.html" class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">Read the Comparison Reference</a>
+            <a href="matrix.html" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Open the Live Matrix</a>
+            <a href="lab.html" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Browse Runtime Labs</a>
+          </div>
         </div>
-      </a>
+        <div class="grid w-full max-w-md grid-cols-2 gap-3">
+          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+            <div class="text-xs font-medium uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Validated</div>
+            <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">4</div>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Independent comparison environments</p>
+          </div>
+          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+            <div class="text-xs font-medium uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Deep Dives</div>
+            <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">3</div>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">runc, gVisor, and Kata analysis pages</p>
+          </div>
+          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+            <div class="text-xs font-medium uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Matrix</div>
+            <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">6</div>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Shared test cases rendered from JSON</p>
+          </div>
+          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+            <div class="text-xs font-medium uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Updated</div>
+            <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">06-08</div>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Latest evidence refresh date in the docs set</p>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Supporting Sections -->
-    <div class="grid md:grid-cols-3 gap-4">
-      <a href="installs.html" class="reference-card block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 hover:shadow-sm transition-all">
-        <div class="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">Install</div>
-        <div class="font-semibold text-lg text-slate-900 dark:text-white">Install Paths</div>
-        <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">How to provision the four independent environments (gVisor, OpenShell+runc, OpenShell+gVisor, KubeArmor).</p>
-      </a>
+    <section class="mb-8">
+      <div class="mb-4">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">START HERE</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Core reference set</h2>
+        <p class="mt-1 text-slate-600 dark:text-slate-400">The first four pages cover the active comparison workflow from install through evidence review.</p>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <a href="comparison-four-stacks.html" class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <div class="mb-2 text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Reference</div>
+          <div class="text-lg font-semibold text-slate-900 dark:text-white">Technical Reference</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Architectural differences, verified behaviors, decision framing, and links into the raw evidence.</p>
+        </a>
+        <a href="installs.html" class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <div class="mb-2 text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Deploy</div>
+          <div class="text-lg font-semibold text-slate-900 dark:text-white">Install Paths</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Independent install roots, matrix bootstrap, and runbook entry points for each supported stack.</p>
+        </a>
+        <a href="matrix.html" class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <div class="mb-2 text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Data</div>
+          <div class="text-lg font-semibold text-slate-900 dark:text-white">Comparison Matrix</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Shared test catalog, per-stack status, and evidence links rendered from the published JSON snapshot.</p>
+        </a>
+        <a href="report.html" class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <div class="mb-2 text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Decision</div>
+          <div class="text-lg font-semibold text-slate-900 dark:text-white">Executive Report</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Condensed platform judgment, trade-offs, and the shortest route to the relevant deep-dive pages.</p>
+        </a>
+      </div>
+    </section>
 
-      <a href="matrix.html" class="reference-card block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 hover:shadow-sm transition-all">
-        <div class="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">Compare</div>
-        <div class="font-semibold text-lg text-slate-900 dark:text-white">Comparison Matrix</div>
-        <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Shared test catalog and live results across the four stacks. Data-driven view of what works where.</p>
-      </a>
+    <section class="mb-8">
+      <div class="mb-4">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">RUNTIME DEEP DIVES</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Focused lab pages</h2>
+        <p class="mt-1 text-slate-600 dark:text-slate-400">These pages isolate the runtime-specific evidence that sits behind the higher-level comparison pages.</p>
+      </div>
+      <div class="grid gap-4 md:grid-cols-3">
+        <a href="lab.html" class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+            <span class="signal-dot signal-green"></span> runc baseline
+          </div>
+          <div class="text-lg font-semibold text-slate-900 dark:text-white">OpenShell + runc</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Full-function baseline with working Landlock, L7 controls, policy hot-reload, FUSE baseline, and Azure File CSI.</p>
+        </a>
+        <a href="lab-gvisor.html" class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
+            <span class="signal-dot signal-amber"></span> gVisor trade-off
+          </div>
+          <div class="text-lg font-semibold text-slate-900 dark:text-white">OpenShell + gVisor</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Stronger runtime isolation with a concrete filesystem-policy regression caused by missing Landlock syscall support.</p>
+        </a>
+        <a href="lab-kata.html" class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+            <span class="signal-dot signal-red"></span> blocker analysis
+          </div>
+          <div class="text-lg font-semibold text-slate-900 dark:text-white">OpenShell + Kata</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Kata runtime verification plus the current privileged-workload blocker that prevents the OpenShell sandbox path from completing.</p>
+        </a>
+      </div>
+    </section>
 
-      <a href="report.html" class="reference-card block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 hover:shadow-sm transition-all">
-        <div class="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">Evidence</div>
-        <div class="font-semibold text-lg text-slate-900 dark:text-white">Validation Reports</div>
-        <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Detailed runtime validation reports and raw evidence from the Azure k3s lab runs.</p>
-      </a>
-    </div>
+    <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="mb-4">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">RUNBOOKS</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Direct operational entry points</h2>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-comparison-matrix.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="text-sm font-semibold text-slate-900 dark:text-white">Comparison matrix runbook</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Provision, validate, and destroy the four-stack matrix end-to-end.</p>
+        </a>
+        <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-runc.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="text-sm font-semibold text-slate-900 dark:text-white">OpenShell + runc runbook</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Primary install path for the full OpenShell capability set.</p>
+        </a>
+        <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-gvisor.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="text-sm font-semibold text-slate-900 dark:text-white">OpenShell + gVisor runbook</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Trade-off path for stronger runtime isolation with degraded filesystem policy.</p>
+        </a>
+        <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-kubearmor-runc.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="text-sm font-semibold text-slate-900 dark:text-white">KubeArmor + runc runbook</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Independent security-control comparison path for KubeArmor evidence.</p>
+        </a>
+      </div>
+    </section>
+  </main>
 
-    <div class="mt-12 text-center text-xs text-slate-500 dark:text-slate-400">
-      This site is being migrated to a clean professional reference style. The core technical content lives in the comparison reference above.
-    </div>
-  </div>
-
-  <footer class="border-t border-slate-200 dark:border-slate-800 py-8 text-center text-xs text-slate-400">
-    OpenShell Lab Professional Reference • <a href="https://github.com/hwchiu/openqq" class="hover:text-slate-600 dark:hover:text-slate-300">GitHub</a>
+  <footer class="border-t border-slate-200 py-8 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+    OpenShell Lab Professional Reference •
+    <a href="https://github.com/hwchiu/openqq" target="_blank" rel="noreferrer" class="transition-colors hover:text-slate-700 dark:hover:text-slate-200">GitHub</a>
   </footer>
 </body>
 </html>

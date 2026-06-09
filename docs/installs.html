@@ -1,95 +1,245 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Installation Paths · OpenShell Lab</title>
-<link rel="stylesheet" href="assets/site.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Install Paths · OpenShell Lab</title>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="assets/reference.css">
+  <script src="assets/reference.js" defer></script>
 </head>
-<body>
-<header class="topbar">
-  <div class="page topbar-row">
-    <div class="brand-group">
-      <a href="index.html" class="toplink">← Home</a>
-      <span class="brand"><span class="brand-mark"></span>OpenShell Lab</span>
-    </div>
-    <nav class="site-nav">
-      <a href="matrix.html" class="chip">Matrix</a>
-      <a href="report.html" class="chip">Report</a>
-      <a href="lab.html" class="chip green">runc</a>
-      <a href="lab-gvisor.html" class="chip amber">gVisor</a>
-      <a href="lab-kata.html" class="chip blue">Kata</a>
-    </nav>
-  </div>
-</header>
-
-<main class="page">
-  <section class="hero">
-    <div class="hero-grid">
-      <div>
-        <div class="eyebrow">Installation Catalog / Independent Paths</div>
-        <h1>四套環境<br>直接裝起來</h1>
-        <p class="lead">這一頁只回答部署問題。Repo 現在同時提供四個獨立 Terraform root，加上四支對應的 installation script。最極端的情況下，你可以用一條 matrix 腳本把四套環境一起建立起來做比較。</p>
-      </div>
-      <div class="hero-side">
-        <div class="note-box">
-          <h3>一鍵入口</h3>
-          <pre class="terminal"><code>./scripts/install-comparison-matrix.sh</code></pre>
-          <p>每套環境各自擁有獨立 state、resource group 與 kubeconfig。</p>
+<body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+  <nav class="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+    <div class="mx-auto flex h-14 max-w-7xl items-center justify-between gap-6 px-6">
+      <div class="flex items-center gap-8">
+        <a href="index.html" class="flex items-center gap-3">
+          <div class="flex h-8 w-8 items-center justify-center rounded bg-slate-900 dark:bg-white">
+            <span class="text-sm font-bold tracking-tighter text-white dark:text-slate-900">OSL</span>
+          </div>
+          <span class="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">OpenShell Lab</span>
+        </a>
+        <div class="hidden items-center gap-6 text-sm md:flex">
+          <a href="index.html" class="nav-link">Overview</a>
+          <a href="comparison-four-stacks.html" class="nav-link">Technical Reference</a>
+          <a href="installs.html" class="nav-active">Install Paths</a>
+          <a href="matrix.html" class="nav-link">Matrix</a>
+          <a href="report.html" class="nav-link">Report</a>
+          <a href="lab.html" class="nav-link">Labs</a>
         </div>
       </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="section-head">
-      <div>
-        <div class="section-tag">Install Paths</div>
-        <h2 class="section-title">四條獨立安裝線</h2>
+      <div class="flex items-center gap-3">
+        <div class="hidden items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 font-mono text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400 sm:flex">
+          <i class="fa-solid fa-book"></i>
+          <span>PROFESSIONAL REFERENCE</span>
+        </div>
+        <div class="flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-0.5 text-xs dark:border-slate-700 dark:bg-slate-900">
+          <button data-theme="light" onclick="setTheme('light')" class="theme-btn rounded px-2.5 py-1 text-sm font-medium transition-colors">Light</button>
+          <button data-theme="dark" onclick="setTheme('dark')" class="theme-btn rounded px-2.5 py-1 text-sm font-medium transition-colors">Dark</button>
+        </div>
+        <a href="https://github.com/hwchiu/openqq" target="_blank" rel="noreferrer"
+          class="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+          <i class="fa-brands fa-github"></i>
+          <span class="hidden sm:inline">GitHub</span>
+        </a>
       </div>
     </div>
-    <div class="runtime-grid">
-      <a class="runtime-card gvisor" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-gvisor.md" target="_blank">
-        <div class="runtime-kicker">Path 01</div>
-        <h3>K3s + gVisor</h3>
-        <p>只驗證 runsc 與 RuntimeClass，不混 OpenShell。</p>
-        <pre class="terminal"><code>./scripts/install-k3s-gvisor.sh</code></pre>
-      </a>
-      <a class="runtime-card runc" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-runc.md" target="_blank">
-        <div class="runtime-kicker">Path 02</div>
-        <h3>K3s + OpenShell + runc</h3>
-        <p>目前最穩的完整主線，含 OpenShell 核心能力。</p>
-        <pre class="terminal"><code>./scripts/install-k3s-openshell-runc.sh</code></pre>
-      </a>
-      <a class="runtime-card gvisor" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-gvisor.md" target="_blank">
-        <div class="runtime-kicker">Path 03</div>
-        <h3>K3s + OpenShell + gVisor</h3>
-        <p>獨立驗證 OpenShell 在 runsc 路徑下保留與退化的能力。</p>
-        <pre class="terminal"><code>./scripts/install-k3s-openshell-gvisor.sh</code></pre>
-      </a>
-      <a class="runtime-card kata" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-kubearmor-runc.md" target="_blank">
-        <div class="runtime-kicker">Path 04</div>
-        <h3>K3s + KubeArmor + runc</h3>
-        <p>和 OpenShell 無關的 runtime security 對照線。</p>
-        <pre class="terminal"><code>./scripts/install-k3s-kubearmor-runc.sh</code></pre>
-      </a>
-    </div>
-  </section>
+  </nav>
 
-  <section class="section">
-    <div class="section-head">
-      <div>
-        <div class="section-tag">Matrix</div>
-        <h2 class="section-title">Comparison Matrix</h2>
+  <main class="mx-auto max-w-7xl px-6 pt-8 pb-16">
+    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-10">
+      <div class="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.8fr)]">
+        <div>
+          <div class="mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
+            <span class="rounded bg-slate-200 px-2.5 py-1 dark:bg-slate-800 dark:text-slate-300">INSTALL CATALOG</span>
+            <span>Independent roots</span>
+          </div>
+          <h1 class="font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
+            Four install lines,<br>one comparison workflow
+          </h1>
+          <p class="mt-4 text-lg text-slate-700 dark:text-slate-300">
+            Each environment keeps its own Terraform state, resource group, kubeconfig, and validation path. Use a single path when you only need one stack, or bootstrap the full matrix when you want side-by-side evidence.
+          </p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-comparison-matrix.md" target="_blank" rel="noreferrer" class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">Read the matrix runbook</a>
+            <a href="matrix.html" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Open the live matrix</a>
+          </div>
+        </div>
+        <div class="space-y-3">
+          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+            <div class="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Quick start</div>
+            <div class="terminal-shell">
+              <div class="terminal-label">Matrix bootstrap</div>
+              <pre><code>./scripts/install-comparison-matrix.sh</code></pre>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+              <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Paths</div>
+              <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">4</div>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Independent install routes</p>
+            </div>
+            <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+              <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Cleanup</div>
+              <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">1</div>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Shared destroy path for the matrix</p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="spotlight-card">
-      <p>如果你的目標不是單條路線，而是同時保留四套獨立環境做比較，直接使用 matrix 入口。清理時也用對應的 destroy 腳本回收全部 Azure 資源。</p>
-      <pre class="terminal"><code>./scripts/install-comparison-matrix.sh
+    </section>
+
+    <section class="mb-8">
+      <div class="mb-4">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">INSTALL PATHS</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Independent environment lines</h2>
+        <p class="mt-1 text-slate-600 dark:text-slate-400">These are the four supported roots currently surfaced in the docs and matrix JSON.</p>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            <span class="signal-dot signal-slate"></span> Path 01
+          </div>
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">K3s + gVisor</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Pure runtime-isolation baseline with no extra security control plane layered on top.</p>
+          <div class="mt-4 terminal-shell">
+            <div class="terminal-label">Install command</div>
+            <pre><code>./scripts/install-k3s-gvisor.sh</code></pre>
+          </div>
+          <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-gvisor.md" target="_blank" rel="noreferrer" class="section-link mt-4 inline-block text-sm">Open runbook</a>
+        </article>
+
+        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+            <span class="signal-dot signal-green"></span> Path 02
+          </div>
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">K3s + OpenShell + runc</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Primary full-capability path with verified filesystem controls, L7 policy, hot-reload, and CSI evidence.</p>
+          <div class="mt-4 terminal-shell">
+            <div class="terminal-label">Install command</div>
+            <pre><code>./scripts/install-k3s-openshell-runc.sh</code></pre>
+          </div>
+          <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-runc.md" target="_blank" rel="noreferrer" class="section-link mt-4 inline-block text-sm">Open runbook</a>
+        </article>
+
+        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
+            <span class="signal-dot signal-amber"></span> Path 03
+          </div>
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">K3s + OpenShell + gVisor</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">OpenShell control plane over a gVisor runtime boundary. L7 remains, filesystem policy degrades.</p>
+          <div class="mt-4 terminal-shell">
+            <div class="terminal-label">Install command</div>
+            <pre><code>./scripts/install-k3s-openshell-gvisor.sh</code></pre>
+          </div>
+          <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-gvisor.md" target="_blank" rel="noreferrer" class="section-link mt-4 inline-block text-sm">Open runbook</a>
+        </article>
+
+        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
+            <span class="signal-dot" style="background:#2563eb"></span> Path 04
+          </div>
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">K3s + KubeArmor + runc</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Independent runtime-security comparison line for KubeArmor evidence and SA-token protection checks.</p>
+          <div class="mt-4 terminal-shell">
+            <div class="terminal-label">Install command</div>
+            <pre><code>./scripts/install-k3s-kubearmor-runc.sh</code></pre>
+          </div>
+          <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-kubearmor-runc.md" target="_blank" rel="noreferrer" class="section-link mt-4 inline-block text-sm">Open runbook</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="mb-8 grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
+      <article class="reference-card rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">MATRIX WORKFLOW</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Provision, validate, publish, destroy</h2>
+        <div class="mt-4 content-copy space-y-4 text-sm">
+          <p>The matrix scripts exist so you can build all four environments with shared naming and then run one published comparison pass against them.</p>
+          <div class="terminal-shell">
+            <div class="terminal-label">Standard sequence</div>
+            <pre><code>./scripts/install-comparison-matrix.sh
+PUBLISH_RESULTS=true ./scripts/run-comparison-matrix-tests.sh
 ./scripts/destroy-comparison-matrix.sh</code></pre>
-      <p><a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-comparison-matrix.md" target="_blank">閱讀完整 matrix runbook →</a></p>
-    </div>
-  </section>
-</main>
+          </div>
+          <ul>
+            <li>The install script keeps each stack isolated with separate Terraform state and kubeconfig.</li>
+            <li>The runner executes the shared test catalog and writes evidence into `testing/results/latest` plus the matrix data snapshot.</li>
+            <li>The destroy script tears the matrix back down after the comparison window closes.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="reference-card rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">GUIDANCE</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Which path to start with</h2>
+        <div class="mt-4 space-y-4 text-sm text-slate-600 dark:text-slate-400">
+          <div>
+            <div class="font-semibold text-slate-900 dark:text-white">Need the full OpenShell feature set</div>
+            <p class="mt-1">Start with `k3s-openshell-runc`.</p>
+          </div>
+          <div>
+            <div class="font-semibold text-slate-900 dark:text-white">Need the gVisor baseline only</div>
+            <p class="mt-1">Start with `k3s-gvisor` and verify the runtime boundary first.</p>
+          </div>
+          <div>
+            <div class="font-semibold text-slate-900 dark:text-white">Need published four-stack evidence</div>
+            <p class="mt-1">Use the matrix workflow rather than a single install path.</p>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="mb-4">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">ENVIRONMENT MAP</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">At-a-glance stack characteristics</h2>
+      </div>
+      <div class="data-table-container">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Stack</th>
+              <th>Runtime</th>
+              <th>Control plane</th>
+              <th>Primary use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>K3s + gVisor</td>
+              <td>gVisor</td>
+              <td>None</td>
+              <td>Runtime baseline for the guest-kernel path</td>
+            </tr>
+            <tr>
+              <td>K3s + OpenShell + runc</td>
+              <td>runc</td>
+              <td>OpenShell</td>
+              <td>Primary full-capability reference implementation</td>
+            </tr>
+            <tr>
+              <td>K3s + OpenShell + gVisor</td>
+              <td>gVisor</td>
+              <td>OpenShell</td>
+              <td>Trade-off reference for stronger runtime isolation</td>
+            </tr>
+            <tr>
+              <td>K3s + KubeArmor + runc</td>
+              <td>runc</td>
+              <td>KubeArmor</td>
+              <td>Independent LSM-based comparison line</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 py-8 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+    OpenShell Lab Professional Reference •
+    <a href="https://github.com/hwchiu/openqq" target="_blank" rel="noreferrer" class="transition-colors hover:text-slate-700 dark:hover:text-slate-200">GitHub</a>
+  </footer>
 </body>
 </html>

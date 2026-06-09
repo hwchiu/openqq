@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kata Lab · OpenShell Lab</title>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="assets/reference.css">
+  <script src="assets/reference.js" defer></script>
+</head>
+<body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+  <nav class="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+    <div class="mx-auto flex h-14 max-w-7xl items-center justify-between gap-6 px-6">
+      <div class="flex items-center gap-8">
+        <a href="index.html" class="flex items-center gap-3">
+          <div class="flex h-8 w-8 items-center justify-center rounded bg-slate-900 dark:bg-white">
+            <span class="text-sm font-bold tracking-tighter text-white dark:text-slate-900">OSL</span>
+          </div>
+          <span class="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">OpenShell Lab</span>
+        </a>
+        <div class="hidden items-center gap-6 text-sm md:flex">
+          <a href="index.html" class="nav-link">Overview</a>
+          <a href="comparison-four-stacks.html" class="nav-link">Technical Reference</a>
+          <a href="installs.html" class="nav-link">Install Paths</a>
+          <a href="matrix.html" class="nav-link">Matrix</a>
+          <a href="report.html" class="nav-link">Report</a>
+          <a href="lab.html" class="nav-active">Labs</a>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="hidden items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 font-mono text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400 sm:flex">
+          <i class="fa-solid fa-book"></i>
+          <span>PROFESSIONAL REFERENCE</span>
+        </div>
+        <div class="flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-0.5 text-xs dark:border-slate-700 dark:bg-slate-900">
+          <button data-theme="light" onclick="setTheme('light')" class="theme-btn rounded px-2.5 py-1 text-sm font-medium transition-colors">Light</button>
+          <button data-theme="dark" onclick="setTheme('dark')" class="theme-btn rounded px-2.5 py-1 text-sm font-medium transition-colors">Dark</button>
+        </div>
+        <a href="https://github.com/hwchiu/openqq" target="_blank" rel="noreferrer"
+          class="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+          <i class="fa-brands fa-github"></i>
+          <span class="hidden sm:inline">GitHub</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="mx-auto max-w-7xl px-6 pt-8 pb-16">
+    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-10">
+      <div class="mb-6 flex flex-wrap gap-3">
+        <a href="lab.html" class="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">runc baseline</a>
+        <a href="lab-gvisor.html" class="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">gVisor trade-off</a>
+        <a href="lab-kata.html" class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-slate-900">Kata blocker</a>
+      </div>
+
+      <div class="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.85fr)]">
+        <div>
+          <div class="mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
+            <span class="rounded bg-rose-100 px-2.5 py-1 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">KATA BLOCKER</span>
+            <span>OpenShell sandbox compatibility gap</span>
+          </div>
+          <h1 class="font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
+            Kata works as a runtime,<br>but not yet for OpenShell
+          </h1>
+          <p class="mt-4 text-lg text-slate-700 dark:text-slate-300">
+            The current lab evidence separates two facts cleanly: `RuntimeClass/kata` itself works on the chosen Azure VM shape, but the OpenShell sandbox path still fails because it requires a privileged workload shape that the current Kata path rejects.
+          </p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-kata-validation-2026-06-03.md" target="_blank" rel="noreferrer" class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">Full Kata validation</a>
+            <a href="https://github.com/hwchiu/openqq/blob/main/k8s/kata-runtimeclass.yaml" target="_blank" rel="noreferrer" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">RuntimeClass manifest</a>
+          </div>
+        </div>
+        <div class="space-y-3">
+          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+            <div class="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">What is already proven</div>
+            <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+              <li>The Azure VM shape was upgraded to a Kata-capable profile with `/dev/kvm` available.</li>
+              <li>`RuntimeClass/kata` executes a pod in the Kata guest kernel.</li>
+              <li>The blocker appears only when the workload needs `privileged: true`.</li>
+            </ul>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+              <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">RuntimeClass</div>
+              <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">OK</div>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Guest kernel probe succeeds</p>
+            </div>
+            <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+              <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Sandbox</div>
+              <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">Blocked</div>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Fails on privileged workload shape</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-8">
+      <div class="mb-4">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">VERIFIED SUCCESS</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">The parts that already work</h2>
+      </div>
+      <div class="grid gap-4 md:grid-cols-3">
+        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Azure VM prerequisites</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">The lab moved to `Standard_D4s_v3`, `/dev/kvm` is present on the workers, and `kata-runtime 3.31.0` is visible on the nodes.</p>
+        </article>
+        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">`RuntimeClass/kata` is active</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">The verification pod reports the Kata guest kernel rather than the Azure host kernel, which proves the runtime boundary itself is real.</p>
+        </article>
+        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Image volumes are not the issue</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">A minimal Kata pod with an image volume succeeds without privileged mode, which narrows the blocker to the privileged workload dimension.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="mb-4">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">BLOCKER MATRIX</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">The narrowing experiment</h2>
+      </div>
+      <div class="data-table-container">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Pod shape</th>
+              <th>RuntimeClass</th>
+              <th>Privileged</th>
+              <th>Image volume</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>`kata-base-no-priv`</td>
+              <td>kata</td>
+              <td>No</td>
+              <td>No</td>
+              <td><span class="status-pill status-pass">Pass</span></td>
+            </tr>
+            <tr>
+              <td>`kata-base-priv`</td>
+              <td>kata</td>
+              <td>Yes</td>
+              <td>No</td>
+              <td><span class="status-pill status-fail">Fail</span></td>
+            </tr>
+            <tr>
+              <td>`kata-image-volume-probe`</td>
+              <td>kata</td>
+              <td>No</td>
+              <td>Yes</td>
+              <td><span class="status-pill status-pass">Pass</span></td>
+            </tr>
+            <tr>
+              <td>`kata-alpine-priv-imagevol`</td>
+              <td>kata</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td><span class="status-pill status-fail">Fail</span></td>
+            </tr>
+            <tr>
+              <td>`kata-openshell-volume-probe`</td>
+              <td>kata</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td><span class="status-pill status-fail">Fail</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4 terminal-shell">
+        <div class="terminal-label">Shared failure message</div>
+        <pre><code>failed to create containerd task:
+failed to create shim task:
+QMP command failed:
+The device is not writable: Permission denied</code></pre>
+      </div>
+    </section>
+
+    <section class="mb-8 grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
+      <article class="reference-card rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">INTERPRETATION</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">What the blocker actually means</h2>
+        <div class="mt-4 content-copy space-y-4 text-sm">
+          <p>This does not prove that Kata itself is broken. It proves that the current OpenShell sandbox shape in this k3s path still depends on a privileged pod configuration that Kata rejects in this environment.</p>
+          <ul>
+            <li>The runtime is installed correctly and can execute Kata-native workloads.</li>
+            <li>The patcher is injecting `runtimeClassName: kata` and `securityContext.privileged: true` as intended.</li>
+            <li>The failure occurs after that injection, at the point where Kata refuses the privileged container shape.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="reference-card rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">NEXT MOVES</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">What would unblock progress</h2>
+        <div class="mt-4 space-y-4 text-sm text-slate-600 dark:text-slate-400">
+          <p>Any forward path has to address the privileged dependency directly rather than rewriting ordinary policy YAML.</p>
+          <ul class="space-y-2">
+            <li>Determine whether OpenShell can remove the privileged bootstrap requirement on this path.</li>
+            <li>Verify Kata support boundaries for privileged workloads and any viable alternative settings.</li>
+            <li>If the gap remains, treat Kata as a runtime comparison line rather than the main OpenShell deployment path.</li>
+          </ul>
+        </div>
+      </article>
+    </section>
+
+    <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="mb-4">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">PRIMARY SOURCES</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Open the evidence chain</h2>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2">
+        <a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-kata-validation-2026-06-03.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="text-sm font-semibold text-slate-900 dark:text-white">OpenShell × Kata validation</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Primary report covering the narrowing matrix and blocker interpretation.</p>
+        </a>
+        <a href="https://github.com/hwchiu/openqq/tree/main/testing/raw/kata-openshell-blocker-2026-06-03" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="text-sm font-semibold text-slate-900 dark:text-white">Raw blocker artifacts</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Pod manifests, describe output, and event logs for the privileged Kata failure path.</p>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 py-8 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+    OpenShell Lab Professional Reference •
+    <a href="https://github.com/hwchiu/openqq" target="_blank" rel="noreferrer" class="transition-colors hover:text-slate-700 dark:hover:text-slate-200">GitHub</a>
+  </footer>
+</body>
+</html>

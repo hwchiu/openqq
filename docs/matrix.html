@@ -1,175 +1,246 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Comparison Matrix · OpenShell Lab</title>
-<link rel="stylesheet" href="assets/site.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Comparison Matrix · OpenShell Lab</title>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="assets/reference.css">
+  <script src="assets/reference.js" defer></script>
 </head>
-<body>
-<header class="topbar">
-  <div class="page topbar-row">
-    <div class="brand-group">
-      <a href="index.html" class="toplink">← Home</a>
-      <span class="brand"><span class="brand-mark"></span>OpenShell Lab</span>
-    </div>
-    <nav class="site-nav">
-      <a href="installs.html" class="chip">Installs</a>
-      <a href="report.html" class="chip">Report</a>
-      <a href="lab.html" class="chip green">runc</a>
-      <a href="lab-gvisor.html" class="chip amber">gVisor</a>
-      <a href="lab-kata.html" class="chip blue">Kata</a>
-    </nav>
-  </div>
-</header>
-
-<main class="page">
-  <section class="hero">
-    <div class="hero-grid">
-      <div>
-        <div class="eyebrow">Comparison Matrix / Four Environments / Shared Test Language</div>
-        <h1>四套環境<br>用同一份測試語言比較</h1>
-        <p class="lead">這頁不再讓每個 runtime 各寫各的故事。它把四套安裝路線拉回同一個 matrix：同一批 test case、同一批 status、同一批證據入口。這才是之後能持續維護的技術文件骨架。</p>
-        <div class="hero-actions">
-          <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-comparison-matrix.md" target="_blank">看 matrix runbook</a>
-          <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/testing/matrix/catalog.json" target="_blank">看 test catalog</a>
+<body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+  <nav class="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+    <div class="mx-auto flex h-14 max-w-7xl items-center justify-between gap-6 px-6">
+      <div class="flex items-center gap-8">
+        <a href="index.html" class="flex items-center gap-3">
+          <div class="flex h-8 w-8 items-center justify-center rounded bg-slate-900 dark:bg-white">
+            <span class="text-sm font-bold tracking-tighter text-white dark:text-slate-900">OSL</span>
+          </div>
+          <span class="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">OpenShell Lab</span>
+        </a>
+        <div class="hidden items-center gap-6 text-sm md:flex">
+          <a href="index.html" class="nav-link">Overview</a>
+          <a href="comparison-four-stacks.html" class="nav-link">Technical Reference</a>
+          <a href="installs.html" class="nav-link">Install Paths</a>
+          <a href="matrix.html" class="nav-active">Matrix</a>
+          <a href="report.html" class="nav-link">Report</a>
+          <a href="lab.html" class="nav-link">Labs</a>
         </div>
       </div>
-      <div class="hero-side">
-        <div class="note-box">
-          <h3>標準流程</h3>
-          <pre class="terminal"><code>./scripts/install-comparison-matrix.sh
-PUBLISH_RESULTS=true ./scripts/run-comparison-matrix-tests.sh</code></pre>
+      <div class="flex items-center gap-3">
+        <div class="hidden items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 font-mono text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400 sm:flex">
+          <i class="fa-solid fa-book"></i>
+          <span>PROFESSIONAL REFERENCE</span>
         </div>
-        <div class="note-box">
-          <h3>狀態語言</h3>
-          <ul>
-            <li><strong>PASS</strong>: 測試成立</li>
-            <li><strong>DEGRADED</strong>: 功能存在，但有已知退化</li>
-            <li><strong>PENDING</strong>: 腳本已準備，但還沒發佈最新實測</li>
-            <li><strong>N/A</strong>: 該環境不適用</li>
-          </ul>
+        <div class="flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-0.5 text-xs dark:border-slate-700 dark:bg-slate-900">
+          <button data-theme="light" onclick="setTheme('light')" class="theme-btn rounded px-2.5 py-1 text-sm font-medium transition-colors">Light</button>
+          <button data-theme="dark" onclick="setTheme('dark')" class="theme-btn rounded px-2.5 py-1 text-sm font-medium transition-colors">Dark</button>
+        </div>
+        <a href="https://github.com/hwchiu/openqq" target="_blank" rel="noreferrer"
+          class="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+          <i class="fa-brands fa-github"></i>
+          <span class="hidden sm:inline">GitHub</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="mx-auto max-w-7xl px-6 pt-8 pb-16">
+    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-10">
+      <div class="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.8fr)]">
+        <div>
+          <div class="mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
+            <span class="rounded bg-slate-200 px-2.5 py-1 dark:bg-slate-800 dark:text-slate-300">SHARED TEST LANGUAGE</span>
+            <span>Data-driven view</span>
+          </div>
+          <h1 class="font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
+            Comparison matrix<br>for the four stacks
+          </h1>
+          <p class="mt-4 text-lg text-slate-700 dark:text-slate-300">
+            This page renders the current published comparison snapshot. Every stack is evaluated through the same catalog, the same status language, and the same evidence model.
+          </p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-comparison-matrix.md" target="_blank" rel="noreferrer" class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">Matrix runbook</a>
+            <a href="https://github.com/hwchiu/openqq/blob/main/testing/matrix/catalog.json" target="_blank" rel="noreferrer" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Test catalog</a>
+          </div>
+        </div>
+        <div class="space-y-3">
+          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+            <div class="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Status language</div>
+            <div class="flex flex-wrap gap-2">
+              <span class="status-pill status-pass">PASS</span>
+              <span class="status-pill status-degraded">DEGRADED</span>
+              <span class="status-pill status-pending">PENDING</span>
+              <span class="status-pill status-na">N/A</span>
+            </div>
+            <p class="mt-3 text-sm text-slate-600 dark:text-slate-400">`FAIL` is reserved for published negative results. `DEGRADED` means the capability exists but not at the expected level.</p>
+          </div>
+          <div id="matrix-metrics" class="grid grid-cols-2 gap-3"></div>
         </div>
       </div>
-    </div>
-    <div class="metrics" id="matrix-metrics"></div>
-  </section>
+    </section>
 
-  <section class="section">
-    <div class="section-head">
-      <div>
-        <div class="section-tag">Environments</div>
-        <h2 class="section-title">四套環境的定位</h2>
+    <section class="mb-8">
+      <div class="mb-4">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">ENVIRONMENTS</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Published stacks in the matrix</h2>
       </div>
-    </div>
-    <div class="runtime-grid" id="stack-grid"></div>
-  </section>
+      <div id="stack-grid" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4"></div>
+    </section>
 
-  <section class="section">
-    <div class="section-head">
-      <div>
-        <div class="section-tag">Tests</div>
-        <h2 class="section-title">共用測試矩陣</h2>
-        <p class="section-intro">每一列都是一個標準化案例，每一欄都是一套獨立環境。格子的顏色代表狀態，文字代表目前已發佈的最短結論。</p>
+    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="mb-4">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">TEST RESULTS</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Shared comparison table</h2>
+        <p class="mt-1 text-slate-600 dark:text-slate-400">Each row represents a standardized test case. Each column corresponds to one independently provisioned environment.</p>
       </div>
-    </div>
-    <div class="table-wrap">
-      <table id="matrix-table">
-        <thead></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="section-head">
-      <div>
-        <div class="section-tag">Evidence</div>
-        <h2 class="section-title">證據與更新機制</h2>
+      <div class="data-table-container overflow-x-auto">
+        <table id="matrix-table" class="tech-table">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
       </div>
-    </div>
-    <div class="link-grid">
-      <a class="link-card" href="https://github.com/hwchiu/openqq/blob/main/testing/matrix/README.md" target="_blank"><h3>Matrix README</h3><p>說明 catalog、results 與 pages data 的資料流。</p></a>
-      <a class="link-card" href="https://github.com/hwchiu/openqq/blob/main/testing/comparison-matrix-live-2026-06-08.md" target="_blank"><h3>Live Rerun Report</h3><p>2026-06-08 四環境重建後的人工整理結論。</p></a>
-      <a class="link-card" href="https://github.com/hwchiu/openqq/blob/main/scripts/run-comparison-matrix-tests.sh" target="_blank"><h3>Matrix Runner</h3><p>同一支腳本依序對四套 kubeconfig 執行同一批測試。</p></a>
-      <a class="link-card" href="https://github.com/hwchiu/openqq/tree/main/testing/results/latest" target="_blank"><h3>Latest Results</h3><p>最新 runner 輸出的結果檔。若尚未重新執行，會看到 pending。</p></a>
-      <a class="link-card" href="https://github.com/hwchiu/openqq/tree/main/testing" target="_blank"><h3>Historical Evidence</h3><p>保留原本的原始實驗證據，作為 matrix 之外的深度材料。</p></a>
-    </div>
-  </section>
-</main>
+    </section>
 
-<script>
-const statusLabel = {
-  pass: 'PASS',
-  fail: 'FAIL',
-  degraded: 'DEGRADED',
-  pending: 'PENDING',
-  na: 'N/A'
-};
+    <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="mb-4">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">EVIDENCE FLOW</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Where the matrix data comes from</h2>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <a href="https://github.com/hwchiu/openqq/blob/main/testing/matrix/README.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="text-sm font-semibold text-slate-900 dark:text-white">Matrix README</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Explains the catalog, runner output, and docs data handoff.</p>
+        </a>
+        <a href="https://github.com/hwchiu/openqq/blob/main/testing/comparison-matrix-live-2026-06-08.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="text-sm font-semibold text-slate-900 dark:text-white">Live rerun report</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Manual narrative around the 2026-06-08 rebuild and rerun.</p>
+        </a>
+        <a href="https://github.com/hwchiu/openqq/blob/main/scripts/run-comparison-matrix-tests.sh" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="text-sm font-semibold text-slate-900 dark:text-white">Matrix runner</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Single orchestration script that executes the shared test catalog against all stacks.</p>
+        </a>
+        <a href="https://github.com/hwchiu/openqq/tree/main/testing/results/latest" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="text-sm font-semibold text-slate-900 dark:text-white">Latest results</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Published matrix output and supporting result artifacts.</p>
+        </a>
+      </div>
+    </section>
+  </main>
 
-const statusClass = {
-  pass: 'status-pass',
-  fail: 'status-fail',
-  degraded: 'status-degraded',
-  pending: 'status-pending',
-  na: 'status-na'
-};
+  <footer class="border-t border-slate-200 py-8 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+    OpenShell Lab Professional Reference •
+    <a href="https://github.com/hwchiu/openqq" target="_blank" rel="noreferrer" class="transition-colors hover:text-slate-700 dark:hover:text-slate-200">GitHub</a>
+  </footer>
 
-fetch('data/comparison-matrix.json')
-  .then((response) => response.json())
-  .then((data) => {
-    renderMetrics(data);
-    renderStacks(data);
-    renderTable(data);
-  })
-  .catch((error) => {
-    document.getElementById('matrix-table').outerHTML = `<div class="note-box"><h3>Matrix data failed to load</h3><p>${error}</p></div>`;
-  });
+  <script>
+    const statusLabel = {
+      pass: 'PASS',
+      fail: 'FAIL',
+      degraded: 'DEGRADED',
+      pending: 'PENDING',
+      na: 'N/A'
+    };
 
-function renderMetrics(data) {
-  const metrics = document.getElementById('matrix-metrics');
-  const stacks = data.stacks.length;
-  const tests = data.tests.length;
-  const published = Object.values(data.results).flatMap((stack) => Object.values(stack));
-  const passCount = published.filter((item) => item.status === 'pass').length;
-  const degradedCount = published.filter((item) => item.status === 'degraded').length;
-  metrics.innerHTML = [
-    `<div class="metric"><strong>${stacks}</strong><span>獨立環境</span></div>`,
-    `<div class="metric"><strong>${tests}</strong><span>標準測試案例</span></div>`,
-    `<div class="metric"><strong>${passCount}</strong><span>目前已發佈 PASS</span></div>`,
-    `<div class="metric"><strong>${degradedCount}</strong><span>已定位 DEGRADED</span></div>`,
-    `<div class="metric"><strong>${data.generatedAt.slice(0, 10)}</strong><span>目前頁面資料日期</span></div>`
-  ].join('');
-}
+    const statusClass = {
+      pass: 'status-pill status-pass',
+      fail: 'status-pill status-fail',
+      degraded: 'status-pill status-degraded',
+      pending: 'status-pill status-pending',
+      na: 'status-pill status-na'
+    };
 
-function renderStacks(data) {
-  const grid = document.getElementById('stack-grid');
-  grid.innerHTML = data.stacks.map((stack) => `
-    <article class="runtime-card ${stack.runtime === 'gvisor' ? 'gvisor' : stack.runtime === 'runc' ? 'runc' : 'kata'}">
-      <div class="runtime-kicker">${stack.id}</div>
-      <h3>${stack.title}</h3>
-      <p>runtime: <strong>${stack.runtime}</strong></p>
-      <p>control plane: <strong>${stack.controlPlane}</strong></p>
-      <pre class="terminal"><code>${stack.installScript}</code></pre>
-      <p><a href="https://github.com/hwchiu/openqq/blob/main/${stack.runbook}" target="_blank">看安裝 runbook →</a></p>
-    </article>
-  `).join('');
-}
+    function stackAccent(stack) {
+      if (stack.controlPlane === 'openshell' && stack.runtime === 'runc') {
+        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300';
+      }
+      if (stack.controlPlane === 'openshell' && stack.runtime === 'gvisor') {
+        return 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300';
+      }
+      if (stack.controlPlane === 'kubearmor') {
+        return 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300';
+      }
+      return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+    }
 
-function renderTable(data) {
-  const thead = document.querySelector('#matrix-table thead');
-  const tbody = document.querySelector('#matrix-table tbody');
-  thead.innerHTML = `<tr><th>Test Case</th>${data.stacks.map((stack) => `<th>${stack.title}</th>`).join('')}</tr>`;
-  tbody.innerHTML = data.tests.map((test) => {
-    const cells = data.stacks.map((stack) => {
-      const result = data.results[stack.id][test.id];
-      const badge = `<span class="status-badge ${statusClass[result.status] || 'status-pending'}">${statusLabel[result.status] || result.status}</span>`;
-      const evidence = result.evidencePath ? `<div class="mini-link"><a href="https://github.com/hwchiu/openqq/blob/main/${result.evidencePath}" target="_blank">evidence</a></div>` : '';
-      return `<td><div class="matrix-cell">${badge}<p>${result.summary}</p>${evidence}</div></td>`;
-    }).join('');
-    return `<tr><td><strong>${test.title}</strong><div class="matrix-goal">${test.goal}</div></td>${cells}</tr>`;
-  }).join('');
-}
-</script>
+    fetch('data/comparison-matrix.json')
+      .then((response) => response.json())
+      .then((data) => {
+        renderMetrics(data);
+        renderStacks(data);
+        renderTable(data);
+      })
+      .catch((error) => {
+        const table = document.getElementById('matrix-table');
+        table.outerHTML = `<div class="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-800 dark:border-rose-900/70 dark:bg-rose-950/50 dark:text-rose-200"><div class="font-semibold">Matrix data failed to load</div><p class="mt-2">${error}</p></div>`;
+      });
+
+    function renderMetrics(data) {
+      const metrics = document.getElementById('matrix-metrics');
+      const published = Object.values(data.results).flatMap((stack) => Object.values(stack));
+      const passCount = published.filter((item) => item.status === 'pass').length;
+      const degradedCount = published.filter((item) => item.status === 'degraded').length;
+      const pendingCount = published.filter((item) => item.status === 'pending').length;
+
+      metrics.innerHTML = [
+        metricCard('Stacks', String(data.stacks.length), 'Independent environments'),
+        metricCard('Tests', String(data.tests.length), 'Shared cases in catalog'),
+        metricCard('PASS', String(passCount), 'Published passing outcomes'),
+        metricCard('DEGRADED', String(degradedCount + pendingCount), 'Known regressions and pending evidence')
+      ].join('');
+    }
+
+    function metricCard(label, value, description) {
+      return `
+        <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+          <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">${label}</div>
+          <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">${value}</div>
+          <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">${description}</p>
+        </div>
+      `;
+    }
+
+    function renderStacks(data) {
+      const grid = document.getElementById('stack-grid');
+      grid.innerHTML = data.stacks.map((stack) => `
+        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <div class="mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${stackAccent(stack)}">
+            ${stack.id}
+          </div>
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${stack.title}</h3>
+          <dl class="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-400">
+            <div class="flex justify-between gap-4"><dt>Runtime</dt><dd class="font-medium text-slate-900 dark:text-slate-100">${stack.runtime}</dd></div>
+            <div class="flex justify-between gap-4"><dt>Control plane</dt><dd class="font-medium text-slate-900 dark:text-slate-100">${stack.controlPlane}</dd></div>
+          </dl>
+          <div class="mt-4 terminal-shell">
+            <div class="terminal-label">Install script</div>
+            <pre><code>${stack.installScript}</code></pre>
+          </div>
+          <a href="https://github.com/hwchiu/openqq/blob/main/${stack.runbook}" target="_blank" rel="noreferrer" class="section-link mt-4 inline-block text-sm">Open runbook</a>
+        </article>
+      `).join('');
+    }
+
+    function renderTable(data) {
+      const thead = document.querySelector('#matrix-table thead');
+      const tbody = document.querySelector('#matrix-table tbody');
+
+      thead.innerHTML = `<tr><th>Test Case</th>${data.stacks.map((stack) => `<th>${stack.title}</th>`).join('')}</tr>`;
+      tbody.innerHTML = data.tests.map((test) => {
+        const cells = data.stacks.map((stack) => {
+          const result = data.results[stack.id][test.id];
+          const badge = `<span class="${statusClass[result.status] || statusClass.pending}">${statusLabel[result.status] || result.status}</span>`;
+          const evidence = result.evidencePath
+            ? `<div class="mini-link"><a href="https://github.com/hwchiu/openqq/blob/main/${result.evidencePath}" target="_blank" rel="noreferrer">Evidence</a></div>`
+            : '';
+          return `<td><div class="matrix-cell">${badge}<p>${result.summary}</p>${evidence}</div></td>`;
+        }).join('');
+
+        return `<tr><td><strong>${test.title}</strong><div class="matrix-goal">${test.goal}</div></td>${cells}</tr>`;
+      }).join('');
+    }
+  </script>
 </body>
 </html>

@@ -1,105 +1,187 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>gVisor Lab · OpenShell Lab</title>
-<link rel="stylesheet" href="assets/site.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>gVisor Lab · OpenShell Lab</title>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="assets/reference.css">
+  <script src="assets/reference.js" defer></script>
 </head>
-<body>
-<header class="topbar">
-  <div class="page topbar-row">
-    <div class="brand-group">
-      <a href="index.html" class="toplink">← Home</a>
-      <span class="brand"><span class="brand-mark"></span>OpenShell Lab</span>
-    </div>
-    <nav class="site-nav">
-      <a href="report.html" class="chip">Report</a>
-      <a href="lab.html" class="chip green">runc</a>
-      <a href="lab-kata.html" class="chip blue">Kata</a>
-    </nav>
-  </div>
-</header>
-
-<main class="page">
-  <section class="hero">
-    <div class="hero-grid">
-      <div>
-        <div class="eyebrow">Isolation Branch / gVisor + OpenShell</div>
-        <h1>gVisor 不是升級版<br>而是明確 trade-off</h1>
-        <p class="lead">這條路不是失敗，而是功能退化。OpenShell 的 L7、binary allowlist、policy hot-reload 還在，但 filesystem policy 失去。這頁的任務是把退化原因釘死，而不是給出模糊感受。</p>
-        <div class="hero-actions">
-          <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-gvisor-validation-2026-06-03.md" target="_blank">完整 gVisor 報告</a>
-          <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/testing/landlock-gvisor-root-cause-2026-06-03.md" target="_blank">Landlock 根因</a>
+<body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+  <nav class="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+    <div class="mx-auto flex h-14 max-w-7xl items-center justify-between gap-6 px-6">
+      <div class="flex items-center gap-8">
+        <a href="index.html" class="flex items-center gap-3">
+          <div class="flex h-8 w-8 items-center justify-center rounded bg-slate-900 dark:bg-white">
+            <span class="text-sm font-bold tracking-tighter text-white dark:text-slate-900">OSL</span>
+          </div>
+          <span class="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">OpenShell Lab</span>
+        </a>
+        <div class="hidden items-center gap-6 text-sm md:flex">
+          <a href="index.html" class="nav-link">Overview</a>
+          <a href="comparison-four-stacks.html" class="nav-link">Technical Reference</a>
+          <a href="installs.html" class="nav-link">Install Paths</a>
+          <a href="matrix.html" class="nav-link">Matrix</a>
+          <a href="report.html" class="nav-link">Report</a>
+          <a href="lab.html" class="nav-active">Labs</a>
         </div>
       </div>
-      <div class="hero-side">
-        <div class="note-box">
-          <h3>最重要發現</h3>
-          <p>這不是 policy 沒送到。真正的根因是 `landlock_create_ruleset` 在 gVisor 路徑回 `ENOSYS`，所以 OpenShell supervisor 沒辦法把 filesystem 規則套上去。</p>
+      <div class="flex items-center gap-3">
+        <div class="hidden items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 font-mono text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400 sm:flex">
+          <i class="fa-solid fa-book"></i>
+          <span>PROFESSIONAL REFERENCE</span>
+        </div>
+        <div class="flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-0.5 text-xs dark:border-slate-700 dark:bg-slate-900">
+          <button data-theme="light" onclick="setTheme('light')" class="theme-btn rounded px-2.5 py-1 text-sm font-medium transition-colors">Light</button>
+          <button data-theme="dark" onclick="setTheme('dark')" class="theme-btn rounded px-2.5 py-1 text-sm font-medium transition-colors">Dark</button>
+        </div>
+        <a href="https://github.com/hwchiu/openqq" target="_blank" rel="noreferrer"
+          class="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+          <i class="fa-brands fa-github"></i>
+          <span class="hidden sm:inline">GitHub</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="mx-auto max-w-7xl px-6 pt-8 pb-16">
+    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-10">
+      <div class="mb-6 flex flex-wrap gap-3">
+        <a href="lab.html" class="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">runc baseline</a>
+        <a href="lab-gvisor.html" class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-slate-900">gVisor trade-off</a>
+        <a href="lab-kata.html" class="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Kata blocker</a>
+      </div>
+
+      <div class="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.85fr)]">
+        <div>
+          <div class="mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
+            <span class="rounded bg-amber-100 px-2.5 py-1 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">GVISOR TRADE-OFF</span>
+            <span>Isolation branch</span>
+          </div>
+          <h1 class="font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
+            gVisor is not an upgrade,<br>it is a trade-off
+          </h1>
+          <p class="mt-4 text-lg text-slate-700 dark:text-slate-300">
+            This line is not a failure case. It is a controlled regression case. OpenShell keeps L7 policy, binary allowlist, and hot-reload on runsc, but loses filesystem policy because the Landlock syscall path is unavailable.
+          </p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-gvisor-validation-2026-06-03.md" target="_blank" rel="noreferrer" class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">Full gVisor report</a>
+            <a href="https://github.com/hwchiu/openqq/blob/main/testing/landlock-gvisor-root-cause-2026-06-03.md" target="_blank" rel="noreferrer" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Landlock root cause</a>
+          </div>
+        </div>
+        <div class="space-y-3">
+          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+            <div class="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Most important finding</div>
+            <p class="text-sm text-slate-700 dark:text-slate-300">This is not a policy-distribution problem. The actual root cause is `landlock_create_ruleset` returning `ENOSYS` on the gVisor path, which means the supervisor cannot activate filesystem rules.</p>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+              <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">L7</div>
+              <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">Held</div>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">GET/POST/binary controls still work</p>
+            </div>
+            <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+              <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Filesystem</div>
+              <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">Lost</div>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Blocked by Landlock `ENOSYS`</p>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="metrics">
-      <div class="metric"><strong>runsc</strong><span>probe 已通過</span></div>
-      <div class="metric"><strong>L7</strong><span>仍然成立</span></div>
-      <div class="metric"><strong>Hot Reload</strong><span>仍然成立</span></div>
-      <div class="metric"><strong>ENOSYS</strong><span>Landlock syscall 缺失</span></div>
-      <div class="metric"><strong>退化</strong><span>filesystem policy 失效</span></div>
-    </div>
-  </section>
+    </section>
 
-  <section class="section">
-    <div class="section-head">
-      <div>
-        <div class="section-tag">What Stayed</div>
-        <h2 class="section-title">gVisor 還保住了什麼</h2>
+    <section class="mb-8">
+      <div class="mb-4">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">WHAT SURVIVES</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Capabilities that stay alive on runsc</h2>
       </div>
-    </div>
-    <div class="grid-3">
-      <article class="panel"><h3>L7 還在</h3><p>`curl GET` 允許、`curl POST` 拒絕、`python3 GET` 拒絕，表示 supervisor 的 network/L7 管理沒有因為 runsc 而消失。</p></article>
-      <article class="panel"><h3>Hot-reload 還在</h3><p>policy 更新時 Pod UID 不變，表示 control plane 路徑仍然有效。</p></article>
-      <article class="panel"><h3>Sandbox 還起得來</h3><p>相較於 Kata，這條路至少不是被 startup blocker 卡死，而是真正進入 OpenShell 行為層驗證。</p></article>
-    </div>
-  </section>
+      <div class="grid gap-4 md:grid-cols-3">
+        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">L7 policy remains</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">`curl GET` is allowed, `curl POST` is denied, and `python3 GET` is denied. The network/L7 policy plane still works across the runtime boundary.</p>
+        </article>
+        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Hot-reload remains</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Matching Pod UIDs across a policy update show that the OpenShell control plane can still update active policy without a pod rebuild.</p>
+        </article>
+        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">The sandbox still starts</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Unlike the Kata blocker path, this runtime reaches real OpenShell behavior validation. The failure is inside one enforcement layer, not at startup.</p>
+        </article>
+      </div>
+    </section>
 
-  <section class="section">
-    <div class="section-head">
-      <div>
-        <div class="section-tag">What Broke</div>
-        <h2 class="section-title">真正退化的是哪一層</h2>
+    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="mb-4">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">WHAT BREAKS</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">The specific regression layer</h2>
       </div>
-    </div>
-    <div class="callout"><p><strong>filesystem policy 沒有成立。</strong> 這不是測試巧合，而是 supervisor 自己就回報 `Landlock Filesystem Sandbox Unavailable`。</p></div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>項目</th><th>runc</th><th>gVisor</th><th>意義</th></tr></thead>
-        <tbody>
-          <tr><td>`/var/tmp`</td><td><span class="tag green">拒絕寫入</span></td><td><span class="tag warn">可寫</span></td><td>filesystem policy 已退化</td></tr>
-          <tr><td>`ls /`</td><td><span class="tag green">拒絕</span></td><td><span class="tag warn">不再拒絕</span></td><td>root listing 不再被 Landlock 攔下</td></tr>
-          <tr><td>syscall</td><td><span class="tag green">ret=4</span></td><td><span class="tag warn">ENOSYS</span></td><td>根因不是猜測</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="terminal">
-      <div class="terminal-header"><span></span><span></span><span></span> Root Cause Snapshot</div>
-      <pre><span class="ok">runc:   landlock_create_ruleset -> ret=4</span>
-<span class="deny">gvisor: landlock_create_ruleset -> ENOSYS</span></pre>
-    </div>
-  </section>
+      <div class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-200">
+        <strong>Filesystem policy is the failed layer.</strong> The supervisor reports `Landlock Filesystem Sandbox Unavailable`, and the failure can be reproduced through direct syscall comparison rather than inferred from policy behavior alone.
+      </div>
+      <div class="data-table-container mb-4">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Probe</th>
+              <th>runc</th>
+              <th>gVisor</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>`/var/tmp` write</td>
+              <td><span class="status-pill status-pass">Denied</span></td>
+              <td><span class="status-pill status-degraded">Allowed</span></td>
+              <td>Filesystem policy no longer blocks write access on gVisor.</td>
+            </tr>
+            <tr>
+              <td>`ls /`</td>
+              <td><span class="status-pill status-pass">Denied</span></td>
+              <td><span class="status-pill status-degraded">Allowed</span></td>
+              <td>Root-directory listing is no longer constrained by Landlock.</td>
+            </tr>
+            <tr>
+              <td>Landlock syscall</td>
+              <td><span class="status-pill status-pass">ret=4</span></td>
+              <td><span class="status-pill status-degraded">ENOSYS</span></td>
+              <td>The root cause is concrete and directly measurable.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="terminal-shell">
+        <div class="terminal-label">Root cause snapshot</div>
+        <pre><code>runc:   landlock_create_ruleset -> ret=4
+gvisor: landlock_create_ruleset -> ENOSYS</code></pre>
+      </div>
+    </section>
 
-  <section class="section">
-    <div class="section-head">
-      <div>
-        <div class="section-tag">Sources</div>
-        <h2 class="section-title">直接證據入口</h2>
+    <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="mb-4">
+        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">PRIMARY SOURCES</div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Open the direct evidence</h2>
       </div>
-    </div>
-    <div class="evidence-list">
-      <div class="evidence-item"><div><strong>gVisor 驗證報告</strong><small>完整實驗結果與判讀</small></div><a class="section-link" href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-gvisor-validation-2026-06-03.md" target="_blank">Open</a></div>
-      <div class="evidence-item"><div><strong>Landlock 根因報告</strong><small>直接用 syscall 對照 runc / gVisor</small></div><a class="section-link" href="https://github.com/hwchiu/openqq/blob/main/testing/landlock-gvisor-root-cause-2026-06-03.md" target="_blank">Open</a></div>
-    </div>
-  </section>
-</main>
+      <div class="grid gap-4 md:grid-cols-2">
+        <a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-gvisor-validation-2026-06-03.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="text-sm font-semibold text-slate-900 dark:text-white">gVisor validation report</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Full experiment log and interpretation for the OpenShell + gVisor path.</p>
+        </a>
+        <a href="https://github.com/hwchiu/openqq/blob/main/testing/landlock-gvisor-root-cause-2026-06-03.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="text-sm font-semibold text-slate-900 dark:text-white">Landlock root cause report</div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Direct syscall comparison between runc and gVisor.</p>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 py-8 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+    OpenShell Lab Professional Reference •
+    <a href="https://github.com/hwchiu/openqq" target="_blank" rel="noreferrer" class="transition-colors hover:text-slate-700 dark:hover:text-slate-200">GitHub</a>
+  </footer>
 </body>
 </html>
