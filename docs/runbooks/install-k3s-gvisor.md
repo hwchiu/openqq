@@ -1,6 +1,6 @@
 # Install Path: K3s + gVisor
 
-這條路線只建立 `k3s + gVisor`，不安裝 OpenShell。
+這條路線只建立 `K3s 1.31 + CRI-O 1.31 + gVisor`，不安裝 OpenShell。
 
 ## 最短路徑
 
@@ -11,29 +11,27 @@
 ## 它會做什麼
 
 1. 套用 `terraform/stacks/k3s-gvisor`
-2. 抓回 kubeconfig 到 `generated/stacks/k3s-gvisor/kubeconfig`
-3. 等三個節點都 `Ready`
-4. 驗證 `RuntimeClass/gvisor`
+2. 啟動三節點叢集
+3. 安裝 `runsc` 並配置 CRI-O runtime handler
+4. 抓回 kubeconfig 到 `generated/stacks/k3s-gvisor/kubeconfig`
+5. 驗證節點 `Ready`
+6. 嘗試驗證 `RuntimeClass/gvisor`
 
-## 對應 Terraform Root
+## 06-09 最新實測狀態
 
-- `terraform/stacks/k3s-gvisor`
+- `nodes-ready`: PASS
+- `baseline-pod`: PASS
+- `istio-control-plane`: PASS
+- `istio-sidecar-smoke`: PASS
+- `gvisor-runtime`: FAIL
+- `istio-gvisor-sidecar`: FAIL
 
-## 對應腳本
+這代表：
+- 叢集基線與一般 workload 沒問題
+- 但 bare `RuntimeClass gvisor` workload 仍沒有乾淨成功結果
+- 疊上 Istio sidecar 後也沒有變好
 
-- `scripts/install-k3s-gvisor.sh`
-- `scripts/fetch-kubeconfig-from-stack.sh`
-- `scripts/verify-gvisor-runtime.sh`
+## 參考報告
 
-## 輸出位置
-
-- kubeconfig: `generated/stacks/k3s-gvisor/kubeconfig`
-- Terraform state: `terraform/stacks/k3s-gvisor/terraform.tfstate`
-
-## 清理
-
-```bash
-./scripts/destroy-comparison-matrix.sh
-# 或單獨 destroy
-source ./scripts/lib-stack.sh && terraform_destroy_stack k3s-gvisor
-```
+- [testing/comparison-matrix-live-2026-06-09.md](/Users/hwchiu/hwchiu/openqq/testing/comparison-matrix-live-2026-06-09.md)
+- [testing/istio-impact-2026-06-09.md](/Users/hwchiu/hwchiu/openqq/testing/istio-impact-2026-06-09.md)

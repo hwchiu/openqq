@@ -67,7 +67,7 @@ variable "k3s_service_cidr" {
 variable "k3s_version" {
   type        = string
   description = "K3s version to install."
-  default     = "v1.35.5+k3s1"
+  default     = "v1.31.14+k3s1"
 }
 
 variable "container_runtime" {
@@ -83,8 +83,8 @@ variable "container_runtime" {
 
 variable "crio_version" {
   type        = string
-  description = "CRI-O minor stream to install when container_runtime=crio, for example v1.35."
-  default     = "v1.35"
+  description = "CRI-O minor stream to install when container_runtime=crio, for example v1.31."
+  default     = "v1.31"
 }
 
 variable "server_name" {

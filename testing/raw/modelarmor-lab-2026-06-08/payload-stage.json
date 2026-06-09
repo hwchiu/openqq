@@ -1,0 +1,7 @@
+{
+  "status": "degraded",
+  "summary": "ModelArmor-style lab allowed payload staging to /tmp",
+  "details": {
+    "stdout": "32"
+  }
+}

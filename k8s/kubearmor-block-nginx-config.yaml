@@ -1,0 +1,13 @@
+apiVersion: security.kubearmor.com/v1
+kind: KubeArmorPolicy
+metadata:
+  name: block-nginx-config-read
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: kubearmor-demo
+  file:
+    matchPaths:
+      - path: /etc/nginx/nginx.conf
+  action: Block

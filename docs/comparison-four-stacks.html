@@ -4,439 +4,127 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>四套架構比較技術參考 · OpenShell Lab</title>
-  <script>tailwind.config = { darkMode: 'class' };</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="assets/reference.css">
-  <script src="assets/reference.js" defer></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .font-display { font-family: 'Space Grotesk', system-ui, sans-serif; }
+    .status-pill { display:inline-flex; align-items:center; padding:2px 10px; border-radius:9999px; font-size:.7rem; font-weight:600; }
+    .table th { background:#0f172a; color:#f8fafc; padding:12px 14px; text-align:left; font-size:.75rem; text-transform:uppercase; }
+    .table td { padding:12px 14px; border-bottom:1px solid #e2e8f0; vertical-align:top; }
+  </style>
 </head>
-<body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-  <nav class="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
-    <div class="mx-auto flex h-14 max-w-7xl items-center justify-between gap-6 px-6">
-      <div class="flex items-center gap-8">
-        <a href="index.html" class="flex items-center gap-3">
-          <div class="flex h-8 w-8 items-center justify-center rounded bg-slate-900 dark:bg-white">
-            <span class="text-sm font-bold tracking-tighter text-white dark:text-slate-900">OSL</span>
+<body class="bg-slate-100 text-slate-900">
+  <nav class="border-b border-slate-200 bg-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex h-14 items-center justify-between">
+        <div class="flex items-center gap-x-8">
+          <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900">← Home</a>
+          <div class="flex items-center gap-x-3">
+            <div class="h-8 w-8 rounded bg-slate-900 flex items-center justify-center text-white text-sm font-bold">OSL</div>
+            <span class="font-semibold tracking-tight text-xl">OpenShell Lab</span>
           </div>
-          <span class="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">OpenShell Lab</span>
-        </a>
-        <div class="hidden items-center gap-6 text-sm md:flex">
-          <a href="index.html" class="nav-link">Overview</a>
-          <a href="comparison-four-stacks.html" class="nav-active">Technical Reference</a>
-          <a href="installs.html" class="nav-link">Install Paths</a>
-          <a href="matrix.html" class="nav-link">Matrix</a>
-          <a href="report.html" class="nav-link">Report</a>
-          <a href="lab.html" class="nav-link">Labs</a>
         </div>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <div class="hidden items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 font-mono text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400 sm:flex">
-          <i class="fa-solid fa-book"></i>
-          <span>PROFESSIONAL REFERENCE</span>
+        <div class="flex items-center gap-x-3 text-sm">
+          <a href="installs.html" class="text-slate-600 hover:text-slate-900">Installs</a>
+          <a href="matrix.html" class="text-slate-600 hover:text-slate-900">Matrix</a>
+          <a href="report.html" class="text-slate-600 hover:text-slate-900">Report</a>
         </div>
-
-        <div class="flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-0.5 text-xs dark:border-slate-700 dark:bg-slate-900">
-          <button data-theme="light" onclick="setTheme('light')" class="theme-btn rounded px-2.5 py-1 text-sm font-medium transition-colors">Light</button>
-          <button data-theme="dark" onclick="setTheme('dark')" class="theme-btn rounded px-2.5 py-1 text-sm font-medium transition-colors">Dark</button>
-        </div>
-
-        <a href="https://github.com/hwchiu/openqq" target="_blank" rel="noreferrer"
-           class="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-          <i class="fa-brands fa-github"></i>
-          <span class="hidden sm:inline">GitHub</span>
-        </a>
       </div>
     </div>
   </nav>
 
-  <main class="page-shell">
-    <div class="page-hero bg-white border border-slate-200 rounded-2xl p-8 lg:p-10 shadow-sm dark:bg-slate-900 dark:border-slate-700 dark:shadow-none">
-    <!-- Header -->
-    <div class="page-hero-grid flex flex-col md:flex-row md:items-end md:justify-between gap-y-4 mb-10">
+  <main class="max-w-7xl mx-auto px-6 py-10 space-y-10">
+    <section class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
       <div>
-        <div class="page-kicker inline-flex items-center gap-x-2 text-xs font-semibold tracking-[0.125em] text-slate-500 mb-3">
-          <span class="px-2.5 py-1 bg-slate-200 dark:bg-slate-800 dark:text-slate-300 rounded">TECHNICAL REFERENCE</span>
-          <span>v2026.06</span>
+        <div class="inline-flex items-center gap-x-2 text-xs font-semibold tracking-[0.125em] text-slate-500 mb-3">
+          <span class="px-2.5 py-1 bg-slate-200 rounded">TECHNICAL REFERENCE</span>
+          <span>v2026.06.09</span>
         </div>
-        <h1 class="page-title font-display text-5xl tracking-tighter font-semibold text-slate-900 dark:text-white leading-none">
-          四套 Kubernetes 安全執行環境<br>比較技術參考
-        </h1>
-        <p class="page-lead mt-4 max-w-2xl text-lg text-slate-700 dark:text-slate-300">
-          這份技術參考總結我們在 Azure k3s 環境上對四套安全執行環境的實際驗證結果。聚焦架構差異、已證實的行為治理能力、以及重現實驗的完整路徑。
-        </p>
+        <h1 class="font-display text-5xl tracking-tighter font-semibold leading-none">四套 Kubernetes 安全執行環境<br>比較技術參考</h1>
+        <p class="mt-4 max-w-3xl text-lg text-slate-700">這份文件以 `2026-06-09` 的 live rerun 為準，統一反映四套 Azure lab 在 `K3s v1.31.14+k3s1 + CRI-O 1.31.13 + Istio 1.30.1` 基線上的實測結果。</p>
       </div>
-      
-      <div class="flex flex-col items-start md:items-end gap-y-1 text-sm">
-        <div class="flex items-center gap-x-2 text-emerald-600">
-          <i class="fa-solid fa-check-circle"></i>
-          <span class="font-medium">4 套獨立環境已驗證</span>
-        </div>
-        <div class="text-slate-500 text-xs">最後更新：2026-06-08 · 基於實際 Azure k3s 叢集</div>
+      <div class="text-sm text-slate-600 space-y-1">
+        <div class="flex items-center gap-x-2 text-emerald-600"><i class="fa-solid fa-check-circle"></i><span class="font-medium">4 套環境已重建並重跑驗證</span></div>
+        <div>最後更新：2026-06-09</div>
+        <div>主報告：<a class="underline" href="https://github.com/hwchiu/openqq/blob/main/testing/comparison-matrix-live-2026-06-09.md" target="_blank">comparison-matrix-live-2026-06-09.md</a></div>
       </div>
-    </div>
+    </section>
 
-    <!-- Quick Facts -->
-    <div class="page-stats grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-      <div class="page-stat page-card bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
-        <div class="text-xs text-slate-500 font-medium dark:text-slate-400">主要路線</div>
-        <div class="mt-1 text-2xl font-semibold tracking-tight dark:text-white">k3s + OpenShell + runc</div>
-        <div class="text-emerald-600 text-sm mt-1">功能最完整</div>
+    <section class="grid md:grid-cols-4 gap-4">
+      <div class="bg-white border border-slate-200 rounded-xl p-4"><div class="text-xs text-slate-500 font-medium">主要路線</div><div class="mt-1 text-2xl font-semibold tracking-tight">OpenShell + runc</div><div class="text-emerald-600 text-sm mt-1">control plane / guardrails 全 PASS</div></div>
+      <div class="bg-white border border-slate-200 rounded-xl p-4"><div class="text-xs text-slate-500 font-medium">gVisor 路線</div><div class="mt-1 text-2xl font-semibold tracking-tight">OpenShell + gVisor</div><div class="text-amber-600 text-sm mt-1">guardrails PASS，但 bare probe / sidecar FAIL</div></div>
+      <div class="bg-white border border-slate-200 rounded-xl p-4"><div class="text-xs text-slate-500 font-medium">獨立安全路線</div><div class="mt-1 text-2xl font-semibold tracking-tight">KubeArmor + runc</div><div class="text-blue-600 text-sm mt-1">secret/file PASS，process/network FAIL</div></div>
+      <div class="bg-white border border-slate-200 rounded-xl p-4"><div class="text-xs text-slate-500 font-medium">Baseline</div><div class="mt-1 text-2xl font-semibold tracking-tight">k3s + gVisor</div><div class="text-slate-600 text-sm mt-1">叢集穩定，但 gvisor workload probe 不乾淨</div></div>
+    </section>
+
+    <section class="bg-white border border-slate-200 rounded-2xl p-6">
+      <div class="flex items-baseline gap-x-3 mb-4">
+        <span class="font-mono text-xs text-slate-400">01</span>
+        <h2 class="text-2xl font-semibold tracking-tight">快速比較矩陣</h2>
       </div>
-      <div class="page-stat page-card bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
-        <div class="text-xs text-slate-500 font-medium dark:text-slate-400">對照路線</div>
-        <div class="mt-1 text-2xl font-semibold tracking-tight dark:text-white">OpenShell + gVisor</div>
-        <div class="text-amber-600 text-sm mt-1">Filesystem 能力退化</div>
+      <div class="overflow-x-auto">
+        <table class="table w-full border-separate border-spacing-0 text-sm">
+          <thead>
+            <tr>
+              <th>維度</th>
+              <th>k3s-gvisor</th>
+              <th>k3s-openshell-runc</th>
+              <th>k3s-openshell-gvisor</th>
+              <th>k3s-kubearmor-runc</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="font-medium">Nodes Ready</td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td></tr>
+            <tr><td class="font-medium">Baseline Pod</td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td></tr>
+            <tr><td class="font-medium">Istio Control Plane</td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td></tr>
+            <tr><td class="font-medium">Istio Sidecar Smoke</td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td></tr>
+            <tr><td class="font-medium">gVisor Runtime Probe</td><td><span class="status-pill bg-red-100 text-red-700">FAIL</span></td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-red-100 text-red-700">FAIL</span></td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td></tr>
+            <tr><td class="font-medium">Istio + gVisor Sidecar</td><td><span class="status-pill bg-red-100 text-red-700">FAIL</span></td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-red-100 text-red-700">FAIL</span></td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td></tr>
+            <tr><td class="font-medium">OpenShell Control Plane</td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td></tr>
+            <tr><td class="font-medium">OpenShell Guardrails</td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td></tr>
+            <tr><td class="font-medium">KubeArmor SA Token</td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td></tr>
+            <tr><td class="font-medium">KubeArmor File Block</td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td></tr>
+            <tr><td class="font-medium">KubeArmor Process Block</td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-red-100 text-red-700">FAIL</span></td></tr>
+            <tr><td class="font-medium">KubeArmor Network Block</td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td><td><span class="status-pill bg-red-100 text-red-700">FAIL</span></td></tr>
+          </tbody>
+        </table>
       </div>
-      <div class="page-stat page-card bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
-        <div class="text-xs text-slate-500 font-medium dark:text-slate-400">獨立安全路線</div>
-        <div class="mt-1 text-2xl font-semibold tracking-tight dark:text-white">KubeArmor + runc</div>
-        <div class="text-blue-600 text-sm mt-1">LSM 層保護</div>
+      <p class="mt-3 text-xs text-slate-500">資料來源：<a class="underline" href="https://github.com/hwchiu/openqq/blob/main/testing/comparison-matrix-live-2026-06-09.md" target="_blank">comparison-matrix-live-2026-06-09.md</a> 與 <a class="underline" href="data/comparison-matrix.json">docs/data/comparison-matrix.json</a></p>
+    </section>
+
+    <section class="grid lg:grid-cols-2 gap-6">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6">
+        <h2 class="text-2xl font-semibold tracking-tight mb-4">這輪最重要的修正</h2>
+        <ul class="list-disc pl-5 space-y-2 text-slate-700">
+          <li>四套叢集統一升級到 `K3s 1.31 + CRI-O 1.31`。</li>
+          <li>修掉 CRI-O 路徑上的 `bandwidth` CNI plugin panic，恢復 workload 建立。</li>
+          <li>`gVisor` 路線補上 `drop_infra_ctr=false`、`/run/runsc` 與 `runsc` runtime handler。</li>
+          <li>Istio smoke test 改成每次使用獨立 namespace，避免 `Terminating` namespace 污染 rerun。</li>
+          <li>`gvisor-runtime` runner 改成失敗快速返回，避免整輪 matrix 卡死。</li>
+        </ul>
       </div>
-      <div class="page-stat page-card bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
-        <div class="text-xs text-slate-500 font-medium dark:text-slate-400">Baseline</div>
-        <div class="mt-1 text-2xl font-semibold tracking-tight dark:text-white">純 k3s + gVisor</div>
-        <div class="text-slate-600 text-sm mt-1 dark:text-slate-400">無額外 agent 控制平面</div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-6">
+        <h2 class="text-2xl font-semibold tracking-tight mb-4">該怎麼讀這份結果</h2>
+        <ul class="list-disc pl-5 space-y-2 text-slate-700">
+          <li>`OpenShell + runc` 仍是最穩的完整主線。</li>
+          <li>`OpenShell + gVisor` 這輪不要再簡化成「一定 degraded」；Guardrails 是 PASS，但 bare runtime probe 與 gVisor+sidecar 仍 FAIL。</li>
+          <li>`KubeArmor + runc` 不能只看 token block；secret/file 有效果，但 process/network 仍沒有擋住。</li>
+          <li>一般 Istio sidecar injection 不等於 `RuntimeClass gvisor` + sidecar 可用，這兩件事在這輪被明確分開了。</li>
+        </ul>
       </div>
-    </div>
+    </section>
 
-    <!-- Table of Contents -->
-    <div class="mb-8 flex flex-col lg:flex-row gap-8">
-      <div class="lg:w-64 shrink-0">
-        <div class="sticky top-20">
-          <div class="text-xs font-semibold text-slate-500 tracking-widest mb-3 px-1">目錄</div>
-          <nav class="space-y-1 text-sm">
-            <a href="#overview" class="toc-link block py-1 text-slate-600 hover:text-slate-900">1. 快速概覽與比較矩陣</a>
-            <a href="#architecture" class="toc-link block py-1 text-slate-600 hover:text-slate-900">2. 架構模型</a>
-            <a href="#differences" class="toc-link block py-1 text-slate-600 hover:text-slate-900">3. 差異分析</a>
-            <a href="#process" class="toc-link block py-1 text-slate-600 hover:text-slate-900">4. 實驗過程與可重現性</a>
-            <a href="#decision" class="toc-link block py-1 text-slate-600 hover:text-slate-900">5. 決策指南</a>
-            <a href="#limitations" class="toc-link block py-1 text-slate-600 hover:text-slate-900">6. 限制與後續</a>
-          </nav>
-          <div class="mt-6 text-[10px] text-slate-400 border-l-2 border-slate-200 pl-3">
-            所有結論均來自實際 Azure 叢集驗證<br>
-            附原始報告與 log 連結
-          </div>
-        </div>
+    <section class="bg-white border border-slate-200 rounded-2xl p-6">
+      <h2 class="text-2xl font-semibold tracking-tight mb-4">直接證據入口</h2>
+      <div class="grid md:grid-cols-2 gap-4 text-sm">
+        <a class="underline" href="https://github.com/hwchiu/openqq/blob/main/testing/comparison-matrix-live-2026-06-09.md" target="_blank">2026-06-09 live rerun matrix report</a>
+        <a class="underline" href="https://github.com/hwchiu/openqq/blob/main/testing/istio-impact-2026-06-09.md" target="_blank">2026-06-09 Istio impact report</a>
+        <a class="underline" href="https://github.com/hwchiu/openqq/blob/main/testing/raw/comparison-matrix-live-2026-06-09/summary.json" target="_blank">raw summary JSON</a>
+        <a class="underline" href="https://github.com/hwchiu/openqq/blob/main/docs/data/comparison-matrix.json" target="_blank">pages data JSON</a>
       </div>
-
-      <!-- Main Content -->
-      <div class="flex-1 min-w-0 space-y-12">
-
-        <!-- 1. 快速概覽 -->
-        <section id="overview" class="page-section">
-          <div class="flex items-baseline gap-x-3 mb-4">
-            <span class="font-mono text-xs text-slate-400">01</span>
-            <h2 class="section-header">快速概覽與比較矩陣</h2>
-          </div>
-          <p class="text-slate-600 max-w-prose">四套環境建立在相同 k3s + agent-sandbox 基礎上，核心差異在於「誰負責執行環境的行為治理」。</p>
-
-          <div class="mt-6 data-table-container">
-            <table class="tech-table w-full text-sm">
-              <thead>
-                <tr>
-                  <th class="w-52">維度</th>
-                  <th>k3s-gvisor<br><span class="font-normal text-[10px] opacity-70">Baseline</span></th>
-                  <th>k3s-openshell-runc<br><span class="font-normal text-[10px] opacity-70">主推</span></th>
-                  <th>k3s-openshell-gvisor<br><span class="font-normal text-[10px] opacity-70">對照</span></th>
-                  <th>k3s-kubearmor-runc<br><span class="font-normal text-[10px] opacity-70">獨立路線</span></th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100">
-                <tr>
-                  <td class="font-medium text-slate-700">Process 執行身分</td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">普通 container</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">sandbox 使用者 (Verified)</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">sandbox 使用者 (Verified)</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">普通 container</span></td>
-                </tr>
-                <tr>
-                  <td class="font-medium text-slate-700">Filesystem 隔離 (Landlock)</td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">Baseline（無 policy）</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">Verified（/var/tmp 拒絕、root ls 拒絕）</span></td>
-                  <td><span class="status-pill bg-amber-100 text-amber-700">Degraded（Landlock ENOSYS，VARTMP_OK）</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">Baseline（無 policy）</span></td>
-                </tr>
-                <tr>
-                  <td class="font-medium text-slate-700">預設 Egress</td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">放行</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">拒絕 (Verified)</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">拒絕 (Verified)</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">放行</span></td>
-                </tr>
-                <tr>
-                  <td class="font-medium text-slate-700">L7 method/path 控制</td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">Verified（binary + method/path）</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">Verified（binary + method/path）</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
-                </tr>
-                <tr>
-                  <td class="font-medium text-slate-700">政策熱更新</td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">Verified（不需重建 Pod）</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">Verified（不需重建 Pod）</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
-                </tr>
-                <tr>
-                  <td class="font-medium text-slate-700">SA Token 保護</td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">無</span></td>
-                  <td><span class="status-pill bg-blue-100 text-blue-700">Verified（KubeArmor, 06-08 hardening）</span></td>
-                </tr>
-                <tr>
-                  <td class="font-medium text-slate-700">Kernel / Userspace 邊界</td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">Strong（gVisor guest kernel）</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">Baseline（runc）</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">Strong（gVisor guest kernel）</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">Baseline（runc）</span></td>
-                </tr>
-                <tr>
-                  <td class="font-medium text-slate-700">Istio control plane</td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
-                </tr>
-                <tr>
-                  <td class="font-medium text-slate-700">Istio sidecar smoke</td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS</span></td>
-                </tr>
-                <tr>
-                  <td class="font-medium text-slate-700">Istio gVisor sidecar</td>
-                  <td><span class="status-pill bg-red-100 text-red-700">FAIL（iptables nat）</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
-                  <td><span class="status-pill bg-red-100 text-red-700">FAIL（iptables nat）</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
-                </tr>
-                <tr>
-                  <td class="font-medium text-slate-700">KubeArmor file block</td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
-                  <td><span class="status-pill bg-emerald-100 text-emerald-700">PASS（06-08）</span></td>
-                </tr>
-                <tr>
-                  <td class="font-medium text-slate-700">KubeArmor process block</td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
-                  <td><span class="status-pill bg-red-100 text-red-700">FAIL（06-08）</span></td>
-                </tr>
-                <tr>
-                  <td class="font-medium text-slate-700">KubeArmor network block</td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
-                  <td><span class="status-pill bg-slate-100 text-slate-600">N/A</span></td>
-                  <td><span class="status-pill bg-red-100 text-red-700">FAIL（06-08）</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">資料來源：docs/data/comparison-matrix.json + testing/ 驗證報告（2026-06-03 sandbox / gvisor / landlock）。狀態定義與現有 matrix 一致。</p>
-          <p class="mt-2 text-xs text-slate-500">狀態定義與現有 comparison matrix 一致。Verified = 實測成立；Degraded = 功能存在但退化。</p>
-
-          <div class="mt-6">
-            <h3 class="font-semibold text-lg tracking-tight mb-2">2026-06-08 Live Rerun &amp; Hardening Updates</h3>
-            <p class="text-slate-600 dark:text-slate-300 mb-3">2026-06-08 重新建立四套環境後執行 live matrix rerun（含新增 Istio 疊加測試），並對 KubeArmor 進行 root cause 修正與 agentic scenario 擴充驗證。</p>
-
-            <div class="grid md:grid-cols-2 gap-4 text-sm">
-              <div class="page-card reference-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
-                <div class="font-semibold mb-1">KubeArmor Hardening (06-08)</div>
-                <ul class="list-disc pl-5 space-y-1 text-xs">
-                  <li>Root cause: install timing + annotateExisting=false 導致既有 workload 未被正確處理。</li>
-                  <li>修正: install script 加入 --wait + annotateExisting=true，調整 workload 建立順序。</li>
-                  <li>結果: clean rebuild 後 <code>kubearmor-sa-block</code> 從 FAIL → PASS。</li>
-                  <li>證據: <a href="../testing/kubearmor-hardening-2026-06-08.md" class="underline">kubearmor-hardening-2026-06-08.md</a></li>
-                </ul>
-              </div>
-              <div class="page-card reference-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
-                <div class="font-semibold mb-1">Agentic Scenarios (KubeArmor)</div>
-                <ul class="list-disc pl-5 space-y-1 text-xs">
-                  <li>File/secret guardrails 穩定（PASS）。</li>
-                  <li>Process / network / shell escape / egress 多數 FAIL 或 DEGRADED。</li>
-                  <li>AppArmor profile 已包含規則，但 runtime 行為仍有差距。</li>
-                  <li>適合保護 secret/file read，不適合全面防 agent self-extension。</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="mt-3 text-xs">
-              <div class="font-medium">Istio 疊加影響</div>
-              <ul class="list-disc pl-5 text-xs mt-1">
-                <li>control-plane &amp; sidecar-smoke: 四套全部 PASS。</li>
-                <li>gVisor sidecar: FAIL（iptables nat 無法初始化 in guest kernel）。</li>
-                <li>OpenShell + runc / KubeArmor + runc 的 guardrails 在 Istio 後仍維持 PASS。</li>
-                <li>詳細: <a href="../testing/istio-impact-2026-06-08.md" class="underline">istio-impact-2026-06-08.md</a></li>
-              </ul>
-            </div>
-
-            <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">完整 live 報告：<a href="../testing/comparison-matrix-live-2026-06-08.md" class="underline">comparison-matrix-live-2026-06-08.md</a> + KubeArmor 擴充 <a href="../testing/kubearmor-agentic-scenarios-2026-06-08.md" class="underline">kubearmor-agentic-scenarios-2026-06-08.md</a>。</p>
-          </div>
-        </section>
-
-        <!-- 2. 架構模型 -->
-        <section id="architecture" class="page-section">
-          <div class="flex items-baseline gap-x-3 mb-4">
-            <span class="font-mono text-xs text-slate-400">02</span>
-            <h2 class="section-header">架構模型</h2>
-          </div>
-          
-          <div class="prose text-slate-600">
-            <p>四套環境共享以下基礎層：</p>
-            <ul class="list-disc pl-5 space-y-1 mt-3">
-              <li>Azure VM + Terraform 管理</li>
-              <li>k3s + containerd</li>
-              <li>agent-sandbox CRD + controller（負責 Pod / Service / PVC 承載）</li>
-            </ul>
-            <p class="mt-4">差異發生在「執行環境治理層」：</p>
-          </div>
-
-          <div class="mt-6 grid md:grid-cols-2 gap-4">
-            <div class="page-card reference-card bg-white border border-slate-200 rounded-xl p-5 dark:bg-slate-900 dark:border-slate-700">
-              <div class="font-semibold text-sm text-slate-500 mb-2 dark:text-slate-400">OpenShell 路線</div>
-              <div class="font-semibold text-lg tracking-tight dark:text-white">Gateway + Supervisor 模型</div>
-              <div class="mt-3 text-sm text-slate-600 space-y-2 dark:text-slate-300">
-                <div>• Gateway（openshell-0）負責 control plane 與 policy 版本控管</div>
-                <div>• Supervisor 跑在每個 sandbox Pod 內，負責本地 Landlock、netns proxy、binary allowlist、L7 過濾</div>
-                <div>• sandbox 與 gateway 維持長連線 session</div>
-              </div>
-            </div>
-            
-            <div class="page-card reference-card bg-white border border-slate-200 rounded-xl p-5 dark:bg-slate-900 dark:border-slate-700">
-              <div class="font-semibold text-sm text-slate-500 mb-2 dark:text-slate-400">gVisor 路線</div>
-              <div class="font-semibold text-lg tracking-tight dark:text-white">Userspace Kernel 邊界</div>
-              <div class="mt-3 text-sm text-slate-600 space-y-2 dark:text-slate-300">
-                <div>• runsc 提供獨立 guest kernel</div>
-                <div>• syscall 層隔離，但 Landlock 等 Linux 安全機制在目前版本不可用</div>
-                <div>• OpenShell 的 network/L7 能力仍可運作</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Diagrams -->
-          <div class="mt-6">
-            <h3 class="font-semibold text-lg tracking-tight mb-3 dark:text-white">架構層次示意（Mermaid）</h3>
-            <div class="grid md:grid-cols-2 gap-4">
-              <div class="text-xs">
-                <div class="font-medium mb-1">k3s + gVisor (Baseline)</div>
-                <pre class="bg-slate-100 dark:bg-slate-800 p-2 rounded text-[10px] overflow-auto"><code>graph TD
-  VM[Azure VM] --> k3s[k3s + containerd]
-  k3s --> gvisor[gVisor runsc]
-  gvisor --> kernel[Guest Kernel]
-  kernel --> pod[Pod / Process]</code></pre>
-              </div>
-              <div class="text-xs">
-                <div class="font-medium mb-1">k3s + OpenShell + runc</div>
-                <pre class="bg-slate-100 dark:bg-slate-800 p-2 rounded text-[10px] overflow-auto"><code>graph TD
-  VM --> k3s
-  k3s --> agent[agent-sandbox CR]
-  agent --> pod[Sandbox Pod]
-  pod --> sup[Supervisor<br/>Landlock + netns]
-  sup --> child[Child Process<br/>sandbox user]
-  GW[Gateway openshell-0] <--> sup</code></pre>
-              </div>
-            </div>
-            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">完整 4 套對照圖與 SVG 後續可由 Excalidraw 補上。</p>
-          </div>
-        </section>
-
-        <!-- 3. 差異分析 -->
-        <section id="differences" class="page-section">
-          <div class="flex items-baseline gap-x-3 mb-4">
-            <span class="font-mono text-xs text-slate-400">03</span>
-            <h2 class="section-header">差異分析</h2>
-          </div>
-
-          <div class="space-y-6">
-            <!-- Filesystem example -->
-            <div>
-              <h3 class="font-semibold text-lg tracking-tight mb-2">Filesystem 隔離</h3>
-              <p class="text-slate-600 mb-4">OpenShell 在 runc 路徑上透過 supervisor + Landlock 實現細粒度靜態檔案系統政策。gVisor 目前會讓 landlock_create_ruleset 直接回 ENOSYS。</p>
-              
-              <div class="data-table-container">
-                <table class="tech-table w-full text-sm">
-                  <thead>
-                    <tr>
-                      <th>行為</th>
-                      <th>gVisor</th>
-                      <th>OpenShell + runc</th>
-                      <th>OpenShell + gVisor</th>
-                      <th>KubeArmor</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="font-medium">ls /</td>
-                      <td>可執行</td>
-                      <td class="text-red-600 font-medium">拒絕</td>
-                      <td>可執行</td>
-                      <td>可執行</td>
-                    </tr>
-                    <tr>
-                      <td class="font-medium">/var/tmp 寫入</td>
-                      <td>允許</td>
-                      <td class="text-red-600 font-medium">拒絕</td>
-                      <td>允許</td>
-                      <td>允許</td>
-                    </tr>
-                    <tr>
-                      <td class="font-medium">靜態 policy 生效</td>
-                      <td>—</td>
-                      <td class="text-emerald-600 font-medium">成立</td>
-                      <td class="text-amber-600 font-medium">退化</td>
-                      <td>—</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="mt-2 text-xs flex gap-x-4 text-slate-500">
-                <div>證據：<a href="testing/landlock-gvisor-root-cause-2026-06-03.md" class="underline">landlock root cause</a></div>
-                <div><a href="testing/openshell-sandbox-validation-2026-06-03.md" class="underline">sandbox validation</a></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 4. 實驗過程 -->
-        <section id="process" class="page-section">
-          <div class="flex items-baseline gap-x-3 mb-4">
-            <span class="font-mono text-xs text-slate-400">04</span>
-            <h2 class="section-header">實驗過程與可重現性</h2>
-          </div>
-          
-          <div class="page-card bg-white border border-slate-200 rounded-xl p-6 text-sm">
-            <div class="grid md:grid-cols-2 gap-x-8 gap-y-6">
-              <div>
-                <div class="font-semibold mb-2 text-slate-700">統一建置</div>
-                <div class="font-mono text-xs bg-slate-900 text-slate-100 p-3 rounded">./scripts/install-comparison-matrix.sh</div>
-                <p class="text-xs text-slate-500 mt-2">一次建立四套獨立環境（各自的 Terraform state、VNet、kubeconfig）。</p>
-              </div>
-              <div>
-                <div class="font-semibold mb-2 text-slate-700">測試與發佈</div>
-                <div class="font-mono text-xs bg-slate-900 text-slate-100 p-3 rounded">PUBLISH_RESULTS=true ./scripts/run-comparison-matrix-tests.sh</div>
-                <p class="text-xs text-slate-500 mt-2">使用 <code>testing/matrix/catalog.json</code> 驅動，結果發佈至 <code>docs/data/comparison-matrix.json</code>。</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div class="pt-6 border-t text-xs text-slate-400">
-          本文件為專業技術參考版本。所有結論來自實際執行之 Azure 叢集驗證，非理論推測。
-        </div>
-      </div>
-    </div>
-    </div>
-    <!-- /document container -->
+    </section>
   </main>
-
-  <footer class="border-t border-slate-200 py-8 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
-    OpenShell Lab Professional Reference •
-    <a href="https://github.com/hwchiu/openqq" target="_blank" rel="noreferrer" class="transition-colors hover:text-slate-700 dark:hover:text-slate-200">GitHub</a>
-  </footer>
 </body>
 </html>

@@ -64,6 +64,30 @@
       "goal": "驗證 runsc 真的在執行，而不是只有 YAML 存在"
     },
     {
+      "id": "istio-control-plane",
+      "title": "Istio control plane ready",
+      "category": "mesh",
+      "runner": "scripts/tests/istio-control-plane.sh",
+      "appliesTo": ["all"],
+      "goal": "確認四套叢集都能安裝同一版 Istio control plane"
+    },
+    {
+      "id": "istio-sidecar-smoke",
+      "title": "Istio sidecar injection smoke",
+      "category": "mesh",
+      "runner": "scripts/tests/istio-sidecar-smoke.sh",
+      "appliesTo": ["all"],
+      "goal": "確認 sidecar injection 與 mesh 內基本服務流量成立"
+    },
+    {
+      "id": "istio-gvisor-sidecar",
+      "title": "Istio sidecar on RuntimeClass gvisor",
+      "category": "mesh",
+      "runner": "scripts/tests/istio-gvisor-sidecar.sh",
+      "appliesTo": ["k3s-gvisor", "k3s-openshell-gvisor"],
+      "goal": "確認注入 sidecar 後，gVisor 工作負載是否仍可啟動並通訊"
+    },
+    {
       "id": "openshell-control-plane",
       "title": "OpenShell control plane ready",
       "category": "control-plane",
@@ -86,6 +110,30 @@
       "runner": "scripts/tests/kubearmor-sa-block.sh",
       "appliesTo": ["k3s-kubearmor-runc"],
       "goal": "確認 KubeArmor policy 確實阻擋 service account token"
+    },
+    {
+      "id": "kubearmor-process-block",
+      "title": "KubeArmor blocks process execution",
+      "category": "security",
+      "runner": "scripts/tests/kubearmor-process-block.sh",
+      "appliesTo": ["k3s-kubearmor-runc"],
+      "goal": "確認 KubeArmor 能阻擋指定 binary 執行"
+    },
+    {
+      "id": "kubearmor-file-block",
+      "title": "KubeArmor blocks sensitive file read",
+      "category": "security",
+      "runner": "scripts/tests/kubearmor-file-block.sh",
+      "appliesTo": ["k3s-kubearmor-runc"],
+      "goal": "確認 KubeArmor 能阻擋敏感設定檔讀取"
+    },
+    {
+      "id": "kubearmor-network-block",
+      "title": "KubeArmor blocks TCP egress from curl",
+      "category": "security",
+      "runner": "scripts/tests/kubearmor-network-block.sh",
+      "appliesTo": ["k3s-kubearmor-runc"],
+      "goal": "確認 KubeArmor 能對指定 binary 套用 network protocol block"
     }
   ]
 }

@@ -23,7 +23,8 @@ module "cluster" {
   k3s_cluster_cidr    = "10.210.0.0/16"
   k3s_service_cidr    = "10.211.0.0/16"
   k3s_version         = var.k3s_version
-  container_runtime   = "gvisor"
+  container_runtime   = "crio"
+  crio_version        = var.crio_version
   ubuntu_image_sku    = var.ubuntu_image_sku
   server_name         = var.server_name
   worker_names        = var.worker_names

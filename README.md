@@ -7,6 +7,13 @@ This repository now contains repeatable Azure lab assets for four independent Ku
 3. `k3s + OpenShell + gVisor`
 4. `k3s + KubeArmor + runc`
 
+The provisioning defaults are now aligned on:
+
+1. `K3s v1.31.14+k3s1`
+2. `CRI-O v1.31`
+
+The two gVisor comparison paths keep `runsc` as the sandbox runtime, but they now layer it on top of CRI-O instead of containerd.
+
 ## Fast entry points
 
 **New primary technical reference (professional style, Light/Dark, high contrast):** [docs/comparison-four-stacks.html](/Users/hwchiu/hwchiu/openqq/docs/comparison-four-stacks.html) — 四套 Kubernetes 安全執行環境比較技術參考

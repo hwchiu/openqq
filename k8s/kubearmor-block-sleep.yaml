@@ -1,0 +1,13 @@
+apiVersion: security.kubearmor.com/v1
+kind: KubeArmorPolicy
+metadata:
+  name: block-sleep-exec
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: kubearmor-demo
+  process:
+    matchPaths:
+      - path: /usr/bin/sleep
+  action: Block

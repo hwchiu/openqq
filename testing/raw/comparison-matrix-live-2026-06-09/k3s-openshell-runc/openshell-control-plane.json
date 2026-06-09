@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "summary": "OpenShell control plane ready via service type LoadBalancer",
+  "details": {
+    "serviceType": "LoadBalancer"
+  }
+}

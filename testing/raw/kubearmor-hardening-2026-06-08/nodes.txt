@@ -1,0 +1,4 @@
+NAME       STATUS   ROLES           AGE     VERSION        INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION     CONTAINER-RUNTIME
+cp-0       Ready    control-plane   2m36s   v1.35.5+k3s1   10.140.0.6    <none>        Ubuntu 22.04.5 LTS   6.8.0-1052-azure   containerd://2.2.3-k3s1
+worker-1   Ready    <none>          112s    v1.35.5+k3s1   10.140.0.4    <none>        Ubuntu 22.04.5 LTS   6.8.0-1052-azure   containerd://2.2.3-k3s1
+worker-2   Ready    <none>          116s    v1.35.5+k3s1   10.140.0.5    <none>        Ubuntu 22.04.5 LTS   6.8.0-1052-azure   containerd://2.2.3-k3s1

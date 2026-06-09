@@ -1,0 +1,88 @@
+[1781010424.009] [sandbox] [INFO ] [openshell_sandbox] Starting sandbox command=["sleep", "infinity"]
+[1781010424.009] [sandbox] [INFO ] [openshell_sandbox] Fetching sandbox policy via gRPC endpoint=http://openshell.openshell.svc.cluster.local:8080 sandbox_id=6c9f2783-8198-4c02-b638-0425e039f625
+[1781010424.084] [sandbox] [INFO ] [openshell_sandbox::grpc_client] exchanging K8s ServiceAccount token for sandbox JWT endpoint=http://openshell.openshell.svc.cluster.local:8080
+[1781010424.128] [sandbox] [OCSF ] [ocsf] CONFIG:DISCOVERY [INFO] Server returned no policy; attempting local discovery
+[1781010424.128] [sandbox] [OCSF ] [ocsf] CONFIG:LOADED [INFO] Loaded sandbox policy from container disk [path:/etc/openshell/policy.yaml]
+[1781010424.182] [sandbox] [INFO ] [openshell_sandbox] Creating OPA engine from proto policy data
+[1781010424.182] [sandbox] [OCSF ] [ocsf] CONFIG:VALIDATED [MED] L7 policy validation warning: claude_code.endpoints[0]: 'tls: terminate' is deprecated; TLS termination is now automatic. Use 'tls: skip' to disable.
+[1781010424.182] [sandbox] [OCSF ] [ocsf] CONFIG:VALIDATED [MED] L7 policy validation warning: github_rest_api.endpoints[0]: 'tls: terminate' is deprecated; TLS termination is now automatic. Use 'tls: skip' to disable.
+[1781010424.182] [sandbox] [OCSF ] [ocsf] CONFIG:VALIDATED [MED] L7 policy validation warning: github_ssh_over_https.endpoints[0]: 'tls: terminate' is deprecated; TLS termination is now automatic. Use 'tls: skip' to disable.
+[1781010424.186] [sandbox] [OCSF ] [ocsf] CONFIG:VALIDATED [INFO] Validated 'sandbox' user exists in image
+[1781010424.241] [sandbox] [OCSF ] [ocsf] CONFIG:LOADED [INFO] Fetched provider environment [env_count:0]
+[1781010424.241] [sandbox] [WARN ] [openshell_sandbox::process] runtime cgroup pids.max is unavailable (No such file or directory (os error 2)); configure the compute driver or container runtime to enforce a PID limit
+[1781010424.258] [sandbox] [OCSF ] [ocsf] CONFIG:ENABLED [INFO] TLS termination enabled: ephemeral CA generated
+[1781010424.258] [sandbox] [OCSF ] [ocsf] CONFIG:CREATING [INFO] Creating network namespace [ns:sandbox-33c0342f host_veth:veth-h-33c0342f sandbox_veth:veth-s-33c0342f]
+[1781010424.277] [sandbox] [OCSF ] [ocsf] CONFIG:CREATED [INFO] Network namespace created [ns:sandbox-33c0342f host_ip:10.200.0.1 sandbox_ip:10.200.0.2]
+[1781010424.281] [sandbox] [OCSF ] [ocsf] CONFIG:INSTALLED [INFO] Bypass detection rules installed [ns:sandbox-33c0342f]
+[1781010424.281] [sandbox] [INFO ] [openshell_sandbox] Fetching inference route bundle from gateway endpoint=http://openshell.openshell.svc.cluster.local:8080
+[1781010424.335] [sandbox] [OCSF ] [ocsf] CONFIG:LOADED [INFO] Loaded inference route bundle [route_count:0 revision:d1fba762150c532c]
+[1781010424.335] [sandbox] [OCSF ] [ocsf] CONFIG:WAITING [INFO] Inference route bundle is empty; keeping routing enabled and waiting for refresh
+[1781010424.335] [sandbox] [OCSF ] [ocsf] CONFIG:ENABLED [INFO] Inference routing enabled with local execution [route_count:0]
+[1781010424.347] [sandbox] [OCSF ] [ocsf] NET:LISTEN [INFO] 10.200.0.1:3128
+[1781010424.348] [sandbox] [OCSF ] [ocsf] SSH:LISTEN [INFO]
+[1781010424.348] [sandbox] [OCSF ] [ocsf] LIFECYCLE:INSTALL [INFO] OpenShell Sandbox Supervisor success
+[1781010424.348] [sandbox] [INFO ] [openshell_sandbox] supervisor session task spawned
+[1781010424.348] [sandbox] [OCSF ] [ocsf] CONFIG:PROBED [INFO] Landlock filesystem sandbox available [abi:v4 compat:BestEffort ro:7 rw:3]
+[1781010424.348] [sandbox] [OCSF ] [ocsf] CONFIG:APPLYING [INFO] Applying Landlock filesystem sandbox [abi:V2 compat:BestEffort ro:7 rw:3]
+[1781010424.348] [sandbox] [OCSF ] [ocsf] CONFIG:BUILT [INFO] Landlock ruleset built [rules_applied:9 skipped:1]
+[1781010424.351] [sandbox] [OCSF ] [ocsf] PROC:LAUNCH [INFO] sleep(20)
+[1781010424.401] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] openshell.openshell.svc.cluster.local:8080
+[1781010424.852] [sandbox] [INFO ] [openshell_sandbox] Container filesystem accessible, resolving policy binary symlinks attempt=1 pid=20
+[1781010424.852] [sandbox] [INFO ] [openshell_sandbox::opa] Resolved policy binary symlink via container filesystem: original=/sandbox/.venv/bin/python resolved=/sandbox/.uv/python/cpython-3.14.3-linux-x86_64-gnu/bin/python3.14 pid=20
+[1781010424.852] [sandbox] [INFO ] [openshell_sandbox::opa] Resolved policy binary symlink via container filesystem: original=/sandbox/.venv/bin/python3 resolved=/sandbox/.uv/python/cpython-3.14.3-linux-x86_64-gnu/bin/python3.14 pid=20
+[1781010424.852] [sandbox] [WARN ] [openshell_sandbox::opa] Cannot access container filesystem for symlink resolution: path=/app/.venv/bin/python container_path=/proc/20/root/app/.venv/bin/python pid=20 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1781010424.852] [sandbox] [WARN ] [openshell_sandbox::opa] Cannot access container filesystem for symlink resolution: path=/app/.venv/bin/python3 container_path=/proc/20/root/app/.venv/bin/python3 pid=20 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1781010424.852] [sandbox] [WARN ] [openshell_sandbox::opa] Cannot access container filesystem for symlink resolution: path=/app/.venv/bin/pip container_path=/proc/20/root/app/.venv/bin/pip pid=20 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1781010424.852] [sandbox] [INFO ] [openshell_sandbox::opa] Resolved policy binary symlink via container filesystem: original=/usr/bin/codex resolved=/usr/lib/node_modules/@openai/codex/bin/codex.js pid=20
+[1781010424.853] [sandbox] [INFO ] [openshell_sandbox::opa] Resolved policy binary symlink via container filesystem: original=/usr/bin/copilot resolved=/usr/lib/node_modules/@github/copilot/npm-loader.js pid=20
+[1781010424.853] [sandbox] [WARN ] [openshell_sandbox::opa] Cannot access container filesystem for symlink resolution: path=/usr/bin/wget container_path=/proc/20/root/usr/bin/wget pid=20 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1781010424.853] [sandbox] [WARN ] [openshell_sandbox::opa] Cannot access container filesystem for symlink resolution: path=/usr/bin/wget container_path=/proc/20/root/usr/bin/wget pid=20 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1781010424.853] [sandbox] [WARN ] [openshell_sandbox::opa] Cannot access container filesystem for symlink resolution: path=/usr/local/bin/opencode container_path=/proc/20/root/usr/local/bin/opencode pid=20 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1781010424.853] [sandbox] [WARN ] [openshell_sandbox::opa] Cannot access container filesystem for symlink resolution: path=/usr/local/bin/opencode container_path=/proc/20/root/usr/local/bin/opencode pid=20 error=No such file or directory (os error 2). Binary paths in policy will be matched literally. If this binary is a symlink (e.g., /usr/bin/python3 -> python3.11), use the canonical path instead, or run with CAP_SYS_PTRACE.
+[1781010424.853] [sandbox] [OCSF ] [ocsf] CONFIG:VALIDATED [MED] L7 policy validation warning: claude_code.endpoints[0]: 'tls: terminate' is deprecated; TLS termination is now automatic. Use 'tls: skip' to disable.
+[1781010424.853] [sandbox] [OCSF ] [ocsf] CONFIG:VALIDATED [MED] L7 policy validation warning: github_rest_api.endpoints[0]: 'tls: terminate' is deprecated; TLS termination is now automatic. Use 'tls: skip' to disable.
+[1781010424.853] [sandbox] [OCSF ] [ocsf] CONFIG:VALIDATED [MED] L7 policy validation warning: github_ssh_over_https.endpoints[0]: 'tls: terminate' is deprecated; TLS termination is now automatic. Use 'tls: skip' to disable.
+[1781010424.857] [sandbox] [INFO ] [openshell_sandbox] Policy binary symlink resolution complete (check logs above for per-binary results) pid=20
+[1781010425.475] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] [msg:ssh relay open (channel_id=f021e07a-02e0-40bd-a4c1-bfacf800f605, target=unix:/run/openshell/ssh.sock)]
+[1781010425.475] [sandbox] [OCSF ] [ocsf] SSH:OPEN [INFO] ALLOWED
+[1781010425.604] [sandbox] [OCSF ] [ocsf] CONFIG:APPLYING [INFO] Applying Landlock filesystem sandbox [abi:V2 compat:BestEffort ro:7 rw:3]
+[1781010425.604] [sandbox] [OCSF ] [ocsf] CONFIG:BUILT [INFO] Landlock ruleset built [rules_applied:9 skipped:1]
+[1781010425.690] [sandbox] [OCSF ] [ocsf] NET:CLOSE [INFO] [msg:ssh relay closed (channel_id=f021e07a-02e0-40bd-a4c1-bfacf800f605, target=unix:/run/openshell/ssh.sock)]
+[1781010425.807] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] [msg:ssh relay open (channel_id=6c5ea010-0ce6-4278-a024-312e28dc8145, target=unix:/run/openshell/ssh.sock)]
+[1781010425.807] [sandbox] [OCSF ] [ocsf] SSH:OPEN [INFO] ALLOWED
+[1781010426.667] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] [msg:ssh relay open (channel_id=3b3ee12c-b9e6-493d-b923-1a6c2b0f909e, target=unix:/run/openshell/ssh.sock)]
+[1781010426.668] [sandbox] [OCSF ] [ocsf] SSH:OPEN [INFO] ALLOWED
+[1781010426.798] [sandbox] [OCSF ] [ocsf] CONFIG:APPLYING [INFO] Applying Landlock filesystem sandbox [abi:V2 compat:BestEffort ro:7 rw:3]
+[1781010426.800] [sandbox] [OCSF ] [ocsf] CONFIG:BUILT [INFO] Landlock ruleset built [rules_applied:9 skipped:1]
+[1781010426.886] [sandbox] [OCSF ] [ocsf] NET:CLOSE [INFO] [msg:ssh relay closed (channel_id=3b3ee12c-b9e6-493d-b923-1a6c2b0f909e, target=unix:/run/openshell/ssh.sock)]
+[1781010427.864] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] [msg:ssh relay open (channel_id=a204f77e-1db8-4647-bebd-4e0c0deedb2d, target=unix:/run/openshell/ssh.sock)]
+[1781010427.865] [sandbox] [OCSF ] [ocsf] SSH:OPEN [INFO] ALLOWED
+[1781010427.955] [sandbox] [OCSF ] [ocsf] CONFIG:APPLYING [INFO] Applying Landlock filesystem sandbox [abi:V2 compat:BestEffort ro:7 rw:3]
+[1781010427.955] [sandbox] [OCSF ] [ocsf] CONFIG:BUILT [INFO] Landlock ruleset built [rules_applied:9 skipped:1]
+[1781010427.982] [sandbox] [OCSF ] [ocsf] CONFIG:APPLYING [INFO] Applying Landlock filesystem sandbox [abi:V2 compat:BestEffort ro:7 rw:3]
+[1781010427.982] [sandbox] [OCSF ] [ocsf] CONFIG:BUILT [INFO] Landlock ruleset built [rules_applied:9 skipped:1]
+[1781010428.070] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /usr/bin/curl(51) -> api.github.com:443 [policy:- engine:opa] [reason:binary '/usr/bin/curl' not allowed in policy 'copilot' (ancestors: [/usr/bin/das...]
+[1781010428.114] [sandbox] [OCSF ] [ocsf] NET:CLOSE [INFO] [msg:ssh relay closed (channel_id=a204f77e-1db8-4647-bebd-4e0c0deedb2d, target=unix:/run/openshell/ssh.sock)]
+[1781010434.399] [sandbox] [OCSF ] [ocsf] CONFIG:DETECTED [INFO] Settings poll: config change detected [old_revision:9859304338116581045 new_revision:1086529796914802360 policy_changed:true provider_env_changed:false]
+[1781010434.402] [sandbox] [OCSF ] [ocsf] CONFIG:LOADED [INFO] Policy reloaded successfully [policy_hash:b8cf8d97ded059fe54c8c1565ad5628a61806a2b6bcc8b803afa44f555a4e451] [hash:b8cf8d97ded059fe54c8c1565ad5628a61806a2b6bcc8b803afa44f555a4e451]
+[1781010434.432] [sandbox] [INFO ] [openshell_sandbox] Flushed denial analysis to gateway proposals=1 sandbox_name=matrix-k3s-openshell-gvisor-1781010410 summaries=1
+[1781010437.364] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] [msg:ssh relay open (channel_id=c9fc494f-b2b0-4b13-bcf1-37890a098ff9, target=unix:/run/openshell/ssh.sock)]
+[1781010437.364] [sandbox] [OCSF ] [ocsf] SSH:OPEN [INFO] ALLOWED
+[1781010437.456] [sandbox] [OCSF ] [ocsf] CONFIG:APPLYING [INFO] Applying Landlock filesystem sandbox [abi:V2 compat:BestEffort ro:7 rw:3]
+[1781010437.456] [sandbox] [OCSF ] [ocsf] CONFIG:BUILT [INFO] Landlock ruleset built [rules_applied:9 skipped:1]
+[1781010437.501] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/bin/curl(66) -> api.github.com:443 [policy:github_api engine:opa]
+[1781010437.541] [sandbox] [OCSF ] [ocsf] HTTP:GET [INFO] ALLOWED GET http://api.github.com:443/zen [policy:github_api engine:l7]
+[1781010437.621] [sandbox] [OCSF ] [ocsf] NET:CLOSE [INFO] [msg:ssh relay closed (channel_id=c9fc494f-b2b0-4b13-bcf1-37890a098ff9, target=unix:/run/openshell/ssh.sock)]
+[1781010438.563] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] [msg:ssh relay open (channel_id=ce4ee3c1-41ca-4171-a726-487b856b9528, target=unix:/run/openshell/ssh.sock)]
+[1781010438.564] [sandbox] [OCSF ] [ocsf] SSH:OPEN [INFO] ALLOWED
+[1781010438.654] [sandbox] [OCSF ] [ocsf] CONFIG:APPLYING [INFO] Applying Landlock filesystem sandbox [abi:V2 compat:BestEffort ro:7 rw:3]
+[1781010438.654] [sandbox] [OCSF ] [ocsf] CONFIG:BUILT [INFO] Landlock ruleset built [rules_applied:9 skipped:1]
+[1781010439.116] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /sandbox/.uv/python/cpython-3.14.3-linux-x86_64-gnu/bin/python3.14(75) -> api.github.com:443 [policy:- engine:opa] [reason:binary '/sandbox/.uv/python/cpython-3.14.3-linux-x86_64-gnu/bin/python3.14' not ...]
+[1781010439.243] [sandbox] [OCSF ] [ocsf] NET:CLOSE [INFO] [msg:ssh relay closed (channel_id=ce4ee3c1-41ca-4171-a726-487b856b9528, target=unix:/run/openshell/ssh.sock)]
+[1781010440.222] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] [msg:ssh relay open (channel_id=6c12c3f4-ef5a-42cc-ae7a-fb5420603be4, target=unix:/run/openshell/ssh.sock)]
+[1781010440.223] [sandbox] [OCSF ] [ocsf] SSH:OPEN [INFO] ALLOWED
+[1781010440.313] [sandbox] [OCSF ] [ocsf] CONFIG:APPLYING [INFO] Applying Landlock filesystem sandbox [abi:V2 compat:BestEffort ro:7 rw:3]
+[1781010440.313] [sandbox] [OCSF ] [ocsf] CONFIG:BUILT [INFO] Landlock ruleset built [rules_applied:9 skipped:1]
+[1781010440.339] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/bin/curl(84) -> api.github.com:443 [policy:github_api engine:opa]
+[1781010440.380] [sandbox] [OCSF ] [ocsf] HTTP:POST [MED] DENIED POST http://api.github.com:443/repos/octocat/hello-world/issues [policy:github_api engine:l7] [reason:L7_REQUEST deny POST api.github.com:443/repos/octocat/hello-world/issues reason=...]
+[1781010440.424] [sandbox] [OCSF ] [ocsf] NET:CLOSE [INFO] [msg:ssh relay closed (channel_id=6c12c3f4-ef5a-42cc-ae7a-fb5420603be4, target=unix:/run/openshell/ssh.sock)]

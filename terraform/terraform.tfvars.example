@@ -10,9 +10,9 @@ vnet_cidr           = "10.100.0.0/16"
 subnet_cidr         = "10.100.0.0/24"
 k3s_cluster_cidr    = "10.42.0.0/16"
 k3s_service_cidr    = "10.43.0.0/16"
-k3s_version         = "v1.35.5+k3s1"
+k3s_version         = "v1.31.14+k3s1"
 container_runtime   = "kata"
-crio_version        = "v1.35"
+crio_version        = "v1.31"
 server_name         = "cp-0"
 worker_names        = ["worker-1", "worker-2"]
 

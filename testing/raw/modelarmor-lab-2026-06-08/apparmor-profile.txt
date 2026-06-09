@@ -1,0 +1,103 @@
+--- /etc/apparmor.d/kubearmor-modelarmor-lab-modelarmor-demo-python ---
+
+## == Managed by KubeArmor == ##
+#include <tunables/global>
+
+## == Dispatcher profile START == ##
+profile kubearmor-modelarmor-lab-modelarmor-demo-python flags=(attach_disconnected,mediate_deleted) {
+	## == PRE START == ##
+	#include <abstractions/base>
+	
+	file,
+	network,
+	capability,
+	## == PRE END == ##
+  
+	## == File/Dir START == ##
+        deny /run/secrets/kubernetes.io/serviceaccount/{,**} klmrw,
+	## == File/Dir END == ##
+	## == DISPATCHER START == ##
+				/usr/local/bin/python3.11 px -> kubearmor-modelarmor-lab-modelarmor-demo-python_usrlocalbinpython311,
+				deny /bin/sh x,
+	## == DISPATCHER END == ##
+  
+  ## == Network START == ##
+  ## == Network END == ##
+  
+  ## == Capabilities START == ##
+  ## == Capabilities END == ##
+  
+	## == Native Policy START == ##
+
+	## == Native Policy END == ##
+
+  
+	## == POST START == ##
+	/lib/x86_64-linux-gnu/{*,**} rm,
+
+	
+	deny @{PROC}/{*,**^[0-9*],sys/kernel/shm*} wkx,
+	deny @{PROC}/sysrq-trigger rwklx,
+	deny @{PROC}/mem rwklx,
+	deny @{PROC}/kmem rwklx,
+	deny @{PROC}/kcore rwklx,
+
+	deny mount,
+	
+	deny /sys/[^f]*/** wklx,
+	deny /sys/f[^s]*/** wklx,
+	deny /sys/fs/[^c]*/** wklx,
+	deny /sys/fs/c[^g]*/** wklx,
+	deny /sys/fs/cg[^r]*/** wklx,
+	deny /sys/firmware/efi/efivars/** rwklx,
+	deny /sys/kernel/security/** rwklx,
+	
+
+	## == POST END == ##
+}
+## == Dispatcher profile END == ##
+
+## == FromSource per binary profiles START == ##
+profile kubearmor-modelarmor-lab-modelarmor-demo-python_usrlocalbinpython311 {
+	/usr/local/bin/python3.11 rix,
+	
+	## == PRE START == ##
+	#include <abstractions/base>
+	
+	file,
+	network,
+	capability,
+	## == PRE END == ##
+  
+	## == File/Dir START == ##
+        deny /run/secrets/kubernetes.io/serviceaccount/{,**} klmrw,
+	## == File/Dir END == ##
+ 	## == DISPATCHER START == ##
+				deny /bin/sh x,
+	## == DISPATCHER END == ##
+  
+  ## == Network START == ##
+      deny network tcp,
+  ## == Network END == ##
+  
+  ## == Capabilities START == ##
+  ## == Capabilities END == ##
+  
+	## == POST START == ##
+	/lib/x86_64-linux-gnu/{*,**} rm,
+
+	## == POST END == ##
+}
+## == FromSource per binary profiles END == ##
+
+## == Templates section START == ##
+
+
+
+
+
+
+
+
+
+

@@ -19,6 +19,23 @@ require_bin() {
   command -v "$1" >/dev/null 2>&1 || fail "Missing binary: $1"
 }
 
+default_ssh_args() {
+  local -a args
+  args=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null)
+  if [[ -n "${AZURE_SSH_PRIVATE_KEY_PATH:-}" ]]; then
+    args+=(-i "${AZURE_SSH_PRIVATE_KEY_PATH}")
+  fi
+  printf '%s\n' "${args[@]}"
+}
+
+load_default_ssh_args() {
+  local __target="$1"
+  eval "$__target=()"
+  while IFS= read -r line; do
+    eval "$__target+=(\"\$line\")"
+  done < <(default_ssh_args)
+}
+
 resolve_stack_dir() {
   local stack_name="$1"
   local stack_dir="$STACKS_DIR/$stack_name"
@@ -108,6 +125,7 @@ fetch_kubeconfig_from_stack() {
   local cp_public_ip
   local admin_username
   local -a scp_args
+  local attempt
   stack_dir="$(resolve_stack_dir "$stack_name")"
   out_dir="$GENERATED_STACKS_DIR/$stack_name"
   mkdir -p "$out_dir"
@@ -116,14 +134,38 @@ fetch_kubeconfig_from_stack() {
   require_bin scp
   cp_public_ip="$(terraform -chdir="$stack_dir" output -raw control_plane_public_ip)"
   admin_username="$(terraform -chdir="$stack_dir" output -raw admin_username)"
-  scp_args=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null)
-  if [[ -n "${AZURE_SSH_PRIVATE_KEY_PATH:-}" ]]; then
-    scp_args+=(-i "${AZURE_SSH_PRIVATE_KEY_PATH}")
-  fi
-  scp "${scp_args[@]}" "$admin_username@$cp_public_ip:/etc/rancher/k3s/k3s.yaml" "$out_dir/kubeconfig.raw"
+  load_default_ssh_args scp_args
+  for attempt in $(seq 1 90); do
+    if scp "${scp_args[@]}" "$admin_username@$cp_public_ip:/etc/rancher/k3s/k3s.yaml" "$out_dir/kubeconfig.raw" >/dev/null 2>&1; then
+      break
+    fi
+    sleep 10
+  done
+  [[ -f "$out_dir/kubeconfig.raw" ]] || fail "kubeconfig not ready on control plane for stack $stack_name"
   sed "s/127.0.0.1/$cp_public_ip/g" "$out_dir/kubeconfig.raw" > "$out_dir/kubeconfig"
   chmod 600 "$out_dir/kubeconfig"
   printf '%s\n' "$out_dir/kubeconfig"
+}
+
+wait_for_ssh() {
+  local host="$1"
+  local -a ssh_args
+  load_default_ssh_args ssh_args
+  require_bin ssh
+  for _ in $(seq 1 60); do
+    if ssh "${ssh_args[@]}" "$host" true >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 10
+  done
+  fail "SSH not ready: $host"
+}
+
+ssh_safe() {
+  local -a ssh_args
+  load_default_ssh_args ssh_args
+  require_bin ssh
+  ssh "${ssh_args[@]}" "$@"
 }
 
 wait_for_nodes_ready() {

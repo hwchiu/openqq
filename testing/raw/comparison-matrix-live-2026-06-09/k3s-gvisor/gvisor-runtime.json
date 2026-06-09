@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "summary": "RuntimeClass gvisor did not produce a clean probe result",
+  "details": {
+    "phase": "Failed",
+    "reason": "Error",
+    "describeTail": "  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-dn9nw:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    ConfigMapOptional:       <nil>\n    DownwardAPI:             true\nQoS Class:                   BestEffort\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:\n  Type    Reason     Age   From               Message\n  ----    ------     ----  ----               -------\n  Normal  Scheduled  47s   default-scheduler  Successfully assigned default/gvisor-matrix-1781008949 to worker-2\n  Normal  Pulled     47s   kubelet            Container image \"busybox:stable\" already present on machine\n  Normal  Created    47s   kubelet            Created container: probe\n  Normal  Started    47s   kubelet            Started container probe"
+  }
+}

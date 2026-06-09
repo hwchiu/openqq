@@ -1,0 +1,8 @@
+{
+  "status": "fail",
+  "summary": "Injected gVisor workload did not become Ready under Istio",
+  "details": {
+    "serverError": "error: timed out waiting for the condition",
+    "clientError": "error: timed out waiting for the condition"
+  }
+}

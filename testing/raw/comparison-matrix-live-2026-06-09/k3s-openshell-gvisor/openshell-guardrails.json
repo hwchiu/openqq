@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "summary": "L7 and filesystem guardrails both held",
+  "evidencePath": "testing/raw/matrix-k3s-openshell-gvisor-1781010410",
+  "details": {
+    "curlGet": "Avoid administrative distraction.",
+    "verifierOutput": "sandbox.agents.x-k8s.io/matrix-k3s-openshell-gvisor-1781010410 condition met\n\u001b[1m\u001b[32m✓\u001b[39m\u001b[0m Policy version 2 submitted (hash: b8cf8d97ded0)\n\u001b[1m\u001b[32m✓\u001b[39m\u001b[0m Policy version 2 loaded (active version: 2)\nWarning: log buffer contains only the last 113 lines; --since results may be incomplete.\nevidence written to /Users/hwchiu/hwchiu/openqq/testing/raw/matrix-k3s-openshell-gvisor-1781010410"
+  }
+}

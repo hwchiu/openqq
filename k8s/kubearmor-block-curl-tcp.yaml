@@ -1,0 +1,15 @@
+apiVersion: security.kubearmor.com/v1
+kind: KubeArmorPolicy
+metadata:
+  name: block-curl-tcp-egress
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: kubearmor-demo
+  network:
+    matchProtocols:
+      - protocol: TCP
+        fromSource:
+          - path: /usr/bin/curl
+  action: Block

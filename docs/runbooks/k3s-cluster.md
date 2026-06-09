@@ -1,47 +1,13 @@
 # K3s Cluster Runbook
 
-## Scope
+這份舊 runbook 現在只保留作為歷史入口。
 
-This runbook provisions a three-node Azure-backed Kubernetes cluster:
+目前 repo 的主要建立方式已經改成四個獨立 Terraform stacks，而不是單一 `make cluster-up` 流程。
 
-1. `cp-0`
-2. `worker-1`
-3. `worker-2`
+請優先使用：
 
-The current implementation uses `k3s` because it is the fastest path to a working cluster that can be accessed directly from this session.
-
-## Commands
-
-Create the cluster:
-
-```bash
-make cluster-up
-```
-
-Fetch kubeconfig again later:
-
-```bash
-make cluster-kubeconfig
-```
-
-Check cluster status:
-
-```bash
-make cluster-status
-```
-
-Delete the cluster:
-
-```bash
-make cluster-down
-```
-
-## Generated artifacts
-
-1. `generated/cluster.env`
-2. `generated/kubeconfig`
-3. `generated/kubeconfig.raw`
-
-## Current limitation
-
-The NVIDIA `openshell` layer is still blocked on exact product identification. The base Kubernetes cluster can be created now, but the NVIDIA layer should not be guessed.
+- [docs/runbooks/install-comparison-matrix.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-comparison-matrix.md)
+- [docs/runbooks/install-k3s-gvisor.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-gvisor.md)
+- [docs/runbooks/install-k3s-openshell-runc.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-openshell-runc.md)
+- [docs/runbooks/install-k3s-openshell-gvisor.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-openshell-gvisor.md)
+- [docs/runbooks/install-k3s-kubearmor-runc.md](/Users/hwchiu/hwchiu/openqq/docs/runbooks/install-k3s-kubearmor-runc.md)

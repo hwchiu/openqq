@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "summary": "ModelArmor-style lab did not block Python subprocess shell escape",
+  "details": {
+    "stdout": "escaped",
+    "stderr": "",
+    "exitCode": 0
+  }
+}

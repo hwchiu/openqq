@@ -1,0 +1,3 @@
+uid=998(sandbox) gid=998(sandbox) groups=998(sandbox)
+/sandbox
+ls: cannot open directory '/': Permission denied

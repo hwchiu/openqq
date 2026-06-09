@@ -12,7 +12,7 @@ This directory contains a Terraform implementation for a repeatable Azure-backed
 6. One control-plane VM
 7. Two worker VMs
 8. `k3s` bootstrap via cloud-init
-9. Runtime selection between embedded `containerd`, `gVisor`, `Kata Containers`, and external `CRI-O`
+9. Runtime selection between `CRI-O` baseline, `CRI-O + gVisor`, and `Kata Containers`
 
 ## Files
 
@@ -43,28 +43,23 @@ terraform -chdir=terraform apply
 
 The stack supports:
 
-1. `containerd`
-2. `crio`
-3. `gvisor`
-4. `kata`
+1. `crio`
+2. `gvisor`
+3. `kata`
 
 Set `container_runtime` in `terraform.tfvars`:
 
 ```hcl
-container_runtime = "containerd"
+container_runtime = "crio"
+crio_version      = "v1.31"
 ```
 
 or:
 
 ```hcl
 container_runtime = "crio"
-crio_version      = "v1.35"
-```
-
-or:
-
-```hcl
-container_runtime = "gvisor"
+crio_version      = "v1.31"
+# install-gvisor-stack.sh can then layer runsc onto CRI-O
 ```
 
 or:
@@ -76,7 +71,7 @@ vm_size           = "Standard_D4s_v3"
 
 When `container_runtime="crio"`, cloud-init installs CRI-O from the official packaging repository, enables the `crio` service, points K3s at `unix:///var/run/crio/crio.sock`, and shares the K3s CNI config directory with CRI-O.
 
-When `container_runtime="gvisor"`, cloud-init installs `runsc` and writes a K3s `config-v3.toml.tmpl` that exposes the `runsc` runtime through `RuntimeClass/gvisor`.
+The comparison stacks now standardize on `K3s v1.31.14+k3s1` and `CRI-O v1.31`. The gVisor comparison paths no longer use containerd; they bootstrap K3s on CRI-O first, then install `runsc` onto each node and register `RuntimeClass/gvisor` through CRI-O.
 
 When `container_runtime="kata"`, cloud-init installs the official Kata static release, writes a K3s `config-v3.toml.tmpl` that exposes `io.containerd.kata.v2`, and expects Azure VM sizes with nested virtualization support. `Standard_B2s` is not sufficient because it does not expose `/dev/kvm`. The lab defaults to `Standard_D4s_v3` because `eastus` capacity for `D4s_v5` was not stable enough during rebuild.
 

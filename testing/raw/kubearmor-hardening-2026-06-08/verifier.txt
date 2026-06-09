@@ -1,0 +1,7 @@
+stdout:
+
+stderr:
+cat: /run/secrets/kubernetes.io/serviceaccount/token: Permission denied
+command terminated with exit code 1
+
+[INFO] service account token read was blocked.

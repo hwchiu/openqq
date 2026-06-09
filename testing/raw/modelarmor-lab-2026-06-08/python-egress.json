@@ -1,0 +1,8 @@
+{
+  "status": "fail",
+  "summary": "ModelArmor-style lab allowed Python HTTP egress",
+  "details": {
+    "stdout": "200",
+    "stderr": ""
+  }
+}

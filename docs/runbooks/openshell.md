@@ -1,53 +1,33 @@
 # OpenShell Runbook
 
-## Installed components
+## 元件
 
-1. `agent-sandbox` controller and CRD
-2. `openshell` Helm release in namespace `openshell`
+1. `agent-sandbox` controller + CRD
+2. `openshell` Helm release
+3. sandbox patcher (`runc` 或 `gvisor` 路線)
 
-## Files
+## 06-09 在四環境中的最新結果
 
-1. [k8s/openshell-values.yaml](/Users/hwchiu/hwchiu/openqq/k8s/openshell-values.yaml)
-2. [terraform/main.tf](/Users/hwchiu/hwchiu/openqq/terraform/main.tf)
-3. [k8s/openshell-sandbox-patcher.yaml](/Users/hwchiu/hwchiu/openqq/k8s/openshell-sandbox-patcher.yaml)
-4. [scripts/install-openshell-stack.sh](/Users/hwchiu/hwchiu/openqq/scripts/install-openshell-stack.sh)
-5. [scripts/verify-openshell-runtime.sh](/Users/hwchiu/hwchiu/openqq/scripts/verify-openshell-runtime.sh)
+### `k3s-openshell-runc`
 
-## Current lab configuration
+- `openshell-control-plane`: PASS
+- `openshell-guardrails`: PASS
+- `istio-sidecar-smoke`: PASS
 
-1. `service.type=LoadBalancer`
-2. `server.disableTls=true`
-3. `server.auth.allowUnauthenticatedUsers=true`
-4. Terraform NSG allows NodePort range `30000-32767`
+### `k3s-openshell-gvisor`
 
-## Why NodePort access works
+- `openshell-control-plane`: PASS
+- `openshell-guardrails`: PASS
+- `gvisor-runtime`: FAIL
+- `istio-gvisor-sidecar`: FAIL
 
-`k3s` service load balancer exposes the service through node public IPs and a NodePort.
+## 重要說明
 
-The current OpenShell gateway NodePort is `30968`.
+1. OpenShell 自身路徑在 `runc` 主線仍最穩定。
+2. `gvisor` 路線這輪的 OpenShell guardrails 有通過，但不代表 bare gVisor workload 已穩。
+3. 目前 repo 仍依賴 Kubernetes-side patcher，將 OpenShell sandbox 調整到需要的 `privileged` / runtimeClass 狀態。
 
-## Verified reachable endpoints
+## 參考報告
 
-1. `http://138.91.122.32:30968`
-2. `http://172.191.110.55:30968`
-3. `http://4.157.250.220:30968`
-
-An HTTP `404` from `/` is expected here and confirms the gateway is reachable over the network.
-
-## Security note
-
-This is a lab-first configuration only. It intentionally disables TLS and allows unauthenticated users to simplify initial validation.
-
-Do not treat this as a production configuration.
-
-## Sandbox patcher
-
-Current `k3s` + `containerd` validation requires one Kubernetes-side workaround: OpenShell sandbox pods need `privileged: true` so the supervisor can create its network namespace and proxy path.
-
-This repo now carries [k8s/openshell-sandbox-patcher.yaml](/Users/hwchiu/hwchiu/openqq/k8s/openshell-sandbox-patcher.yaml), which:
-
-1. Watches OpenShell-managed `Sandbox` CRs in the `openshell` namespace
-2. Patches `spec.podTemplate.spec.containers[0].securityContext.privileged=true`
-3. Deletes a stale non-privileged Pod so the controller recreates it from the patched spec
-
-This is a reproducibility workaround, not a final upstream-quality integration.
+- [testing/comparison-matrix-live-2026-06-09.md](/Users/hwchiu/hwchiu/openqq/testing/comparison-matrix-live-2026-06-09.md)
+- [testing/istio-impact-2026-06-09.md](/Users/hwchiu/hwchiu/openqq/testing/istio-impact-2026-06-09.md)

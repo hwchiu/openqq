@@ -1,6 +1,6 @@
 # Install Path: K3s + OpenShell + gVisor
 
-這條路線驗證 OpenShell 在 `runsc` runtime 上保留與退化哪些能力。
+這條路線驗證 OpenShell 在 `K3s 1.31 + CRI-O 1.31 + runsc` 路徑上，哪些能力保留、哪些邊界還沒打通。
 
 ## 最短路徑
 
@@ -8,37 +8,26 @@
 ./scripts/install-k3s-openshell-gvisor.sh
 ```
 
-## 它會做什麼
+## 06-09 最新實測狀態
 
-1. 套用 `terraform/stacks/k3s-openshell-gvisor`
-2. 抓回 kubeconfig 到 `generated/stacks/k3s-openshell-gvisor/kubeconfig`
-3. 等三個節點都 `Ready`
-4. 驗證 `RuntimeClass/gvisor`
-5. 安裝 OpenShell，但跳過預設 patcher
-6. 套用 `gvisor` 專用 patcher
-7. 執行 OpenShell runtime 驗證
+- `nodes-ready`: PASS
+- `baseline-pod`: PASS
+- `istio-control-plane`: PASS
+- `istio-sidecar-smoke`: PASS
+- `gvisor-runtime`: FAIL
+- `istio-gvisor-sidecar`: FAIL
+- `openshell-control-plane`: PASS
+- `openshell-guardrails`: PASS
 
-## 對應 Terraform Root
+## 判讀
 
-- `terraform/stacks/k3s-openshell-gvisor`
+這條路線現在不能再簡單寫成「degraded」。正確說法是：
 
-## 對應腳本
+1. bare `RuntimeClass gvisor` workload 還不穩
+2. `Istio + gVisor sidecar` workload 不可用
+3. 但 `OpenShell` 自己的 control plane 與 guardrails 在這輪是 `PASS`
 
-- `scripts/install-k3s-openshell-gvisor.sh`
-- `scripts/install-openshell-stack.sh`
-- `scripts/install-openshell-sandbox-patcher-gvisor.sh`
-- `scripts/verify-gvisor-runtime.sh`
-- `scripts/verify-openshell-runtime.sh`
+## 參考報告
 
-## 已知結果
-
-- `network / L7 / hot-reload` 可驗證
-- `filesystem_policy` 在 gVisor 路徑退化
-
-## 清理
-
-```bash
-./scripts/destroy-comparison-matrix.sh
-# 或單獨 destroy
-source ./scripts/lib-stack.sh && terraform_destroy_stack k3s-openshell-gvisor
-```
+- [testing/comparison-matrix-live-2026-06-09.md](/Users/hwchiu/hwchiu/openqq/testing/comparison-matrix-live-2026-06-09.md)
+- [testing/istio-impact-2026-06-09.md](/Users/hwchiu/hwchiu/openqq/testing/istio-impact-2026-06-09.md)

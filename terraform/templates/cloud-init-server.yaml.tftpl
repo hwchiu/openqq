@@ -127,13 +127,9 @@ write_files:
       set -euxo pipefail
       [[ '${container_runtime}' == 'crio' ]] || exit 0
       install -d -m 0755 /opt/cni/bin
-      for _ in $(seq 1 120); do
-        if [[ -d /var/lib/rancher/k3s/data/current/bin ]]; then
-          break
-        fi
-        sleep 2
-      done
-      for plugin in /var/lib/rancher/k3s/data/current/bin/*; do
+      find /opt/cni/bin -mindepth 1 -maxdepth 1 -delete
+      for plugin in /usr/lib/cni/*; do
+        [[ -f "$plugin" ]] || continue
         ln -sfn "$plugin" "/opt/cni/bin/$(basename "$plugin")"
       done
       systemctl restart crio

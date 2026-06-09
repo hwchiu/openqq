@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "summary": "KubeArmor blocked service account token access",
+  "details": {
+    "verifierOutput": "stdout:\n\nstderr:\ncat: /run/secrets/kubernetes.io/serviceaccount/token: Permission denied\ncommand terminated with exit code 1\n\n[INFO] service account token read was blocked."
+  }
+}

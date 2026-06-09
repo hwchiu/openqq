@@ -28,7 +28,13 @@ variable "ssh_public_key" {
 variable "k3s_version" {
   type        = string
   description = "K3s version to install."
-  default     = "v1.35.5+k3s1"
+  default     = "v1.31.14+k3s1"
+}
+
+variable "crio_version" {
+  type        = string
+  description = "CRI-O minor stream to install."
+  default     = "v1.31"
 }
 
 variable "ubuntu_image_sku" {

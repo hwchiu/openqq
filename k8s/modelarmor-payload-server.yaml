@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payload-server-content
+  namespace: modelarmor-lab
+data:
+  payload.sh: |
+    #!/bin/sh
+    echo payload-exec >/tmp/download-exec-proof
+    echo payload-ok
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payload-server
+  namespace: modelarmor-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payload-server
+  template:
+    metadata:
+      labels:
+        app: payload-server
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: content
+              mountPath: /usr/share/nginx/html/payload.sh
+              subPath: payload.sh
+      volumes:
+        - name: content
+          configMap:
+            name: payload-server-content
+            defaultMode: 0755
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payload-server
+  namespace: modelarmor-lab
+spec:
+  selector:
+    app: payload-server
+  ports:
+    - port: 80
+      targetPort: 80

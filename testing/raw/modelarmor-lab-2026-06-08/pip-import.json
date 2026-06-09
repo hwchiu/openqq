@@ -1,0 +1,8 @@
+{
+  "status": "degraded",
+  "summary": "ModelArmor-style lab allowed pip install and runtime import",
+  "details": {
+    "stdout": "Collecting colorama==0.4.6\n  Using cached colorama-0.4.6-py2.py3-none-any.whl.metadata (17 kB)\nUsing cached colorama-0.4.6-py2.py3-none-any.whl (25 kB)\nInstalling collected packages: colorama\nSuccessfully installed colorama-0.4.6\n0.4.6",
+    "stderr": "WARNING: Target directory /tmp/pip-import-target/colorama already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/pip-import-target/colorama-0.4.6.dist-info already exists. Specify --upgrade to force replacement.\nWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv\n\n[notice] A new release of pip is available: 24.0 -> 26.1.2\n[notice] To update, run: pip install --upgrade pip"
+  }
+}

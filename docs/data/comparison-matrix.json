@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-06-08T13:26:04Z",
-  "source": "testing/results/latest",
+  "generatedAt": "2026-06-09T13:07:54Z",
+  "source": "testing/raw/comparison-matrix-live-2026-06-09/summary.json",
   "stacks": [
     {
       "id": "k3s-gvisor",
@@ -72,6 +72,37 @@
       "goal": "驗證 runsc 真的在執行，而不是只有 YAML 存在"
     },
     {
+      "id": "istio-control-plane",
+      "title": "Istio control plane ready",
+      "category": "mesh",
+      "runner": "scripts/tests/istio-control-plane.sh",
+      "appliesTo": [
+        "all"
+      ],
+      "goal": "確認四套叢集都能安裝同一版 Istio control plane"
+    },
+    {
+      "id": "istio-sidecar-smoke",
+      "title": "Istio sidecar injection smoke",
+      "category": "mesh",
+      "runner": "scripts/tests/istio-sidecar-smoke.sh",
+      "appliesTo": [
+        "all"
+      ],
+      "goal": "確認 sidecar injection 與 mesh 內基本服務流量成立"
+    },
+    {
+      "id": "istio-gvisor-sidecar",
+      "title": "Istio sidecar on RuntimeClass gvisor",
+      "category": "mesh",
+      "runner": "scripts/tests/istio-gvisor-sidecar.sh",
+      "appliesTo": [
+        "k3s-gvisor",
+        "k3s-openshell-gvisor"
+      ],
+      "goal": "確認注入 sidecar 後，gVisor 工作負載是否仍可啟動並通訊"
+    },
+    {
       "id": "openshell-control-plane",
       "title": "OpenShell control plane ready",
       "category": "control-plane",
@@ -102,6 +133,36 @@
         "k3s-kubearmor-runc"
       ],
       "goal": "確認 KubeArmor policy 確實阻擋 service account token"
+    },
+    {
+      "id": "kubearmor-process-block",
+      "title": "KubeArmor blocks process execution",
+      "category": "security",
+      "runner": "scripts/tests/kubearmor-process-block.sh",
+      "appliesTo": [
+        "k3s-kubearmor-runc"
+      ],
+      "goal": "確認 KubeArmor 能阻擋指定 binary 執行"
+    },
+    {
+      "id": "kubearmor-file-block",
+      "title": "KubeArmor blocks sensitive file read",
+      "category": "security",
+      "runner": "scripts/tests/kubearmor-file-block.sh",
+      "appliesTo": [
+        "k3s-kubearmor-runc"
+      ],
+      "goal": "確認 KubeArmor 能阻擋敏感設定檔讀取"
+    },
+    {
+      "id": "kubearmor-network-block",
+      "title": "KubeArmor blocks TCP egress from curl",
+      "category": "security",
+      "runner": "scripts/tests/kubearmor-network-block.sh",
+      "appliesTo": [
+        "k3s-kubearmor-runc"
+      ],
+      "goal": "確認 KubeArmor 能對指定 binary 套用 network protocol block"
     }
   ],
   "results": {
@@ -125,13 +186,47 @@
         "test": "baseline-pod"
       },
       "gvisor-runtime": {
-        "status": "pass",
-        "summary": "RuntimeClass gvisor executed inside runsc guest kernel",
+        "status": "fail",
+        "summary": "RuntimeClass gvisor did not produce a clean probe result",
         "details": {
-          "logs": "4.19.0-gvisor\ngvisor-probe-ok"
+          "phase": "Failed",
+          "reason": "Error",
+          "describeTail": "  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-dn9nw:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    ConfigMapOptional:       <nil>\n    DownwardAPI:             true\nQoS Class:                   BestEffort\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:\n  Type    Reason     Age   From               Message\n  ----    ------     ----  ----               -------\n  Normal  Scheduled  47s   default-scheduler  Successfully assigned default/gvisor-matrix-1781008949 to worker-2\n  Normal  Pulled     47s   kubelet            Container image \"busybox:stable\" already present on machine\n  Normal  Created    47s   kubelet            Created container: probe\n  Normal  Started    47s   kubelet            Started container probe"
         },
         "stack": "k3s-gvisor",
         "test": "gvisor-runtime"
+      },
+      "istio-control-plane": {
+        "status": "pass",
+        "summary": "Istio control plane ready (istiod-1.30.1)",
+        "details": {
+          "chart": "istiod-1.30.1"
+        },
+        "stack": "k3s-gvisor",
+        "test": "istio-control-plane"
+      },
+      "istio-sidecar-smoke": {
+        "status": "pass",
+        "summary": "Istio sidecar injection and in-mesh traffic succeeded",
+        "details": {
+          "response": "mesh-ok",
+          "serverContainers": "echo istio-proxy",
+          "clientContainers": "curl istio-proxy",
+          "serverInitContainers": "istio-init",
+          "clientInitContainers": "istio-init"
+        },
+        "stack": "k3s-gvisor",
+        "test": "istio-sidecar-smoke"
+      },
+      "istio-gvisor-sidecar": {
+        "status": "fail",
+        "summary": "Injected gVisor workload did not become Ready under Istio",
+        "details": {
+          "serverError": "error: timed out waiting for the condition",
+          "clientError": "error: timed out waiting for the condition"
+        },
+        "stack": "k3s-gvisor",
+        "test": "istio-gvisor-sidecar"
       },
       "openshell-control-plane": {
         "stack": "k3s-gvisor",
@@ -148,6 +243,24 @@
       "kubearmor-sa-block": {
         "stack": "k3s-gvisor",
         "test": "kubearmor-sa-block",
+        "status": "na",
+        "summary": "This test does not apply to this environment"
+      },
+      "kubearmor-process-block": {
+        "stack": "k3s-gvisor",
+        "test": "kubearmor-process-block",
+        "status": "na",
+        "summary": "This test does not apply to this environment"
+      },
+      "kubearmor-file-block": {
+        "stack": "k3s-gvisor",
+        "test": "kubearmor-file-block",
+        "status": "na",
+        "summary": "This test does not apply to this environment"
+      },
+      "kubearmor-network-block": {
+        "stack": "k3s-gvisor",
+        "test": "kubearmor-network-block",
         "status": "na",
         "summary": "This test does not apply to this environment"
       }
@@ -177,6 +290,34 @@
         "status": "na",
         "summary": "This test does not apply to this environment"
       },
+      "istio-control-plane": {
+        "status": "pass",
+        "summary": "Istio control plane ready (istiod-1.30.1)",
+        "details": {
+          "chart": "istiod-1.30.1"
+        },
+        "stack": "k3s-openshell-runc",
+        "test": "istio-control-plane"
+      },
+      "istio-sidecar-smoke": {
+        "status": "pass",
+        "summary": "Istio sidecar injection and in-mesh traffic succeeded",
+        "details": {
+          "response": "mesh-ok",
+          "serverContainers": "echo istio-proxy",
+          "clientContainers": "curl istio-proxy",
+          "serverInitContainers": "istio-init",
+          "clientInitContainers": "istio-init"
+        },
+        "stack": "k3s-openshell-runc",
+        "test": "istio-sidecar-smoke"
+      },
+      "istio-gvisor-sidecar": {
+        "stack": "k3s-openshell-runc",
+        "test": "istio-gvisor-sidecar",
+        "status": "na",
+        "summary": "This test does not apply to this environment"
+      },
       "openshell-control-plane": {
         "status": "pass",
         "summary": "OpenShell control plane ready via service type LoadBalancer",
@@ -189,10 +330,10 @@
       "openshell-guardrails": {
         "status": "pass",
         "summary": "L7 and filesystem guardrails both held",
-        "evidencePath": "testing/raw/matrix-k3s-openshell-runc-1780925079",
+        "evidencePath": "testing/raw/matrix-k3s-openshell-runc-1781010378",
         "details": {
-          "curlGet": "Approachable is better than simple.",
-          "verifierOutput": "sandbox.agents.x-k8s.io/matrix-k3s-openshell-runc-1780925079 condition met\n\u001b[1m\u001b[32m✓\u001b[39m\u001b[0m Policy version 2 submitted (hash: b8cf8d97ded0)\n\u001b[1m\u001b[32m✓\u001b[39m\u001b[0m Policy version 2 loaded (active version: 2)\nWarning: log buffer contains only the last 113 lines; --since results may be incomplete.\nevidence written to /Users/hwchiu/hwchiu/openqq/testing/raw/matrix-k3s-openshell-runc-1780925079"
+          "curlGet": "It's not fully shipped until it's fast.",
+          "verifierOutput": "sandbox.agents.x-k8s.io/matrix-k3s-openshell-runc-1781010378 condition met\n\u001b[1m\u001b[32m✓\u001b[39m\u001b[0m Policy version 2 submitted (hash: b8cf8d97ded0)\n\u001b[1m\u001b[32m✓\u001b[39m\u001b[0m Policy version 2 loaded (active version: 2)\nWarning: log buffer contains only the last 113 lines; --since results may be incomplete.\nevidence written to /Users/hwchiu/hwchiu/openqq/testing/raw/matrix-k3s-openshell-runc-1781010378"
         },
         "stack": "k3s-openshell-runc",
         "test": "openshell-guardrails"
@@ -200,6 +341,24 @@
       "kubearmor-sa-block": {
         "stack": "k3s-openshell-runc",
         "test": "kubearmor-sa-block",
+        "status": "na",
+        "summary": "This test does not apply to this environment"
+      },
+      "kubearmor-process-block": {
+        "stack": "k3s-openshell-runc",
+        "test": "kubearmor-process-block",
+        "status": "na",
+        "summary": "This test does not apply to this environment"
+      },
+      "kubearmor-file-block": {
+        "stack": "k3s-openshell-runc",
+        "test": "kubearmor-file-block",
+        "status": "na",
+        "summary": "This test does not apply to this environment"
+      },
+      "kubearmor-network-block": {
+        "stack": "k3s-openshell-runc",
+        "test": "kubearmor-network-block",
         "status": "na",
         "summary": "This test does not apply to this environment"
       }
@@ -224,13 +383,47 @@
         "test": "baseline-pod"
       },
       "gvisor-runtime": {
-        "status": "pass",
-        "summary": "RuntimeClass gvisor executed inside runsc guest kernel",
+        "status": "fail",
+        "summary": "RuntimeClass gvisor did not produce a clean probe result",
         "details": {
-          "logs": "4.19.0-gvisor\ngvisor-probe-ok"
+          "phase": "Failed",
+          "reason": "Error",
+          "describeTail": "  ContainersReady             False \n  PodScheduled                True \nVolumes:\n  kube-api-access-fr8r7:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    ConfigMapOptional:       <nil>\n    DownwardAPI:             true\nQoS Class:                   BestEffort\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:\n  Type    Reason     Age   From               Message\n  ----    ------     ----  ----               -------\n  Normal  Scheduled  47s   default-scheduler  Successfully assigned default/gvisor-matrix-1781010080 to worker-1\n  Normal  Pulled     47s   kubelet            Container image \"busybox:stable\" already present on machine\n  Normal  Created    47s   kubelet            Created container: probe\n  Normal  Started    47s   kubelet            Started container probe"
         },
         "stack": "k3s-openshell-gvisor",
         "test": "gvisor-runtime"
+      },
+      "istio-control-plane": {
+        "status": "pass",
+        "summary": "Istio control plane ready (istiod-1.30.1)",
+        "details": {
+          "chart": "istiod-1.30.1"
+        },
+        "stack": "k3s-openshell-gvisor",
+        "test": "istio-control-plane"
+      },
+      "istio-sidecar-smoke": {
+        "status": "pass",
+        "summary": "Istio sidecar injection and in-mesh traffic succeeded",
+        "details": {
+          "response": "mesh-ok",
+          "serverContainers": "echo istio-proxy",
+          "clientContainers": "curl istio-proxy",
+          "serverInitContainers": "istio-init",
+          "clientInitContainers": "istio-init"
+        },
+        "stack": "k3s-openshell-gvisor",
+        "test": "istio-sidecar-smoke"
+      },
+      "istio-gvisor-sidecar": {
+        "status": "fail",
+        "summary": "Injected gVisor workload did not become Ready under Istio",
+        "details": {
+          "serverError": "error: timed out waiting for the condition",
+          "clientError": "error: timed out waiting for the condition"
+        },
+        "stack": "k3s-openshell-gvisor",
+        "test": "istio-gvisor-sidecar"
       },
       "openshell-control-plane": {
         "status": "pass",
@@ -242,12 +435,12 @@
         "test": "openshell-control-plane"
       },
       "openshell-guardrails": {
-        "status": "degraded",
-        "summary": "L7 guardrails held, but filesystem policy degraded",
-        "evidencePath": "testing/raw/matrix-k3s-openshell-gvisor-1780925123",
+        "status": "pass",
+        "summary": "L7 and filesystem guardrails both held",
+        "evidencePath": "testing/raw/matrix-k3s-openshell-gvisor-1781010410",
         "details": {
           "curlGet": "Avoid administrative distraction.",
-          "verifierOutput": "sandbox.agents.x-k8s.io/matrix-k3s-openshell-gvisor-1780925123 condition met\n\u001b[1m\u001b[32m✓\u001b[39m\u001b[0m Policy version 2 submitted (hash: b8cf8d97ded0)\n\u001b[1m\u001b[32m✓\u001b[39m\u001b[0m Policy version 2 loaded (active version: 2)\nWarning: log buffer contains only the last 108 lines; --since results may be incomplete.\nevidence written to /Users/hwchiu/hwchiu/openqq/testing/raw/matrix-k3s-openshell-gvisor-1780925123"
+          "verifierOutput": "sandbox.agents.x-k8s.io/matrix-k3s-openshell-gvisor-1781010410 condition met\n\u001b[1m\u001b[32m✓\u001b[39m\u001b[0m Policy version 2 submitted (hash: b8cf8d97ded0)\n\u001b[1m\u001b[32m✓\u001b[39m\u001b[0m Policy version 2 loaded (active version: 2)\nWarning: log buffer contains only the last 113 lines; --since results may be incomplete.\nevidence written to /Users/hwchiu/hwchiu/openqq/testing/raw/matrix-k3s-openshell-gvisor-1781010410"
         },
         "stack": "k3s-openshell-gvisor",
         "test": "openshell-guardrails"
@@ -255,6 +448,24 @@
       "kubearmor-sa-block": {
         "stack": "k3s-openshell-gvisor",
         "test": "kubearmor-sa-block",
+        "status": "na",
+        "summary": "This test does not apply to this environment"
+      },
+      "kubearmor-process-block": {
+        "stack": "k3s-openshell-gvisor",
+        "test": "kubearmor-process-block",
+        "status": "na",
+        "summary": "This test does not apply to this environment"
+      },
+      "kubearmor-file-block": {
+        "stack": "k3s-openshell-gvisor",
+        "test": "kubearmor-file-block",
+        "status": "na",
+        "summary": "This test does not apply to this environment"
+      },
+      "kubearmor-network-block": {
+        "stack": "k3s-openshell-gvisor",
+        "test": "kubearmor-network-block",
         "status": "na",
         "summary": "This test does not apply to this environment"
       }
@@ -284,6 +495,34 @@
         "status": "na",
         "summary": "This test does not apply to this environment"
       },
+      "istio-control-plane": {
+        "status": "pass",
+        "summary": "Istio control plane ready (istiod-1.30.1)",
+        "details": {
+          "chart": "istiod-1.30.1"
+        },
+        "stack": "k3s-kubearmor-runc",
+        "test": "istio-control-plane"
+      },
+      "istio-sidecar-smoke": {
+        "status": "pass",
+        "summary": "Istio sidecar injection and in-mesh traffic succeeded",
+        "details": {
+          "response": "mesh-ok",
+          "serverContainers": "echo istio-proxy",
+          "clientContainers": "curl istio-proxy",
+          "serverInitContainers": "istio-init",
+          "clientInitContainers": "istio-init"
+        },
+        "stack": "k3s-kubearmor-runc",
+        "test": "istio-sidecar-smoke"
+      },
+      "istio-gvisor-sidecar": {
+        "stack": "k3s-kubearmor-runc",
+        "test": "istio-gvisor-sidecar",
+        "status": "na",
+        "summary": "This test does not apply to this environment"
+      },
       "openshell-control-plane": {
         "stack": "k3s-kubearmor-runc",
         "test": "openshell-control-plane",
@@ -297,13 +536,44 @@
         "summary": "This test does not apply to this environment"
       },
       "kubearmor-sa-block": {
-        "status": "fail",
-        "summary": "Service account token read still succeeded",
+        "status": "pass",
+        "summary": "KubeArmor blocked service account token access",
         "details": {
-          "verifierOutput": "stdout:\neyJhbGciOiJSUzI1NiIsImtpZCI6ImtjUF93cHhsd1cyMXQ1ei0yUE5jTDRyTVBCbmNSVVBHVU45eVQzNTV4TjAifQ.eyJhdWQiOlsiaHR0cHM6Ly9rdWJlcm5ldGVzLmRlZmF1bHQuc3ZjLmNsdXN0ZXIubG9jYWwiLCJrM3MiXSwiZXhwIjoxODEyNDYwNzIzLCJpYXQiOjE3ODA5MjQ3MjMsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwianRpIjoiMzdiMDliNTAtZmI1My00ZmU2LTljZDktNTE0MGYzNGQwYjJkIiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJkZWZhdWx0Iiwibm9kZSI6eyJuYW1lIjoiY3AtMCIsInVpZCI6IjlmMWFiNDgzLTRhNWQtNDU2Yy04NzBiLTdkYzMzMTYwODk2YiJ9LCJwb2QiOnsibmFtZSI6Imt1YmVhcm1vci1kZW1vLTY5NTg4YmRkZGItbGJ6YjQiLCJ1aWQiOiI5NmU3OTQyZi1jMzI1LTQ2M2EtODk3OS1jMzdmZWNjZTZjODUifSwic2VydmljZWFjY291bnQiOnsibmFtZSI6ImRlZmF1bHQiLCJ1aWQiOiI1ODVmODkyMC0xODlmLTQwZjMtOWZhOC1kM2Y3NWM2MDBlYjEifSwid2FybmFmdGVyIjoxNzgwOTI4MzMwfSwibmJmIjoxNzgwOTI0NzIzLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6ZGVmYXVsdDpkZWZhdWx0In0.PhrOAooF8HqFryFzHmklmY__8E2QUWtCNCTtdAToR2RupDmi0P3WFhIvP0wIZxw17Ch-UOSk3u_Syv-8VgqSHb1zxmyPr5PrcL85SHCZheznAEYFNdpAkvkF6KEeuk4XI60N6xRs0zKpIteDWpA8aJbJMPmTSmaym7sV4drvyk7iXGaIdQfNqBYoqe_OwpQYvyXMwU47V-ThyWFeuzQPB0qRYdjHaXhIWH7z2MzGX2i_2tPJhOG0WmC5ctx1w94ayvZZBwgI8Ctmb7cooJrrK7LNkqXBGiSyKEnzIBvHS5w6rMmxSvRkyZSqjb8s5Ym1u37BMEWGj9ONOMSVxMsLKw\nstderr:\n\n[WARN] service account token read succeeded; KubeArmor block policy did not trigger."
+          "verifierOutput": "stdout:\n\nstderr:\ncat: /run/secrets/kubernetes.io/serviceaccount/token: Permission denied\ncommand terminated with exit code 1\n\n[INFO] service account token read was blocked."
         },
         "stack": "k3s-kubearmor-runc",
         "test": "kubearmor-sa-block"
+      },
+      "kubearmor-process-block": {
+        "status": "fail",
+        "summary": "KubeArmor did not block /usr/bin/sleep execution",
+        "details": {
+          "stdout": "",
+          "stderr": "",
+          "exitCode": 0
+        },
+        "stack": "k3s-kubearmor-runc",
+        "test": "kubearmor-process-block"
+      },
+      "kubearmor-file-block": {
+        "status": "pass",
+        "summary": "KubeArmor blocked /etc/nginx/nginx.conf read",
+        "details": {
+          "stderr": "/usr/bin/cat: /etc/nginx/nginx.conf: Permission denied\ncommand terminated with exit code 1"
+        },
+        "stack": "k3s-kubearmor-runc",
+        "test": "kubearmor-file-block"
+      },
+      "kubearmor-network-block": {
+        "status": "fail",
+        "summary": "KubeArmor did not block TCP egress from /usr/bin/curl",
+        "details": {
+          "stdout": "HTTP/1.1 200 OK\r\nDate: Tue, 09 Jun 2026 13:07:53 GMT\r\nContent-Type: text/html\r\nConnection: keep-alive\r\nServer: cloudflare\r\nLast-Modified: Thu, 04 Jun 2026 22:59:45 GMT\r\nAllow: GET, HEAD\r\nAccept-Ranges: bytes\r\nAge: 7928\r\ncf-cache-status: HIT\r\nCF-RAY: a0905ca168a92d1c-IAD\r\n\r",
+          "stderr": "  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0",
+          "exitCode": 0
+        },
+        "stack": "k3s-kubearmor-runc",
+        "test": "kubearmor-network-block"
       }
     }
   }

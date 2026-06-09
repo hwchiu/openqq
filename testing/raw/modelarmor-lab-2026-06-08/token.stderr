@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+PermissionError: [Errno 13] Permission denied: '/run/secrets/kubernetes.io/serviceaccount/token'
+command terminated with exit code 1

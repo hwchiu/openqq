@@ -1,0 +1,20 @@
+NAME                                   READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS               IMAGES                                          SELECTOR
+deployment.apps/kubearmor-controller   1/1     1            1           95s     manager                  kubearmor/kubearmor-controller                  kubearmor-app=kubearmor-controller
+deployment.apps/kubearmor-operator     1/1     1            1           2m12s   kubearmor-operator       docker.io/kubearmor/kubearmor-operator:v1.7.3   kubearmor-app=kubearmor-operator
+deployment.apps/kubearmor-relay        1/1     1            1           97s     kubearmor-relay-server   kubearmor/kubearmor-relay-server                kubearmor-app=kubearmor-relay
+
+NAME                                                 DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR                                                                                                                                                                                                                         AGE    CONTAINERS   IMAGES                       SELECTOR
+daemonset.apps/kubearmor-apparmor-containerd-2c350   3         3         3       3            3           kubearmor.io/btf=yes,kubearmor.io/enforcer=apparmor,kubearmor.io/nri-socket=run_nri_nri.sock,kubearmor.io/runtime=containerd,kubearmor.io/seccomp=yes,kubearmor.io/socket=run_k3s_containerd_containerd.sock,kubernetes.io/os=linux   103s   kubearmor    kubearmor/kubearmor:stable   kubearmor-app=kubearmor,kubearmor.io/btf=yes,kubearmor.io/enforcer=apparmor,kubearmor.io/nri-socket=run_nri_nri.sock,kubearmor.io/runtime=containerd,kubearmor.io/seccomp=yes,kubearmor.io/socket=run_k3s_containerd_containerd.sock,kubernetes.io/os=linux
+
+NAME                                            READY   STATUS      RESTARTS   AGE     IP            NODE       NOMINATED NODE   READINESS GATES
+pod/kubearmor-apparmor-containerd-2c350-cx2cq   1/1     Running     0          103s    10.140.0.4    worker-1   <none>           <none>
+pod/kubearmor-apparmor-containerd-2c350-dmn8r   1/1     Running     0          98s     10.140.0.5    worker-2   <none>           <none>
+pod/kubearmor-apparmor-containerd-2c350-hldx9   1/1     Running     0          102s    10.140.0.6    cp-0       <none>           <none>
+pod/kubearmor-controller-847f69bfc-c8w2k        1/1     Running     0          85s     10.240.2.6    worker-1   <none>           <none>
+pod/kubearmor-operator-5444bb8f54-6f2gd         1/1     Running     0          2m13s   10.240.0.9    cp-0       <none>           <none>
+pod/kubearmor-relay-578f99cdb4-d6p7v            1/1     Running     0          98s     10.240.1.5    worker-2   <none>           <none>
+pod/kubearmor-snitch-4msbc-c5vll                0/1     Completed   0          107s    10.240.0.10   cp-0       <none>           <none>
+pod/kubearmor-snitch-5pf9g-nkgjn                0/1     Completed   0          102s    10.240.1.3    worker-2   <none>           <none>
+pod/kubearmor-snitch-dmbfk-v47bc                0/1     Completed   0          106s    10.240.2.3    worker-1   <none>           <none>
+pod/kubearmor-snitch-dtmkh-tspck                0/1     Completed   0          102s    10.240.1.4    worker-2   <none>           <none>
+pod/kubearmor-snitch-qhc68-bcn82                0/1     Completed   0          109s    10.240.2.2    worker-1   <none>           <none>

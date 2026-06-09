@@ -1,209 +1,113 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Executive Report · OpenShell Lab</title>
-  <script>tailwind.config = { darkMode: 'class' };</script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="assets/reference.css">
-  <script src="assets/reference.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Executive Report · OpenShell Lab</title>
+<link rel="stylesheet" href="assets/site.css">
 </head>
-<body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-  <nav class="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
-    <div class="mx-auto flex h-14 max-w-7xl items-center justify-between gap-6 px-6">
-      <div class="flex items-center gap-8">
-        <a href="index.html" class="flex items-center gap-3">
-          <div class="flex h-8 w-8 items-center justify-center rounded bg-slate-900 dark:bg-white">
-            <span class="text-sm font-bold tracking-tighter text-white dark:text-slate-900">OSL</span>
-          </div>
-          <span class="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">OpenShell Lab</span>
-        </a>
-        <div class="hidden items-center gap-6 text-sm md:flex">
-          <a href="index.html" class="nav-link">Overview</a>
-          <a href="comparison-four-stacks.html" class="nav-link">Technical Reference</a>
-          <a href="installs.html" class="nav-link">Install Paths</a>
-          <a href="matrix.html" class="nav-link">Matrix</a>
-          <a href="report.html" class="nav-active">Report</a>
-          <a href="lab.html" class="nav-link">Labs</a>
+<body>
+<header class="topbar">
+  <div class="page topbar-row">
+    <div class="brand-group">
+      <a href="index.html" class="toplink">← Home</a>
+      <span class="brand"><span class="brand-mark"></span>OpenShell Lab</span>
+    </div>
+    <nav class="site-nav">
+      <a href="installs.html" class="chip">Installs</a>
+      <a href="matrix.html" class="chip">Matrix</a>
+      <a href="lab.html" class="chip green">runc</a>
+      <a href="lab-gvisor.html" class="chip amber">gVisor</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow">Executive Report / 2026-06-09 Live Rerun</div>
+        <h1>先分清楚哪條路是真的穩</h1>
+        <p class="lead">這頁只回答平台決策。現在的基線不是早期 `containerd`，而是 `K3s 1.31 + CRI-O 1.31 + Istio 1.30.1`。所有結論都以這輪 live rerun 為準。</p>
+        <div class="hero-actions">
+          <a class="hero-action" href="https://github.com/hwchiu/openqq/blob/main/testing/comparison-matrix-live-2026-06-09.md" target="_blank">看 06-09 主報告</a>
+          <a class="hero-action" href="matrix.html">看 Matrix</a>
         </div>
       </div>
-      <div class="flex items-center gap-3">
-        <div class="hidden items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 font-mono text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400 sm:flex">
-          <i class="fa-solid fa-book"></i>
-          <span>PROFESSIONAL REFERENCE</span>
+      <div class="hero-side">
+        <div class="note-box">
+          <h3>最短結論</h3>
+          <p><strong>`k3s-openshell-runc`</strong> 仍是最穩的完整主線。`k3s-openshell-gvisor` 這輪比舊結論更好，OpenShell guardrails 是 PASS；但 bare `gvisor` probe 和 `Istio + gVisor sidecar` 仍 FAIL。</p>
         </div>
-        <div class="flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-0.5 text-xs dark:border-slate-700 dark:bg-slate-900">
-          <button data-theme="light" onclick="setTheme('light')" class="theme-btn rounded px-2.5 py-1 text-sm font-medium transition-colors">Light</button>
-          <button data-theme="dark" onclick="setTheme('dark')" class="theme-btn rounded px-2.5 py-1 text-sm font-medium transition-colors">Dark</button>
+        <div class="note-box">
+          <h3>KubeArmor 判讀</h3>
+          <p>不能只看 token block。這輪是：token PASS、file PASS、process FAIL、network FAIL。</p>
         </div>
-        <a href="https://github.com/hwchiu/openqq" target="_blank" rel="noreferrer"
-          class="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-          <i class="fa-brands fa-github"></i>
-          <span class="hidden sm:inline">GitHub</span>
-        </a>
       </div>
     </div>
-  </nav>
+    <div class="metrics">
+      <div class="metric"><strong>4/4</strong><span>叢集重建完成</span></div>
+      <div class="metric"><strong>Istio 1.30.1</strong><span>四套 control plane 都 ready</span></div>
+      <div class="metric"><strong>OpenShell+runc</strong><span>control plane / guardrails 全 PASS</span></div>
+      <div class="metric"><strong>OpenShell+gVisor</strong><span>guardrails PASS，但 bare probe FAIL</span></div>
+      <div class="metric"><strong>KubeArmor</strong><span>file/secret 有效，process/network 失敗</span></div>
+    </div>
+  </section>
 
-  <main class="page-shell">
-    <section class="page-hero">
-      <div class="page-hero-grid grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.85fr)]">
-        <div>
-          <div class="page-kicker mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
-            <span class="rounded bg-slate-200 px-2.5 py-1 dark:bg-slate-800 dark:text-slate-300">EXECUTIVE REPORT</span>
-            <span>Decision summary</span>
-          </div>
-          <h1 class="page-title font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
-            Platform decision,<br>without the noise
-          </h1>
-          <p class="page-lead mt-4 text-lg text-slate-700 dark:text-slate-300">
-            The shortest defensible conclusion is still that `OpenShell + runc` remains the only path preserving the full OpenShell control surface. gVisor is the deliberate runtime-isolation trade-off. Kata remains blocked for the OpenShell sandbox path in this lab.
-          </p>
-          <div class="page-actions mt-6 flex flex-wrap gap-3">
-            <a href="lab.html" class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">See the runc baseline</a>
-            <a href="matrix.html" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Open the matrix</a>
-          </div>
-        </div>
-        <div class="space-y-3">
-          <div class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
-            <div class="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Shortest verdict</div>
-            <p class="text-sm text-slate-700 dark:text-slate-300"><strong>Use runc + OpenShell when feature completeness matters.</strong> Use gVisor only when the stronger runtime boundary is worth losing filesystem policy. Treat Kata as blocker analysis, not production guidance.</p>
-          </div>
-          <div class="page-stats grid grid-cols-2 gap-3">
-            <div class="page-stat page-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
-              <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Recommended</div>
-              <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">runc</div>
-              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Only fully verified OpenShell path</p>
-            </div>
-            <div class="page-stat page-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
-              <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Trade-off</div>
-              <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">gVisor</div>
-              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Isolation up, filesystem policy down</p>
-            </div>
-          </div>
-        </div>
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-tag">Verdict</div>
+        <h2 class="section-title">決策結論</h2>
       </div>
-    </section>
+    </div>
+    <div class="runtime-grid">
+      <article class="runtime-card runc">
+        <div class="runtime-kicker">Recommended</div>
+        <h3>k3s + OpenShell + runc</h3>
+        <p>目前唯一同時拿到穩定叢集、Istio sidecar smoke、OpenShell control plane、OpenShell guardrails 全 PASS 的主線。</p>
+      </article>
+      <article class="runtime-card gvisor">
+        <div class="runtime-kicker">Nuanced</div>
+        <h3>k3s + OpenShell + gVisor</h3>
+        <p>這輪不要再簡化成「退化版」。OpenShell guardrails 是 PASS，但裸 `RuntimeClass gvisor` probe 與 `Istio + gVisor sidecar` 都 FAIL。</p>
+      </article>
+      <article class="runtime-card kata">
+        <div class="runtime-kicker">Boundary</div>
+        <h3>k3s + KubeArmor + runc</h3>
+        <p>適合用來驗證 file/secret 類保護，但現在不能宣稱它能完整保護 agentic workflow，因為 process/network 還沒擋住。</p>
+      </article>
+    </div>
+  </section>
 
-    <section class="page-section">
-      <div class="mb-4 flex flex-wrap gap-3">
-        <a href="lab.html" class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-slate-900">runc baseline</a>
-        <a href="lab-gvisor.html" class="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">gVisor trade-off</a>
-        <a href="lab-kata.html" class="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Kata blocker</a>
-      </div>
-      <div class="page-grid page-grid-3 grid gap-4 md:grid-cols-3">
-        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
-          <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-            <span class="signal-dot signal-green"></span> Recommended
-          </div>
-          <h2 class="text-xl font-semibold text-slate-900 dark:text-white">runc + OpenShell</h2>
-          <p class="mt-3 text-sm text-slate-600 dark:text-slate-400">This is still the most complete line: filesystem policy, network control, L7 filters, binary allowlist, hot-reload, and the downstream storage experiments all remain intact.</p>
-        </article>
-        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
-          <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
-            <span class="signal-dot signal-amber"></span> Trade-off
-          </div>
-          <h2 class="text-xl font-semibold text-slate-900 dark:text-white">gVisor + OpenShell</h2>
-          <p class="mt-3 text-sm text-slate-600 dark:text-slate-400">This line buys a stronger runtime boundary, but it does not preserve Landlock-backed filesystem policy. L7 and hot-reload still work, which keeps it relevant as a deliberate compromise path.</p>
-        </article>
-        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
-          <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
-            <span class="signal-dot signal-red"></span> Blocked
-          </div>
-          <h2 class="text-xl font-semibold text-slate-900 dark:text-white">Kata + OpenShell</h2>
-          <p class="mt-3 text-sm text-slate-600 dark:text-slate-400">The blocker is no longer ambiguous: the OpenShell sandbox path still requires a privileged workload shape that the current Kata path rejects in this environment.</p>
-        </article>
-      </div>
-    </section>
+  <section class="section">
+    <div class="section-head"><div><div class="section-tag">Snapshot</div><h2 class="section-title">四條路線目前應該怎麼讀</h2></div></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>路線</th><th>目前狀態</th><th>最重要的限制</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>`k3s-gvisor`</td><td><span class="tag warn">基線可用，但 gvisor workload 不穩</span></td><td>bare `gvisor-runtime` probe FAIL；`Istio + gVisor sidecar` FAIL</td></tr>
+          <tr><td>`k3s-openshell-runc`</td><td><span class="tag green">主線穩定</span></td><td>仍需要 sandbox patcher workaround</td></tr>
+          <tr><td>`k3s-openshell-gvisor`</td><td><span class="tag green">OpenShell 路徑可用</span></td><td>gVisor 本身的裸 workload 與 sidecar 組合還不穩</td></tr>
+          <tr><td>`k3s-kubearmor-runc`</td><td><span class="tag warn">部分有效</span></td><td>process/network block 仍 FAIL</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-    <section class="page-section rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-      <div class="page-section-header mb-4">
-        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">ABILITY MATRIX</div>
-        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">What actually carries across runtimes</h2>
-      </div>
-      <div class="data-table-container">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Capability</th>
-              <th>runc</th>
-              <th>gVisor</th>
-              <th>Kata</th>
-              <th>Interpretation</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Default deny egress</td>
-              <td><span class="status-pill status-pass">Verified</span></td>
-              <td><span class="status-pill status-pass">Verified</span></td>
-              <td><span class="status-pill status-fail">Blocked</span></td>
-              <td>Kata never reaches the comparable OpenShell sandbox state.</td>
-            </tr>
-            <tr>
-              <td>L7 method/path control</td>
-              <td><span class="status-pill status-pass">Verified</span></td>
-              <td><span class="status-pill status-pass">Verified</span></td>
-              <td><span class="status-pill status-fail">Blocked</span></td>
-              <td>gVisor keeps the L7 path even while filesystem policy regresses.</td>
-            </tr>
-            <tr>
-              <td>Filesystem policy</td>
-              <td><span class="status-pill status-pass">Verified</span></td>
-              <td><span class="status-pill status-degraded">ENOSYS</span></td>
-              <td><span class="status-pill status-fail">Blocked</span></td>
-              <td>The decisive gVisor limitation is missing Landlock syscall support.</td>
-            </tr>
-            <tr>
-              <td>Policy hot-reload</td>
-              <td><span class="status-pill status-pass">Verified</span></td>
-              <td><span class="status-pill status-pass">Verified</span></td>
-              <td><span class="status-pill status-fail">Blocked</span></td>
-              <td>This remains an OpenShell control-plane strength where the sandbox can start.</td>
-            </tr>
-            <tr>
-              <td>Runtime / kernel boundary</td>
-              <td><span class="status-pill status-pending">Baseline</span></td>
-              <td><span class="status-pill status-pass">Stronger</span></td>
-              <td><span class="status-pill status-pass">Strongest</span></td>
-              <td>Boundary strength alone does not imply the OpenShell feature set survives intact.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="page-section rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-      <div class="page-section-header mb-4">
-        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">DIRECT SOURCES</div>
-        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Pages to open next</h2>
-      </div>
-      <div class="page-grid page-grid-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <a href="lab.html" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
-          <div class="text-sm font-semibold text-slate-900 dark:text-white">runc lab</div>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Baseline proof for the full OpenShell capability set.</p>
-        </a>
-        <a href="lab-gvisor.html" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
-          <div class="text-sm font-semibold text-slate-900 dark:text-white">gVisor lab</div>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Root-cause view of what survives and what degrades on runsc.</p>
-        </a>
-        <a href="lab-kata.html" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
-          <div class="text-sm font-semibold text-slate-900 dark:text-white">Kata blocker</div>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Evidence trail for the privileged workload incompatibility.</p>
-        </a>
-        <a href="https://github.com/hwchiu/openqq/tree/main/testing" target="_blank" rel="noreferrer" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
-          <div class="text-sm font-semibold text-slate-900 dark:text-white">Testing folder</div>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Raw markdown reports, logs, and supporting evidence artifacts.</p>
-        </a>
-      </div>
-    </section>
-  </main>
-
-  <footer class="border-t border-slate-200 py-8 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
-    OpenShell Lab Professional Reference •
-    <a href="https://github.com/hwchiu/openqq" target="_blank" rel="noreferrer" class="transition-colors hover:text-slate-700 dark:hover:text-slate-200">GitHub</a>
-  </footer>
+  <section class="section">
+    <div class="section-head"><div><div class="section-tag">References</div><h2 class="section-title">你應該直接看的文件</h2></div></div>
+    <div class="link-grid">
+      <a class="link-card" href="comparison-four-stacks.html"><h3>四套架構比較技術參考</h3><p>最新 06-09 總表與判讀。</p></a>
+      <a class="link-card" href="matrix.html"><h3>Comparison Matrix</h3><p>讀 pages data 與狀態表。</p></a>
+      <a class="link-card" href="lab.html"><h3>runc Lab</h3><p>完整 OpenShell 主線。</p></a>
+      <a class="link-card" href="lab-gvisor.html"><h3>gVisor Lab</h3><p>拆開看 bare gVisor 與 OpenShell-on-gVisor。</p></a>
+      <a class="link-card" href="https://github.com/hwchiu/openqq/blob/main/testing/comparison-matrix-live-2026-06-09.md" target="_blank"><h3>06-09 Live Report</h3><p>最完整的文字版結果。</p></a>
+      <a class="link-card" href="https://github.com/hwchiu/openqq/blob/main/testing/istio-impact-2026-06-09.md" target="_blank"><h3>06-09 Istio Report</h3><p>專門看 mesh 疊加後的變化。</p></a>
+    </div>
+  </section>
+</main>
 </body>
 </html>

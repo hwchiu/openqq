@@ -1,48 +1,37 @@
 # Install Path: Four-Way Comparison Matrix
 
-這條路線不是新的 runtime，而是把四套環境一起建起來。
+這條路線會一次建立四套獨立環境，基線統一為：
 
-## 目標
+- `K3s v1.31.14+k3s1`
+- `CRI-O 1.31.13`
+- `Ubuntu 22.04`
 
-同時維持四個彼此獨立的 Azure lab：
+## 四套環境
 
 1. `k3s-gvisor`
 2. `k3s-openshell-runc`
 3. `k3s-openshell-gvisor`
 4. `k3s-kubearmor-runc`
 
-每套環境都有獨立的：
-
-- Terraform state
-- Azure resource group
-- VNet/subnet CIDR
-- kubeconfig
-- post-install path
-
-## 最短路徑
+## 一鍵建立
 
 ```bash
 ./scripts/install-comparison-matrix.sh
 ```
 
-這支腳本目前用安全的 serial 流程逐套建立，但對使用者來說仍然是一個入口命令。
+## 06-09 live rerun 結果摘要
 
-## 共享輸入來源
+- 四套叢集都成功建立
+- 四套節點都 `Ready`
+- 四套都能裝上 `Istio 1.30.1`
+- `OpenShell + runc`: 完整通過
+- `OpenShell + gVisor`: OpenShell 路徑通過，但 bare gVisor probe / gVisor sidecar 失敗
+- `KubeArmor + runc`: file/secret 類保護有效，process/network 失敗
 
-優先順序如下：
+主報告：
+- [testing/comparison-matrix-live-2026-06-09.md](/Users/hwchiu/hwchiu/openqq/testing/comparison-matrix-live-2026-06-09.md)
 
-1. `terraform/stacks/common.auto.tfvars`
-2. 環境變數
-3. `terraform/terraform.tfvars` 中的共用欄位
-
-## 產物位置
-
-- `generated/stacks/k3s-gvisor/kubeconfig`
-- `generated/stacks/k3s-openshell-runc/kubeconfig`
-- `generated/stacks/k3s-openshell-gvisor/kubeconfig`
-- `generated/stacks/k3s-kubearmor-runc/kubeconfig`
-
-## 清理整組環境
+## 清理
 
 ```bash
 ./scripts/destroy-comparison-matrix.sh
