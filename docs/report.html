@@ -47,37 +47,37 @@
     </div>
   </nav>
 
-  <main class="mx-auto max-w-7xl px-6 pt-8 pb-16">
-    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-10">
-      <div class="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.85fr)]">
+  <main class="page-shell">
+    <section class="page-hero">
+      <div class="page-hero-grid grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.85fr)]">
         <div>
-          <div class="mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
+          <div class="page-kicker mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
             <span class="rounded bg-slate-200 px-2.5 py-1 dark:bg-slate-800 dark:text-slate-300">EXECUTIVE REPORT</span>
             <span>Decision summary</span>
           </div>
-          <h1 class="font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
+          <h1 class="page-title font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
             Platform decision,<br>without the noise
           </h1>
-          <p class="mt-4 text-lg text-slate-700 dark:text-slate-300">
+          <p class="page-lead mt-4 text-lg text-slate-700 dark:text-slate-300">
             The shortest defensible conclusion is still that `OpenShell + runc` remains the only path preserving the full OpenShell control surface. gVisor is the deliberate runtime-isolation trade-off. Kata remains blocked for the OpenShell sandbox path in this lab.
           </p>
-          <div class="mt-6 flex flex-wrap gap-3">
+          <div class="page-actions mt-6 flex flex-wrap gap-3">
             <a href="lab.html" class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">See the runc baseline</a>
             <a href="matrix.html" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Open the matrix</a>
           </div>
         </div>
         <div class="space-y-3">
-          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
             <div class="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Shortest verdict</div>
             <p class="text-sm text-slate-700 dark:text-slate-300"><strong>Use runc + OpenShell when feature completeness matters.</strong> Use gVisor only when the stronger runtime boundary is worth losing filesystem policy. Treat Kata as blocker analysis, not production guidance.</p>
           </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+          <div class="page-stats grid grid-cols-2 gap-3">
+            <div class="page-stat page-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
               <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Recommended</div>
               <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">runc</div>
               <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Only fully verified OpenShell path</p>
             </div>
-            <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+            <div class="page-stat page-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
               <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Trade-off</div>
               <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">gVisor</div>
               <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Isolation up, filesystem policy down</p>
@@ -87,28 +87,28 @@
       </div>
     </section>
 
-    <section class="mb-8">
+    <section class="page-section">
       <div class="mb-4 flex flex-wrap gap-3">
         <a href="lab.html" class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-slate-900">runc baseline</a>
         <a href="lab-gvisor.html" class="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">gVisor trade-off</a>
         <a href="lab-kata.html" class="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Kata blocker</a>
       </div>
-      <div class="grid gap-4 md:grid-cols-3">
-        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+      <div class="page-grid page-grid-3 grid gap-4 md:grid-cols-3">
+        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
             <span class="signal-dot signal-green"></span> Recommended
           </div>
           <h2 class="text-xl font-semibold text-slate-900 dark:text-white">runc + OpenShell</h2>
           <p class="mt-3 text-sm text-slate-600 dark:text-slate-400">This is still the most complete line: filesystem policy, network control, L7 filters, binary allowlist, hot-reload, and the downstream storage experiments all remain intact.</p>
         </article>
-        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
             <span class="signal-dot signal-amber"></span> Trade-off
           </div>
           <h2 class="text-xl font-semibold text-slate-900 dark:text-white">gVisor + OpenShell</h2>
           <p class="mt-3 text-sm text-slate-600 dark:text-slate-400">This line buys a stronger runtime boundary, but it does not preserve Landlock-backed filesystem policy. L7 and hot-reload still work, which keeps it relevant as a deliberate compromise path.</p>
         </article>
-        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
             <span class="signal-dot signal-red"></span> Blocked
           </div>
@@ -118,10 +118,10 @@
       </div>
     </section>
 
-    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-      <div class="mb-4">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">ABILITY MATRIX</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">What actually carries across runtimes</h2>
+    <section class="page-section rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="page-section-header mb-4">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">ABILITY MATRIX</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">What actually carries across runtimes</h2>
       </div>
       <div class="data-table-container">
         <table class="tech-table">
@@ -175,25 +175,25 @@
       </div>
     </section>
 
-    <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-      <div class="mb-4">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">DIRECT SOURCES</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Pages to open next</h2>
+    <section class="page-section rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="page-section-header mb-4">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">DIRECT SOURCES</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Pages to open next</h2>
       </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <a href="lab.html" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+      <div class="page-grid page-grid-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <a href="lab.html" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
           <div class="text-sm font-semibold text-slate-900 dark:text-white">runc lab</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Baseline proof for the full OpenShell capability set.</p>
         </a>
-        <a href="lab-gvisor.html" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+        <a href="lab-gvisor.html" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
           <div class="text-sm font-semibold text-slate-900 dark:text-white">gVisor lab</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Root-cause view of what survives and what degrades on runsc.</p>
         </a>
-        <a href="lab-kata.html" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+        <a href="lab-kata.html" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
           <div class="text-sm font-semibold text-slate-900 dark:text-white">Kata blocker</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Evidence trail for the privileged workload incompatibility.</p>
         </a>
-        <a href="https://github.com/hwchiu/openqq/tree/main/testing" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+        <a href="https://github.com/hwchiu/openqq/tree/main/testing" target="_blank" rel="noreferrer" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
           <div class="text-sm font-semibold text-slate-900 dark:text-white">Testing folder</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Raw markdown reports, logs, and supporting evidence artifacts.</p>
         </a>

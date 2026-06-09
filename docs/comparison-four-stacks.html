@@ -9,162 +9,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="assets/reference.css">
   <script src="assets/reference.js" defer></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
-    
-    :root {
-      --accent: #0f172a;
-    }
-    
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    }
-
-    /* Improved reading contrast */
-    .prose, p, li, td {
-      color: #1e2937;
-    }
-    .dark .prose, .dark p, .dark li, .dark td {
-      color: #f1f5f9;
-    }
-
-    .text-slate-600 {
-      color: #475569 !important;
-    }
-    .dark .text-slate-600 {
-      color: #94a3b8 !important;
-    }
-
-    .text-slate-500 {
-      color: #64748b !important;
-    }
-    .dark .text-slate-500 {
-      color: #cbd5e1 !important;
-    }
-    
-    .font-display {
-      font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
-      font-weight: 600;
-      letter-spacing: -0.025em;
-    }
-
-    .tech-table {
-      border-collapse: separate;
-      border-spacing: 0;
-    }
-    
-    .tech-table th {
-      background: #0f172a;
-      color: #f1f5f9;
-      font-weight: 600;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 14px 16px;
-      text-align: left;
-      border-bottom: 1px solid #334155;
-    }
-    .dark .tech-table th {
-      background: #1e2937;
-      color: #e2e8f0;
-      border-bottom-color: #475569;
-    }
-    
-    .tech-table td {
-      padding: 14px 16px;
-      border-bottom: 1px solid #e2e8f0;
-      vertical-align: top;
-      font-size: 0.925rem;
-      color: #1e2937;
-    }
-    .dark .tech-table td {
-      border-bottom-color: #334155;
-      color: #e2e8f0;
-    }
-    
-    .tech-table tr:hover td {
-      background: #f8fafc;
-    }
-    .dark .tech-table tr:hover td {
-      background: #1e2937;
-    }
-    
-    .section-header {
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.025em;
-      color: #0f172a;
-      margin-bottom: 0.5rem;
-    }
-    .dark .section-header {
-      color: #f1f5f9;
-    }
-
-    .prose {
-      max-width: 75ch;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 1px 10px;
-      border-radius: 9999px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-
-    .nav-active {
-      color: #0f172a;
-      font-weight: 600;
-    }
-    .dark .nav-active {
-      color: #f1f5f9;
-    }
-
-    .metric {
-      font-variant-numeric: tabular-nums;
-    }
-
-    .reference-card {
-      transition: box-shadow 0.1s ease;
-    }
-    
-    .reference-card:hover {
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
-    }
-    .dark .reference-card {
-      background-color: #1e2937;
-      border-color: #334155;
-    }
-
-    .toc-link {
-      transition: all 0.1s ease;
-      color: #475569;
-    }
-    
-    .toc-link:hover {
-      color: #0f172a;
-      padding-left: 4px;
-    }
-    .dark .toc-link {
-      color: #94a3b8;
-    }
-    .dark .toc-link:hover {
-      color: #f1f5f9;
-    }
-
-    .data-table-container {
-      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .dark .data-table-container {
-      box-shadow: none;
-      border-color: #334155;
-    }
-  </style>
 </head>
 <body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
   <nav class="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
@@ -206,20 +50,19 @@
     </div>
   </nav>
 
-  <div class="max-w-7xl mx-auto px-6 pt-8 pb-16">
-    <!-- Focused document container - clean white card on subtle background for professional reference feel -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-8 lg:p-10 shadow-sm dark:bg-slate-900 dark:border-slate-700 dark:shadow-none">
+  <main class="page-shell">
+    <div class="page-hero bg-white border border-slate-200 rounded-2xl p-8 lg:p-10 shadow-sm dark:bg-slate-900 dark:border-slate-700 dark:shadow-none">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-y-4 mb-10">
+    <div class="page-hero-grid flex flex-col md:flex-row md:items-end md:justify-between gap-y-4 mb-10">
       <div>
-        <div class="inline-flex items-center gap-x-2 text-xs font-semibold tracking-[0.125em] text-slate-500 mb-3">
+        <div class="page-kicker inline-flex items-center gap-x-2 text-xs font-semibold tracking-[0.125em] text-slate-500 mb-3">
           <span class="px-2.5 py-1 bg-slate-200 dark:bg-slate-800 dark:text-slate-300 rounded">TECHNICAL REFERENCE</span>
           <span>v2026.06</span>
         </div>
-        <h1 class="font-display text-5xl tracking-tighter font-semibold text-slate-900 dark:text-white leading-none">
+        <h1 class="page-title font-display text-5xl tracking-tighter font-semibold text-slate-900 dark:text-white leading-none">
           四套 Kubernetes 安全執行環境<br>比較技術參考
         </h1>
-        <p class="mt-4 max-w-2xl text-lg text-slate-700 dark:text-slate-300">
+        <p class="page-lead mt-4 max-w-2xl text-lg text-slate-700 dark:text-slate-300">
           這份技術參考總結我們在 Azure k3s 環境上對四套安全執行環境的實際驗證結果。聚焦架構差異、已證實的行為治理能力、以及重現實驗的完整路徑。
         </p>
       </div>
@@ -234,23 +77,23 @@
     </div>
 
     <!-- Quick Facts -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-      <div class="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
+    <div class="page-stats grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+      <div class="page-stat page-card bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
         <div class="text-xs text-slate-500 font-medium dark:text-slate-400">主要路線</div>
         <div class="mt-1 text-2xl font-semibold tracking-tight dark:text-white">k3s + OpenShell + runc</div>
         <div class="text-emerald-600 text-sm mt-1">功能最完整</div>
       </div>
-      <div class="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
+      <div class="page-stat page-card bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
         <div class="text-xs text-slate-500 font-medium dark:text-slate-400">對照路線</div>
         <div class="mt-1 text-2xl font-semibold tracking-tight dark:text-white">OpenShell + gVisor</div>
         <div class="text-amber-600 text-sm mt-1">Filesystem 能力退化</div>
       </div>
-      <div class="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
+      <div class="page-stat page-card bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
         <div class="text-xs text-slate-500 font-medium dark:text-slate-400">獨立安全路線</div>
         <div class="mt-1 text-2xl font-semibold tracking-tight dark:text-white">KubeArmor + runc</div>
         <div class="text-blue-600 text-sm mt-1">LSM 層保護</div>
       </div>
-      <div class="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
+      <div class="page-stat page-card bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-700">
         <div class="text-xs text-slate-500 font-medium dark:text-slate-400">Baseline</div>
         <div class="mt-1 text-2xl font-semibold tracking-tight dark:text-white">純 k3s + gVisor</div>
         <div class="text-slate-600 text-sm mt-1 dark:text-slate-400">無額外 agent 控制平面</div>
@@ -281,7 +124,7 @@
       <div class="flex-1 min-w-0 space-y-12">
 
         <!-- 1. 快速概覽 -->
-        <section id="overview">
+        <section id="overview" class="page-section">
           <div class="flex items-baseline gap-x-3 mb-4">
             <span class="font-mono text-xs text-slate-400">01</span>
             <h2 class="section-header">快速概覽與比較矩陣</h2>
@@ -402,7 +245,7 @@
             <p class="text-slate-600 dark:text-slate-300 mb-3">2026-06-08 重新建立四套環境後執行 live matrix rerun（含新增 Istio 疊加測試），並對 KubeArmor 進行 root cause 修正與 agentic scenario 擴充驗證。</p>
 
             <div class="grid md:grid-cols-2 gap-4 text-sm">
-              <div class="reference-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+              <div class="page-card reference-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
                 <div class="font-semibold mb-1">KubeArmor Hardening (06-08)</div>
                 <ul class="list-disc pl-5 space-y-1 text-xs">
                   <li>Root cause: install timing + annotateExisting=false 導致既有 workload 未被正確處理。</li>
@@ -411,7 +254,7 @@
                   <li>證據: <a href="../testing/kubearmor-hardening-2026-06-08.md" class="underline">kubearmor-hardening-2026-06-08.md</a></li>
                 </ul>
               </div>
-              <div class="reference-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+              <div class="page-card reference-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
                 <div class="font-semibold mb-1">Agentic Scenarios (KubeArmor)</div>
                 <ul class="list-disc pl-5 space-y-1 text-xs">
                   <li>File/secret guardrails 穩定（PASS）。</li>
@@ -437,7 +280,7 @@
         </section>
 
         <!-- 2. 架構模型 -->
-        <section id="architecture">
+        <section id="architecture" class="page-section">
           <div class="flex items-baseline gap-x-3 mb-4">
             <span class="font-mono text-xs text-slate-400">02</span>
             <h2 class="section-header">架構模型</h2>
@@ -454,7 +297,7 @@
           </div>
 
           <div class="mt-6 grid md:grid-cols-2 gap-4">
-            <div class="reference-card bg-white border border-slate-200 rounded-xl p-5 dark:bg-slate-900 dark:border-slate-700">
+            <div class="page-card reference-card bg-white border border-slate-200 rounded-xl p-5 dark:bg-slate-900 dark:border-slate-700">
               <div class="font-semibold text-sm text-slate-500 mb-2 dark:text-slate-400">OpenShell 路線</div>
               <div class="font-semibold text-lg tracking-tight dark:text-white">Gateway + Supervisor 模型</div>
               <div class="mt-3 text-sm text-slate-600 space-y-2 dark:text-slate-300">
@@ -464,7 +307,7 @@
               </div>
             </div>
             
-            <div class="reference-card bg-white border border-slate-200 rounded-xl p-5 dark:bg-slate-900 dark:border-slate-700">
+            <div class="page-card reference-card bg-white border border-slate-200 rounded-xl p-5 dark:bg-slate-900 dark:border-slate-700">
               <div class="font-semibold text-sm text-slate-500 mb-2 dark:text-slate-400">gVisor 路線</div>
               <div class="font-semibold text-lg tracking-tight dark:text-white">Userspace Kernel 邊界</div>
               <div class="mt-3 text-sm text-slate-600 space-y-2 dark:text-slate-300">
@@ -503,7 +346,7 @@
         </section>
 
         <!-- 3. 差異分析 -->
-        <section id="differences">
+        <section id="differences" class="page-section">
           <div class="flex items-baseline gap-x-3 mb-4">
             <span class="font-mono text-xs text-slate-400">03</span>
             <h2 class="section-header">差異分析</h2>
@@ -560,13 +403,13 @@
         </section>
 
         <!-- 4. 實驗過程 -->
-        <section id="process">
+        <section id="process" class="page-section">
           <div class="flex items-baseline gap-x-3 mb-4">
             <span class="font-mono text-xs text-slate-400">04</span>
             <h2 class="section-header">實驗過程與可重現性</h2>
           </div>
           
-          <div class="bg-white border border-slate-200 rounded-xl p-6 text-sm">
+          <div class="page-card bg-white border border-slate-200 rounded-xl p-6 text-sm">
             <div class="grid md:grid-cols-2 gap-x-8 gap-y-6">
               <div>
                 <div class="font-semibold mb-2 text-slate-700">統一建置</div>
@@ -587,10 +430,9 @@
         </div>
       </div>
     </div>
-  </div>
-
     </div>
     <!-- /document container -->
+  </main>
 
   <footer class="border-t border-slate-200 py-8 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
     OpenShell Lab Professional Reference •

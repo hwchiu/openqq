@@ -47,33 +47,33 @@
     </div>
   </nav>
 
-  <main class="mx-auto max-w-7xl px-6 pt-8 pb-16">
-    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-10">
+  <main class="page-shell">
+    <section class="page-hero">
       <div class="mb-6 flex flex-wrap gap-3">
         <a href="lab.html" class="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">runc baseline</a>
         <a href="lab-gvisor.html" class="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">gVisor trade-off</a>
         <a href="lab-kata.html" class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-slate-900">Kata blocker</a>
       </div>
 
-      <div class="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.85fr)]">
+      <div class="page-hero-grid grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.85fr)]">
         <div>
-          <div class="mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
+          <div class="page-kicker mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
             <span class="rounded bg-rose-100 px-2.5 py-1 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">KATA BLOCKER</span>
             <span>OpenShell sandbox compatibility gap</span>
           </div>
-          <h1 class="font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
+          <h1 class="page-title font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
             Kata works as a runtime,<br>but not yet for OpenShell
           </h1>
-          <p class="mt-4 text-lg text-slate-700 dark:text-slate-300">
+          <p class="page-lead mt-4 text-lg text-slate-700 dark:text-slate-300">
             The current lab evidence separates two facts cleanly: `RuntimeClass/kata` itself works on the chosen Azure VM shape, but the OpenShell sandbox path still fails because it requires a privileged workload shape that the current Kata path rejects.
           </p>
-          <div class="mt-6 flex flex-wrap gap-3">
+          <div class="page-actions mt-6 flex flex-wrap gap-3">
             <a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-kata-validation-2026-06-03.md" target="_blank" rel="noreferrer" class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">Full Kata validation</a>
             <a href="https://github.com/hwchiu/openqq/blob/main/k8s/kata-runtimeclass.yaml" target="_blank" rel="noreferrer" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">RuntimeClass manifest</a>
           </div>
         </div>
         <div class="space-y-3">
-          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
             <div class="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">What is already proven</div>
             <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400">
               <li>The Azure VM shape was upgraded to a Kata-capable profile with `/dev/kvm` available.</li>
@@ -81,13 +81,13 @@
               <li>The blocker appears only when the workload needs `privileged: true`.</li>
             </ul>
           </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+          <div class="page-stats grid grid-cols-2 gap-3">
+            <div class="page-stat page-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
               <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">RuntimeClass</div>
               <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">OK</div>
               <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Guest kernel probe succeeds</p>
             </div>
-            <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+            <div class="page-stat page-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
               <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Sandbox</div>
               <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">Blocked</div>
               <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Fails on privileged workload shape</p>
@@ -97,31 +97,31 @@
       </div>
     </section>
 
-    <section class="mb-8">
-      <div class="mb-4">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">VERIFIED SUCCESS</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">The parts that already work</h2>
+    <section class="page-section">
+      <div class="page-section-header mb-4">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">VERIFIED SUCCESS</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">The parts that already work</h2>
       </div>
-      <div class="grid gap-4 md:grid-cols-3">
-        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+      <div class="page-grid page-grid-3 grid gap-4 md:grid-cols-3">
+        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Azure VM prerequisites</h3>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">The lab moved to `Standard_D4s_v3`, `/dev/kvm` is present on the workers, and `kata-runtime 3.31.0` is visible on the nodes.</p>
         </article>
-        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <h3 class="text-lg font-semibold text-slate-900 dark:text-white">`RuntimeClass/kata` is active</h3>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">The verification pod reports the Kata guest kernel rather than the Azure host kernel, which proves the runtime boundary itself is real.</p>
         </article>
-        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Image volumes are not the issue</h3>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">A minimal Kata pod with an image volume succeeds without privileged mode, which narrows the blocker to the privileged workload dimension.</p>
         </article>
       </div>
     </section>
 
-    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-      <div class="mb-4">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">BLOCKER MATRIX</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">The narrowing experiment</h2>
+    <section class="page-section rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="page-section-header mb-4">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">BLOCKER MATRIX</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">The narrowing experiment</h2>
       </div>
       <div class="data-table-container">
         <table class="tech-table">
@@ -182,10 +182,11 @@ The device is not writable: Permission denied</code></pre>
       </div>
     </section>
 
-    <section class="mb-8 grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
-      <article class="reference-card rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">INTERPRETATION</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">What the blocker actually means</h2>
+    <section class="page-section">
+      <div class="page-grid page-grid-2 grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
+      <article class="page-card reference-card rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">INTERPRETATION</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">What the blocker actually means</h2>
         <div class="mt-4 content-copy space-y-4 text-sm">
           <p>This does not prove that Kata itself is broken. It proves that the current OpenShell sandbox shape in this k3s path still depends on a privileged pod configuration that Kata rejects in this environment.</p>
           <ul>
@@ -196,9 +197,9 @@ The device is not writable: Permission denied</code></pre>
         </div>
       </article>
 
-      <article class="reference-card rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">NEXT MOVES</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">What would unblock progress</h2>
+      <article class="page-card reference-card rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">NEXT MOVES</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">What would unblock progress</h2>
         <div class="mt-4 space-y-4 text-sm text-slate-600 dark:text-slate-400">
           <p>Any forward path has to address the privileged dependency directly rather than rewriting ordinary policy YAML.</p>
           <ul class="space-y-2">
@@ -208,19 +209,20 @@ The device is not writable: Permission denied</code></pre>
           </ul>
         </div>
       </article>
+      </div>
     </section>
 
-    <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-      <div class="mb-4">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">PRIMARY SOURCES</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Open the evidence chain</h2>
+    <section class="page-section rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="page-section-header mb-4">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">PRIMARY SOURCES</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Open the evidence chain</h2>
       </div>
-      <div class="grid gap-4 md:grid-cols-2">
-        <a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-kata-validation-2026-06-03.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+      <div class="page-grid page-grid-2 grid gap-4 md:grid-cols-2">
+        <a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-kata-validation-2026-06-03.md" target="_blank" rel="noreferrer" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
           <div class="text-sm font-semibold text-slate-900 dark:text-white">OpenShell × Kata validation</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Primary report covering the narrowing matrix and blocker interpretation.</p>
         </a>
-        <a href="https://github.com/hwchiu/openqq/tree/main/testing/raw/kata-openshell-blocker-2026-06-03" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+        <a href="https://github.com/hwchiu/openqq/tree/main/testing/raw/kata-openshell-blocker-2026-06-03" target="_blank" rel="noreferrer" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
           <div class="text-sm font-semibold text-slate-900 dark:text-white">Raw blocker artifacts</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Pod manifests, describe output, and event logs for the privileged Kata failure path.</p>
         </a>

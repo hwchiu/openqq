@@ -47,40 +47,40 @@
     </div>
   </nav>
 
-  <main class="mx-auto max-w-7xl px-6 pt-8 pb-16">
-    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-10">
-      <div class="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.8fr)]">
+  <main class="page-shell">
+    <section class="page-hero">
+      <div class="page-hero-grid grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.8fr)]">
         <div>
-          <div class="mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
+          <div class="page-kicker mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
             <span class="rounded bg-slate-200 px-2.5 py-1 dark:bg-slate-800 dark:text-slate-300">INSTALL CATALOG</span>
             <span>Independent roots</span>
           </div>
-          <h1 class="font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
+          <h1 class="page-title font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
             Four install lines,<br>one comparison workflow
           </h1>
-          <p class="mt-4 text-lg text-slate-700 dark:text-slate-300">
+          <p class="page-lead mt-4 text-lg text-slate-700 dark:text-slate-300">
             Each environment keeps its own Terraform state, resource group, kubeconfig, and validation path. Use a single path when you only need one stack, or bootstrap the full matrix when you want side-by-side evidence.
           </p>
-          <div class="mt-6 flex flex-wrap gap-3">
+          <div class="page-actions mt-6 flex flex-wrap gap-3">
             <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-comparison-matrix.md" target="_blank" rel="noreferrer" class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">Read the matrix runbook</a>
             <a href="matrix.html" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Open the live matrix</a>
           </div>
         </div>
         <div class="space-y-3">
-          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
             <div class="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Quick start</div>
             <div class="terminal-shell">
               <div class="terminal-label">Matrix bootstrap</div>
               <pre><code>./scripts/install-comparison-matrix.sh</code></pre>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+          <div class="page-stats grid grid-cols-2 gap-3">
+            <div class="page-stat page-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
               <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Paths</div>
               <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">4</div>
               <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Independent install routes</p>
             </div>
-            <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+            <div class="page-stat page-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
               <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Cleanup</div>
               <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">1</div>
               <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Shared destroy path for the matrix</p>
@@ -90,14 +90,14 @@
       </div>
     </section>
 
-    <section class="mb-8">
-      <div class="mb-4">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">INSTALL PATHS</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Independent environment lines</h2>
-        <p class="mt-1 text-slate-600 dark:text-slate-400">These are the four supported roots currently surfaced in the docs and matrix JSON.</p>
+    <section class="page-section">
+      <div class="page-section-header mb-4">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">INSTALL PATHS</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Independent environment lines</h2>
+        <p class="page-section-lead mt-1 text-slate-600 dark:text-slate-400">These are the four supported roots currently surfaced in the docs and matrix JSON.</p>
       </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+      <div class="page-grid page-grid-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 dark:bg-slate-800 dark:text-slate-300">
             <span class="signal-dot signal-slate"></span> Path 01
           </div>
@@ -110,7 +110,7 @@
           <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-gvisor.md" target="_blank" rel="noreferrer" class="section-link mt-4 inline-block text-sm">Open runbook</a>
         </article>
 
-        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
             <span class="signal-dot signal-green"></span> Path 02
           </div>
@@ -123,7 +123,7 @@
           <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-runc.md" target="_blank" rel="noreferrer" class="section-link mt-4 inline-block text-sm">Open runbook</a>
         </article>
 
-        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
             <span class="signal-dot signal-amber"></span> Path 03
           </div>
@@ -136,7 +136,7 @@
           <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-gvisor.md" target="_blank" rel="noreferrer" class="section-link mt-4 inline-block text-sm">Open runbook</a>
         </article>
 
-        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
             <span class="signal-dot" style="background:#2563eb"></span> Path 04
           </div>
@@ -151,10 +151,11 @@
       </div>
     </section>
 
-    <section class="mb-8 grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
-      <article class="reference-card rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">MATRIX WORKFLOW</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Provision, validate, publish, destroy</h2>
+    <section class="page-section">
+      <div class="page-grid page-grid-2 grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
+      <article class="page-card reference-card rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">MATRIX WORKFLOW</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Provision, validate, publish, destroy</h2>
         <div class="mt-4 content-copy space-y-4 text-sm">
           <p>The matrix scripts exist so you can build all four environments with shared naming and then run one published comparison pass against them.</p>
           <div class="terminal-shell">
@@ -171,9 +172,9 @@ PUBLISH_RESULTS=true ./scripts/run-comparison-matrix-tests.sh
         </div>
       </article>
 
-      <article class="reference-card rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">GUIDANCE</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Which path to start with</h2>
+      <article class="page-card reference-card rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">GUIDANCE</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Which path to start with</h2>
         <div class="mt-4 space-y-4 text-sm text-slate-600 dark:text-slate-400">
           <div>
             <div class="font-semibold text-slate-900 dark:text-white">Need the full OpenShell feature set</div>
@@ -189,12 +190,13 @@ PUBLISH_RESULTS=true ./scripts/run-comparison-matrix-tests.sh
           </div>
         </div>
       </article>
+      </div>
     </section>
 
-    <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-      <div class="mb-4">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">ENVIRONMENT MAP</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">At-a-glance stack characteristics</h2>
+    <section class="page-section rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="page-section-header mb-4">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">ENVIRONMENT MAP</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">At-a-glance stack characteristics</h2>
       </div>
       <div class="data-table-container">
         <table class="tech-table">

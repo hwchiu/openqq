@@ -47,43 +47,43 @@
     </div>
   </nav>
 
-  <main class="mx-auto max-w-7xl px-6 pt-8 pb-16">
-    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-10">
-      <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+  <main class="page-shell">
+    <section class="page-hero">
+      <div class="page-hero-grid flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
         <div class="max-w-3xl">
-          <div class="mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
+          <div class="page-kicker mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
             <span class="rounded bg-slate-200 px-2.5 py-1 dark:bg-slate-800 dark:text-slate-300">PROFESSIONAL REFERENCE PORTAL</span>
             <span>v2026.06</span>
           </div>
-          <h1 class="font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
+          <h1 class="page-title font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
             OpenShell Lab<br>Professional Reference
           </h1>
-          <p class="mt-4 text-lg text-slate-700 dark:text-slate-300">
+          <p class="page-lead mt-4 text-lg text-slate-700 dark:text-slate-300">
             Unified entry point for the verified four-stack comparison, install paths, live matrix, executive report, and runtime deep dives. The goal is direct technical orientation, not marketing copy.
           </p>
-          <div class="mt-6 flex flex-wrap gap-3">
+          <div class="page-actions mt-6 flex flex-wrap gap-3">
             <a href="comparison-four-stacks.html" class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">Read the Comparison Reference</a>
             <a href="matrix.html" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Open the Live Matrix</a>
             <a href="lab.html" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Browse Runtime Labs</a>
           </div>
         </div>
-        <div class="grid w-full max-w-md grid-cols-2 gap-3">
-          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+        <div class="page-stats grid w-full max-w-md grid-cols-2 gap-3">
+          <div class="page-stat page-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
             <div class="text-xs font-medium uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Validated</div>
             <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">4</div>
             <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Independent comparison environments</p>
           </div>
-          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+          <div class="page-stat page-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
             <div class="text-xs font-medium uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Deep Dives</div>
             <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">3</div>
             <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">runc, gVisor, and Kata analysis pages</p>
           </div>
-          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+          <div class="page-stat page-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
             <div class="text-xs font-medium uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Matrix</div>
             <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">6</div>
             <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Shared test cases rendered from JSON</p>
           </div>
-          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+          <div class="page-stat page-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
             <div class="text-xs font-medium uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Updated</div>
             <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">06-08</div>
             <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Latest evidence refresh date in the docs set</p>
@@ -92,29 +92,29 @@
       </div>
     </section>
 
-    <section class="mb-8">
-      <div class="mb-4">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">START HERE</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Core reference set</h2>
-        <p class="mt-1 text-slate-600 dark:text-slate-400">The first four pages cover the active comparison workflow from install through evidence review.</p>
+    <section class="page-section">
+      <div class="page-section-header mb-4">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">START HERE</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Core reference set</h2>
+        <p class="page-section-lead mt-1 text-slate-600 dark:text-slate-400">The first four pages cover the active comparison workflow from install through evidence review.</p>
       </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <a href="comparison-four-stacks.html" class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+      <div class="page-grid page-grid-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <a href="comparison-four-stacks.html" class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <div class="mb-2 text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Reference</div>
           <div class="text-lg font-semibold text-slate-900 dark:text-white">Technical Reference</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Architectural differences, verified behaviors, decision framing, and links into the raw evidence.</p>
         </a>
-        <a href="installs.html" class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <a href="installs.html" class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <div class="mb-2 text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Deploy</div>
           <div class="text-lg font-semibold text-slate-900 dark:text-white">Install Paths</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Independent install roots, matrix bootstrap, and runbook entry points for each supported stack.</p>
         </a>
-        <a href="matrix.html" class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <a href="matrix.html" class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <div class="mb-2 text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Data</div>
           <div class="text-lg font-semibold text-slate-900 dark:text-white">Comparison Matrix</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Shared test catalog, per-stack status, and evidence links rendered from the published JSON snapshot.</p>
         </a>
-        <a href="report.html" class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <a href="report.html" class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <div class="mb-2 text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Decision</div>
           <div class="text-lg font-semibold text-slate-900 dark:text-white">Executive Report</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Condensed platform judgment, trade-offs, and the shortest route to the relevant deep-dive pages.</p>
@@ -122,28 +122,28 @@
       </div>
     </section>
 
-    <section class="mb-8">
-      <div class="mb-4">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">RUNTIME DEEP DIVES</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Focused lab pages</h2>
-        <p class="mt-1 text-slate-600 dark:text-slate-400">These pages isolate the runtime-specific evidence that sits behind the higher-level comparison pages.</p>
+    <section class="page-section">
+      <div class="page-section-header mb-4">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">RUNTIME DEEP DIVES</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Focused lab pages</h2>
+        <p class="page-section-lead mt-1 text-slate-600 dark:text-slate-400">These pages isolate the runtime-specific evidence that sits behind the higher-level comparison pages.</p>
       </div>
-      <div class="grid gap-4 md:grid-cols-3">
-        <a href="lab.html" class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+      <div class="page-grid page-grid-3 grid gap-4 md:grid-cols-3">
+        <a href="lab.html" class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
             <span class="signal-dot signal-green"></span> runc baseline
           </div>
           <div class="text-lg font-semibold text-slate-900 dark:text-white">OpenShell + runc</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Full-function baseline with working Landlock, L7 controls, policy hot-reload, FUSE baseline, and Azure File CSI.</p>
         </a>
-        <a href="lab-gvisor.html" class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <a href="lab-gvisor.html" class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
             <span class="signal-dot signal-amber"></span> gVisor trade-off
           </div>
           <div class="text-lg font-semibold text-slate-900 dark:text-white">OpenShell + gVisor</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Stronger runtime isolation with a concrete filesystem-policy regression caused by missing Landlock syscall support.</p>
         </a>
-        <a href="lab-kata.html" class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <a href="lab-kata.html" class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
             <span class="signal-dot signal-red"></span> blocker analysis
           </div>
@@ -153,25 +153,25 @@
       </div>
     </section>
 
-    <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-      <div class="mb-4">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">RUNBOOKS</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Direct operational entry points</h2>
+    <section class="page-section rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="page-section-header mb-4">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">RUNBOOKS</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Direct operational entry points</h2>
       </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-comparison-matrix.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+      <div class="page-grid page-grid-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-comparison-matrix.md" target="_blank" rel="noreferrer" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
           <div class="text-sm font-semibold text-slate-900 dark:text-white">Comparison matrix runbook</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Provision, validate, and destroy the four-stack matrix end-to-end.</p>
         </a>
-        <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-runc.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+        <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-runc.md" target="_blank" rel="noreferrer" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
           <div class="text-sm font-semibold text-slate-900 dark:text-white">OpenShell + runc runbook</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Primary install path for the full OpenShell capability set.</p>
         </a>
-        <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-gvisor.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+        <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-openshell-gvisor.md" target="_blank" rel="noreferrer" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
           <div class="text-sm font-semibold text-slate-900 dark:text-white">OpenShell + gVisor runbook</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Trade-off path for stronger runtime isolation with degraded filesystem policy.</p>
         </a>
-        <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-kubearmor-runc.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+        <a href="https://github.com/hwchiu/openqq/blob/main/docs/runbooks/install-k3s-kubearmor-runc.md" target="_blank" rel="noreferrer" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
           <div class="text-sm font-semibold text-slate-900 dark:text-white">KubeArmor + runc runbook</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Independent security-control comparison path for KubeArmor evidence.</p>
         </a>

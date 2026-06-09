@@ -47,43 +47,43 @@
     </div>
   </nav>
 
-  <main class="mx-auto max-w-7xl px-6 pt-8 pb-16">
-    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-10">
+  <main class="page-shell">
+    <section class="page-hero">
       <div class="mb-6 flex flex-wrap gap-3">
         <a href="lab.html" class="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">runc baseline</a>
         <a href="lab-gvisor.html" class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-slate-900">gVisor trade-off</a>
         <a href="lab-kata.html" class="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Kata blocker</a>
       </div>
 
-      <div class="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.85fr)]">
+      <div class="page-hero-grid grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.85fr)]">
         <div>
-          <div class="mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
+          <div class="page-kicker mb-3 inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
             <span class="rounded bg-amber-100 px-2.5 py-1 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">GVISOR TRADE-OFF</span>
             <span>Isolation branch</span>
           </div>
-          <h1 class="font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
+          <h1 class="page-title font-display text-5xl leading-none tracking-tight text-slate-900 dark:text-white md:text-6xl">
             gVisor is not an upgrade,<br>it is a trade-off
           </h1>
-          <p class="mt-4 text-lg text-slate-700 dark:text-slate-300">
+          <p class="page-lead mt-4 text-lg text-slate-700 dark:text-slate-300">
             This line is not a failure case. It is a controlled regression case. OpenShell keeps L7 policy, binary allowlist, and hot-reload on runsc, but loses filesystem policy because the Landlock syscall path is unavailable.
           </p>
-          <div class="mt-6 flex flex-wrap gap-3">
+          <div class="page-actions mt-6 flex flex-wrap gap-3">
             <a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-gvisor-validation-2026-06-03.md" target="_blank" rel="noreferrer" class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">Full gVisor report</a>
             <a href="https://github.com/hwchiu/openqq/blob/main/testing/landlock-gvisor-root-cause-2026-06-03.md" target="_blank" rel="noreferrer" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Landlock root cause</a>
           </div>
         </div>
         <div class="space-y-3">
-          <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+          <div class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
             <div class="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Most important finding</div>
             <p class="text-sm text-slate-700 dark:text-slate-300">This is not a policy-distribution problem. The actual root cause is `landlock_create_ruleset` returning `ENOSYS` on the gVisor path, which means the supervisor cannot activate filesystem rules.</p>
           </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+          <div class="page-stats grid grid-cols-2 gap-3">
+            <div class="page-stat page-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
               <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">L7</div>
               <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">Held</div>
               <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">GET/POST/binary controls still work</p>
             </div>
-            <div class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+            <div class="page-stat page-card rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
               <div class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Filesystem</div>
               <div class="metric-value mt-2 text-3xl font-semibold text-slate-900 dark:text-white">Lost</div>
               <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Blocked by Landlock `ENOSYS`</p>
@@ -93,31 +93,31 @@
       </div>
     </section>
 
-    <section class="mb-8">
-      <div class="mb-4">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">WHAT SURVIVES</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Capabilities that stay alive on runsc</h2>
+    <section class="page-section">
+      <div class="page-section-header mb-4">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">WHAT SURVIVES</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Capabilities that stay alive on runsc</h2>
       </div>
-      <div class="grid gap-4 md:grid-cols-3">
-        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+      <div class="page-grid page-grid-3 grid gap-4 md:grid-cols-3">
+        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <h3 class="text-lg font-semibold text-slate-900 dark:text-white">L7 policy remains</h3>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">`curl GET` is allowed, `curl POST` is denied, and `python3 GET` is denied. The network/L7 policy plane still works across the runtime boundary.</p>
         </article>
-        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Hot-reload remains</h3>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Matching Pod UIDs across a policy update show that the OpenShell control plane can still update active policy without a pod rebuild.</p>
         </article>
-        <article class="reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <article class="page-card reference-card rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
           <h3 class="text-lg font-semibold text-slate-900 dark:text-white">The sandbox still starts</h3>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Unlike the Kata blocker path, this runtime reaches real OpenShell behavior validation. The failure is inside one enforcement layer, not at startup.</p>
         </article>
       </div>
     </section>
 
-    <section class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-      <div class="mb-4">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">WHAT BREAKS</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">The specific regression layer</h2>
+    <section class="page-section rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="page-section-header mb-4">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">WHAT BREAKS</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">The specific regression layer</h2>
       </div>
       <div class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-200">
         <strong>Filesystem policy is the failed layer.</strong> The supervisor reports `Landlock Filesystem Sandbox Unavailable`, and the failure can be reproduced through direct syscall comparison rather than inferred from policy behavior alone.
@@ -161,17 +161,17 @@ gvisor: landlock_create_ruleset -> ENOSYS</code></pre>
       </div>
     </section>
 
-    <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-      <div class="mb-4">
-        <div class="mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">PRIMARY SOURCES</div>
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Open the direct evidence</h2>
+    <section class="page-section rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="page-section-header mb-4">
+        <div class="page-section-kicker mb-1 text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">PRIMARY SOURCES</div>
+        <h2 class="page-section-title text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Open the direct evidence</h2>
       </div>
-      <div class="grid gap-4 md:grid-cols-2">
-        <a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-gvisor-validation-2026-06-03.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+      <div class="page-grid page-grid-2 grid gap-4 md:grid-cols-2">
+        <a href="https://github.com/hwchiu/openqq/blob/main/testing/openshell-gvisor-validation-2026-06-03.md" target="_blank" rel="noreferrer" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
           <div class="text-sm font-semibold text-slate-900 dark:text-white">gVisor validation report</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Full experiment log and interpretation for the OpenShell + gVisor path.</p>
         </a>
-        <a href="https://github.com/hwchiu/openqq/blob/main/testing/landlock-gvisor-root-cause-2026-06-03.md" target="_blank" rel="noreferrer" class="reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
+        <a href="https://github.com/hwchiu/openqq/blob/main/testing/landlock-gvisor-root-cause-2026-06-03.md" target="_blank" rel="noreferrer" class="page-card reference-card rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950">
           <div class="text-sm font-semibold text-slate-900 dark:text-white">Landlock root cause report</div>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Direct syscall comparison between runc and gVisor.</p>
         </a>

@@ -19,6 +19,9 @@ required_patterns=(
   '<link rel="stylesheet" href="assets/reference.css">'
   '<script src="assets/reference.js" defer><\/script>'
   'class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100"'
+  'class="[^"]*page-hero'
+  'class="[^"]*page-section'
+  'class="[^"]*page-card'
   'class="theme-btn'
   'OpenShell Lab'
   'OpenShell Lab Professional Reference'
@@ -39,6 +42,11 @@ for page in "${pages[@]}"; do
 
   if grep -q 'assets/site.css' "${page}"; then
     echo "legacy site.css shell still present in ${page}" >&2
+    exit 1
+  fi
+
+  if grep -q '<style>' "${page}"; then
+    echo "inline page-specific style block still present in ${page}" >&2
     exit 1
   fi
 done
