@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-06-10T01:40:00+08:00",
+  "generatedAt": "2026-06-10T05:15:04+00:00",
   "recommendation": {
-    "title": "目前暫定主推薦仍是 OpenShell + CRI-O，但 1.34 與 scenario 家族仍待完成",
-    "summary": "GitHub Pages 現在已開始反映正式 current analysis。plain CRI-O 對照組在兩條正式基線上都已出現同型態的 baseline workload failure；OpenShell + CRI-O 在 1.34/1.34 卡在 bootstrap；gVisor 1.34 則走得更遠，但 worker-side runtime verify 仍失敗。",
-    "detail": "在新模型下，每個候選方案都必須在 K8s 1.31 + CRI-O 1.31 與 K8s 1.34 + CRI-O 1.34 上，以明確宣告的 guardrail / policy / config 重新驗證；節點 Ready 不等於 solution 成功。",
-    "currentCall": "目前仍偏向 OpenShell + CRI-O，但 plain CRI-O 已在 1.31 與 1.34 兩條基線上重現 baseline pod 與 Istio control plane 失敗；OpenShell + CRI-O 在 1.34/1.34 出現 bootstrap blocked；gVisor 在 1.34/1.34 則出現 worker-side runtime verify failure",
+    "title": "目前暫定主推薦仍是 OpenShell + CRI-O，但 plain CRI-O baseline smoke 已恢復",
+    "summary": "GitHub Pages 現在反映修正後的最新判讀。plain CRI-O 在 1.31 與 1.34 兩條基線上的 baseline smoke，已在 pinned flannel CNI config 下恢復；OpenShell + CRI-O 仍是唯一在 1.31 上同時確認 baseline、Istio 與 OpenShell control plane 正常的候選，但 1.34 scenario 家族需要在修正後重跑。",
+    "detail": "在新模型下，每個候選方案都必須在 K8s 1.31 + CRI-O 1.31 與 K8s 1.34 + CRI-O 1.34 上，以明確宣告的 guardrail / policy / config 重新驗證。先前由 CNI bandwidth plugin 引發的 plain-CRI-O failure，現在已被確認是可修正的 flannel CNI configuration regression，不應再直接當成 solution 不支援。",
+    "currentCall": "OpenShell + CRI-O 仍暫列主候選；plain CRI-O 已在兩條基線恢復 baseline smoke，但 service mesh 與 1.34 專屬 scenario 仍需在修正後重跑",
     "solutionId": "openshell-crio",
     "solutionLabel": "OpenShell + CRI-O",
-    "why": "在現有存活的 1.31 + CRI-O 1.31 環境中，OpenShell + CRI-O 已確認 baseline、Istio control plane 與 OpenShell control plane 皆正常；相對地，plain CRI-O 對照組已被新實測證明在 1.31 與 1.34 兩條基線上都存在 CNI bandwidth plugin panic。OpenShell + CRI-O 在 1.34/1.34 目前也因相同底層 workload failure 導致 controller bootstrap blocked，因此推薦仍是暫定，不是正式定案。"
+    "why": "在現有存活的 1.31 + CRI-O 1.31 環境中，OpenShell + CRI-O 已確認 baseline、Istio control plane 與 OpenShell control plane 皆正常。plain CRI-O 先前在 1.31 與 1.34 上觀察到的 CNI bandwidth plugin panic，已在 pinned flannel CNI config 的 follow-up live smoke 中恢復 baseline-pod；因此舊的 plain-CRI-O FAIL 不應再被當成最終結論。OpenShell 1.34 與 gVisor 1.34 的負面結果都發生在修正前的 baseline 上，必須在修正後重跑。"
   },
   "overview": {
     "blockedCandidates": 0,
-    "blockedSummary": "目前已有多個明確 solution failure 被寫回：plain CRI-O 在 K8s 1.31 + CRI-O 1.31 與 K8s 1.34 + CRI-O 1.34 上，節點雖然 Ready，但 baseline pod 與 Istio control plane 都因 CNI bandwidth plugin panic 而失敗；OpenShell + CRI-O 在 1.34/1.34 因同一底層問題導致 controller bootstrap 被阻塞；gVisor 在 1.34/1.34 則在 worker-side runtime verify 重現相同型態的 pod sandbox failure。"
+    "blockedSummary": "目前最重要的更新不是新增 unsupported，而是修正判讀基準：plain CRI-O 在 K8s 1.31 + CRI-O 1.31 與 K8s 1.34 + CRI-O 1.34 上，已用 pinned flannel CNI config 重新通過 baseline smoke。這代表舊的 bandwidth panic 屬於可修正的 configuration regression。OpenShell 1.34 與 gVisor 1.34 仍需在修正後重跑，現在不應再直接沿用修正前的負面結論。"
   },
   "methodology": [
     "Raw archive 全部保留，供追溯與除錯，不再直接作為遠端閱讀主入口。",
@@ -23,7 +23,7 @@
   "outputModel": [
     {
       "title": "Raw archive",
-      "path": "testing/raw/...",
+      "path": "records/raw/...",
       "body": "保存歷史原始輸出、命令結果、log 與結構化 artifacts，主要用途是追溯與除錯。"
     },
     {
@@ -120,81 +120,81 @@
       "id": "cri-o",
       "label": "K8s + CRI-O",
       "category": "Candidate Solution",
-      "currentCall": "兩條正式基線都已觀察到 workload failure",
-      "summary": "作為最基礎的對照組，它現在已經提供了非常明確的訊號：節點可 Ready，但實際 workload sandbox 建立在 1.31 與 1.34 兩條基線上都會失敗。",
-      "interpretation": "這條路線主要價值是提供 baseline comparison，不是預設會成為最終推薦。最新實測已顯示，plain CRI-O 不只 protection 較弱，連 baseline compatibility 都可能在跨基線上一致出問題。",
+      "currentCall": "baseline smoke 已恢復，完整基線判讀待補齊",
+      "summary": "作為最基礎的對照組，它現在已證明先前的跨基線 FAIL 不是 inherent limitation，而是 flannel CNI config regression。最新 live rerun 顯示兩條基線的 nodes-ready 與 baseline-pod 都可恢復。",
+      "interpretation": "這條路線仍主要提供 baseline comparison，不是預設主推薦；但最新證據也顯示，plain CRI-O 不能再被直接判成 unsupported。需要補齊 Istio control plane 與後續 scenario，才能給完整 compatibility / ops 結論。",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
-          "status": "FAIL",
-          "note": "2026-06-10 新實測：nodes-ready PASS，但 baseline-pod 與 istio-control-plane FAIL。control plane log 與 events 顯示 CNI bandwidth plugin 在建立 pod sandbox 時 panic。"
+          "status": "PROVISIONAL",
+          "note": "2026-06-10 follow-up live smoke：三個節點維持 Ready，baseline-pod PASS。修正方式是 pinned flannel CNI config（flannel + portmap、移除 bandwidth plugin）；Istio control plane 尚未在修正後重跑。"
         },
         "k8s-1.34-crio-1.34": {
-          "status": "FAIL",
-          "note": "2026-06-10 新實測：節點版本已確認為 v1.34.1+k3s1 / cri-o://1.34.9。nodes-ready PASS，但 baseline-pod 與 istio-control-plane 再次 FAIL。events、describe 與 k3s journal 都顯示 CNI bandwidth plugin 在建立 pod sandbox 時 panic。"
+          "status": "PROVISIONAL",
+          "note": "2026-06-10 follow-up live smoke：節點版本已確認為 v1.34.1+k3s1 / cri-o://1.34.9，nodes-wide Ready，baseline-pod PASS。修正方式同樣是 pinned flannel CNI config；Istio control plane 尚未在修正後重跑。"
         }
       },
       "dimensionRead": [
         "Protection：預期作為對照組，不會是最強防護路線。",
-        "Compatibility：1.31 與 1.34 兩條基線都已證明不能只看 nodes Ready。baseline workload 與 Istio control plane 都可能因 runtime / CNI 問題失敗。",
-        "Ops：即使理論上成本較低，只要要額外追查跨基線重現的 CNI panic，維運負擔就不是低成本。"
+        "Compatibility：目前已知 nodes Ready 與 baseline workload 都可恢復，但 service mesh 與其他 scenario 還要在修正後基線上重跑。",
+        "Ops：平面的成本仍相對低，但這次也證明 flannel / CRI-O wiring 一旦飄掉，會直接把 baseline 判讀帶偏。"
       ],
       "scenarioRead": [
         "要用來衡量沒有額外 guardrail 時，filesystem / network / privilege 面會缺多少。",
-        "最新結果已證明，如果這條路線在兩條正式基線上都連 baseline workload 不穩，後續 scenario 就沒有比較基礎。"
+        "最新結果代表後續 scenario 有比較基礎了，但 service mesh、filesystem、network 與 privilege 還是要在修正後基線上重新量一次。"
       ]
     },
     {
       "id": "openshell-crio",
       "label": "K8s + OpenShell + CRI-O",
       "category": "Candidate Solution",
-      "currentCall": "仍是暫定主推薦，但 1.34 基線目前 blocked",
-      "summary": "在新模型下，它暫時仍是最有希望成為主推薦的候選，但 1.34/1.34 已先遇到 bootstrap blocked，不能再把它視為單純未測。",
-      "interpretation": "這條路線的重點不是只看它能不能擋，而是它能不能在 agentic workload、Istio 與日常維運條件下，持續維持可用且精準的 guardrail。1.34/1.34 的最新結果顯示，它也可能被底層 runtime / CNI 問題拖住。",
+      "currentCall": "仍是暫定主推薦，1.34 需在修正後重跑",
+      "summary": "在新模型下，它暫時仍是最有希望成為主推薦的候選，因為 1.31/1.31 已確認 baseline、Istio 與 OpenShell control plane 皆正常。1.34/1.34 先前的 bootstrap blocked 發生在 plain CRI-O baseline 還帶有 bandwidth regression 的時點，因此目前應視為 rerun pending，而不是最終 failure。",
+      "interpretation": "這條路線的重點不是只看它能不能擋，而是它能不能在 agentic workload、Istio 與日常維運條件下，持續維持可用且精準的 guardrail。1.34/1.34 的下一步應該是在已修正的 flannel CNI baseline 上重跑，而不是直接沿用修正前的 blocked 結論。",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
           "status": "PASS",
           "note": "2026-06-10 初步實測：nodes-ready、baseline-pod、istio-control-plane、openshell-control-plane 全部 PASS。"
         },
         "k8s-1.34-crio-1.34": {
-          "status": "BLOCKED",
-          "note": "2026-06-10 新實測：節點版本已確認為 v1.34.1+k3s1 / cri-o://1.34.9，nodes-ready PASS。但 agent-sandbox-controller rollout timeout，pod 與 k3s journal 顯示底層仍因 CNI bandwidth plugin panic 導致 pod sandbox 建立失敗，後續 OpenShell 驗證被 bootstrap failure 阻塞。"
+          "status": "NOT_TESTED",
+          "note": "2026-06-10 首次觀測曾在 agent-sandbox-controller rollout 時 blocked，但那次發生在 plain CRI-O baseline 仍帶有 bandwidth regression 的時點。plain CRI-O 現已恢復 baseline smoke，因此 OpenShell 1.34 需要在修正後基線上重跑。"
         }
       },
       "dimensionRead": [
         "Protection：關鍵在 explicit OpenShell policy 是否能精準表達 allowed / blocked。",
-        "Compatibility：1.31 + 1.31 上已初步證明 baseline 與 Istio / OpenShell control plane 可運作，但 1.34 + 1.34 現在已被 bootstrap failure 阻塞，完整 agentic workflow 尚未成立。",
-        "Ops：policy authoring、觀測與除錯成本都要記錄；如果底層問題會直接卡住 controller rollout，這會實質拉高維運風險。"
+        "Compatibility：1.31 + 1.31 上已初步證明 baseline 與 Istio / OpenShell control plane 可運作；1.34 + 1.34 目前最重要的是在修正後 baseline 上重建同樣證據。",
+        "Ops：policy authoring、觀測與除錯成本都要記錄；這次 plain-CRI-O recovery 也證明 baseline wiring 要先固定，才不會把 controller 問題和底層網路問題混在一起。"
       ],
       "scenarioRead": [
         "Workspace 與 network 應是最重要的 allowed-path 驗證。",
-        "service account token、敏感檔案、非授權路徑寫入則是 blocked-path 驗證。"
+        "service account token、敏感檔案、非授權路徑寫入則是 blocked-path 驗證；這些都要建立在修正後的 1.34 baseline 之上。"
       ]
     },
     {
       "id": "gvisor",
       "label": "K8s + gVisor",
       "category": "Candidate Solution",
-      "currentCall": "高風險候選，1.34 基線已觀察到 runtime 驗證失敗",
-      "summary": "這條路線代表純 runtime sandbox 候選，重點是看 protection 是否帶來可接受的 compatibility 與 ops 成本。1.34/1.34 的最新重跑顯示，它雖然比 plain CRI-O 更能把 control plane 拉起來，但 gVisor runtime 自己仍會失敗。",
-      "interpretation": "如果 gVisor 類路線在 install/bootstrap、runtime verify 或 Istio 疊加時持續產生 FAIL / BLOCKED，這會直接拖累 compatibility 與 operational complexity，而不是只算成單一技術瑕疵。",
+      "currentCall": "高風險候選，1.34 runtime verify 需在修正後重跑",
+      "summary": "這條路線代表純 runtime sandbox 候選，重點是看 protection 是否帶來可接受的 compatibility 與 ops 成本。1.34/1.34 先前的 runtime verify failure，同樣發生在修正前的 CRI-O flannel layout 上，因此目前不能直接當成最終 incompatibility。",
+      "interpretation": "如果 gVisor 類路線在 install/bootstrap、runtime verify 或 Istio 疊加時持續產生 FAIL / BLOCKED，這會直接拖累 compatibility 與 operational complexity。但在 plain CRI-O baseline 已恢復後，1.34 gVisor 的下一步是重跑，而不是直接沿用修正前的 FAIL 標籤。",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
           "status": "PASS",
           "note": "2026-06-10 初步實測：nodes-ready、baseline-pod、istio-control-plane 皆 PASS；gVisor 專屬 scenario 尚未重跑。"
         },
         "k8s-1.34-crio-1.34": {
-          "status": "FAIL",
-          "note": "2026-06-10 新實測：節點版本已確認為 v1.34.1+k3s1 / cri-o://1.34.9。control-plane workloads 多數可 Running，但 gvisor RuntimeClass verify pod 在 worker 上 timeout。手動保留的 pod describe、events 與 k3s journal 都顯示 worker-side pod sandbox 仍因 CNI bandwidth plugin panic 而失敗。"
+          "status": "NOT_TESTED",
+          "note": "2026-06-10 首次觀測曾在 gvisor RuntimeClass verify 時失敗，但那次同樣落在修正前的 flannel CNI layout。plain CRI-O baseline 現已恢復，因此 gVisor 1.34 runtime verify 需要在修正後基線上重跑。"
         }
       },
       "dimensionRead": [
         "Protection：預期較強，但不能用想像代替 scenario 驗證。",
-        "Compatibility：Istio、一般 workload 與 agentic 工具鏈是主要風險點；1.34 + 1.34 已證明即使 control-plane workload 可起來，worker-side gVisor workload 仍可能失敗。",
-        "Ops：runtime 調整與故障分析成本可能偏高，尤其當 failure 落在 worker-side sandbox / CNI 交界。"
+        "Compatibility：Istio、一般 workload 與 agentic 工具鏈是主要風險點；1.34 + 1.34 的關鍵問題現在變成要在修正後 baseline 上確認 worker-side gVisor workload 是否仍失敗。",
+        "Ops：runtime 調整與故障分析成本可能偏高，尤其當 failure 落在 worker-side sandbox / CNI 交界；這次也提醒要先排除共享 baseline regression。"
       ],
       "scenarioRead": [
         "gVisor 不是只看 runtime probe，而要看真實 agentic workload 下的 allowed / blocked 行為。",
-        "與 Istio 疊加的結果尤其重要；但在 1.34 + 1.34 上，連 runtime verify 本身都還沒乾淨成功。"
+        "與 Istio 疊加的結果尤其重要；但在 1.34 + 1.34 上，首先要在修正後 baseline 上重新跑乾淨的 runtime verify。"
       ]
     },
     {

@@ -1,5 +1,7 @@
 # K3s + CRI-O Baseline Failure - 2026-06-10
 
+> Update 2026-06-10: 之後的 follow-up live rerun 已在 pinned flannel CNI config 下恢復 `baseline-pod`。這份文件保留第一次 failure observation；目前結論請同時參考 [2026-06-10-k3s-crio-baseline-recovery.md](./2026-06-10-k3s-crio-baseline-recovery.md)。
+
 這份紀錄對應 `k3s-crio`，也就是沒有額外 sandbox / policy layer 的 plain CRI-O 對照組。
 
 目的不是證明這條路線最終一定不適合，而是把它在新 `Decision Lab` 模型下第一次正式重跑的結果寫成可閱讀記錄。

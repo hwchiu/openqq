@@ -16,6 +16,8 @@
   --danger-bg: rgba(251, 113, 133, 0.12);
   --blocked: #fbbf24;
   --blocked-bg: rgba(251, 191, 36, 0.12);
+  --provisional: #7dd3fc;
+  --provisional-bg: rgba(125, 211, 252, 0.12);
   --not-tested: #94a3b8;
   --not-tested-bg: rgba(148, 163, 184, 0.12);
   --shadow: 0 20px 48px rgba(0, 0, 0, 0.38);
@@ -354,6 +356,11 @@ tr:last-child td {
 .status-blocked {
   color: var(--blocked);
   background: var(--blocked-bg);
+}
+
+.status-provisional {
+  color: var(--provisional);
+  background: var(--provisional-bg);
 }
 
 .status-not-tested {

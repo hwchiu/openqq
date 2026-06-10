@@ -41,6 +41,8 @@
         return "status-fail";
       case "BLOCKED":
         return "status-blocked";
+      case "PROVISIONAL":
+        return "status-provisional";
       default:
         return "status-not-tested";
     }
@@ -346,6 +348,12 @@
           <li><a href="${repoLink("docs/runbooks/decision-lab-workflow.md")}">Decision Lab workflow</a></li>
           <li><a href="${repoLink("docs/runbooks/experiment-design-template.md")}">Experiment design template</a></li>
           <li><a href="${repoLink("docs/reports/2026-06-10-initial-baseline-status.md")}">Initial baseline status report</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-10-k3s-crio-baseline-failure.md")}">Plain CRI-O 1.31 first failure report</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-10-k3s-crio-baseline-recovery.md")}">Plain CRI-O 1.31 recovery report</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-10-k3s-crio-134-baseline-failure.md")}">Plain CRI-O 1.34 first failure report</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-10-k3s-crio-134-baseline-recovery.md")}">Plain CRI-O 1.34 recovery report</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-10-k3s-openshell-runc-134-bootstrap-blocked.md")}">OpenShell + CRI-O 1.34 blocked report</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-10-k3s-gvisor-134-runtime-failure.md")}">gVisor 1.34 runtime verify report</a></li>
           <li><a href="${repoLink("docs/superpowers/specs/2026-06-09-k8s-sandbox-decision-lab-design.md")}">Decision Lab design spec</a></li>
         </ul>
       </article>

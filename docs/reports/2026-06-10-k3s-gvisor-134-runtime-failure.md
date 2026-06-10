@@ -1,5 +1,7 @@
 # K3s + gVisor 1.34 Runtime Verification Failure - 2026-06-10
 
+> Update 2026-06-10: plain CRI-O 的 follow-up live rerun 已在 pinned flannel CNI config 下恢復 baseline smoke。這份文件保留修正前 baseline 上的第一次 runtime verify failure；gVisor 1.34 需要在修正後基線上重跑，才能保留或推翻這個結論。
+
 這份紀錄對應 `k3s-gvisor-134`，也就是 `gVisor` 候選在 `K8s 1.34 + CRI-O 1.34` 基線上的第一次正式重跑。
 
 ## 測試基線

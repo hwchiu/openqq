@@ -1,5 +1,7 @@
 # K3s + CRI-O 1.34 Baseline Failure - 2026-06-10
 
+> Update 2026-06-10: 之後的 follow-up live rerun 已在 pinned flannel CNI config 下恢復 `baseline-pod`。這份文件保留第一次 failure observation；目前結論請同時參考 [2026-06-10-k3s-crio-134-baseline-recovery.md](./2026-06-10-k3s-crio-134-baseline-recovery.md)。
+
 這份紀錄對應 `k3s-crio-134`，也就是 plain CRI-O 對照組在 `K8s 1.34 + CRI-O 1.34` 基線上的第一次正式重跑。
 
 這次重跑先修正了一個 IaC 問題：原本 `-134` stack 缺少實際 `stack.auto.tfvars`，第一次部署錯用了 `1.31/1.31` 預設值，因此那次結果無效。修正後重新建立，節點版本已確認是：
