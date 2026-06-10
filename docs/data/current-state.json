@@ -1,24 +1,25 @@
 {
-  "generatedAt": "2026-06-10T05:15:04+00:00",
+  "generatedAt": "2026-06-10T14:10:00+08:00",
   "recommendation": {
-    "title": "目前暫定主推薦仍是 OpenShell + CRI-O，但 plain CRI-O baseline smoke 已恢復",
-    "summary": "GitHub Pages 現在反映修正後的最新判讀。plain CRI-O 在 1.31 與 1.34 兩條基線上的 baseline smoke，已在 pinned flannel CNI config 下恢復；OpenShell + CRI-O 仍是唯一在 1.31 上同時確認 baseline、Istio 與 OpenShell control plane 正常的候選，但 1.34 scenario 家族需要在修正後重跑。",
-    "detail": "在新模型下，每個候選方案都必須在 K8s 1.31 + CRI-O 1.31 與 K8s 1.34 + CRI-O 1.34 上，以明確宣告的 guardrail / policy / config 重新驗證。先前由 CNI bandwidth plugin 引發的 plain-CRI-O failure，現在已被確認是可修正的 flannel CNI configuration regression，不應再直接當成 solution 不支援。",
-    "currentCall": "OpenShell + CRI-O 仍暫列主候選；plain CRI-O 已在兩條基線恢復 baseline smoke，但 service mesh 與 1.34 專屬 scenario 仍需在修正後重跑",
+    "title": "CRI-O family 正式切換到 Cilium baseline，推薦結論暫時保留但需重跑確認",
+    "summary": "GitHub Pages 現在把 `K3s + CRI-O + Cilium` 視為所有 CRI-O family 候選的正式比較基線。先前基於 pinned flannel override 的 recovery 與 workaround 仍保留為歷史證據，但不再作為 current recommendation 的正式依據。",
+    "detail": "在新模型下，每個候選方案都必須在 `K8s 1.31 + CRI-O 1.31` 與 `K8s 1.34 + CRI-O 1.34` 上，以明確宣告的 guardrail / policy / config 重新驗證。這次變更的目的，是把 `Flannel-specific wiring workaround` 從官方比較基線移除，改成 `no-flannel K3s + Cilium`，避免讓暫時修補蓋掉真正的 solution 判讀。",
+    "currentCall": "目前仍暫列 OpenShell + CRI-O 為 leading candidate，但所有建在 CRI-O 上的候選都要在 Cilium baseline 上重跑後，才可恢復正式推薦",
     "solutionId": "openshell-crio",
     "solutionLabel": "OpenShell + CRI-O",
-    "why": "在現有存活的 1.31 + CRI-O 1.31 環境中，OpenShell + CRI-O 已確認 baseline、Istio control plane 與 OpenShell control plane 皆正常。plain CRI-O 先前在 1.31 與 1.34 上觀察到的 CNI bandwidth plugin panic，已在 pinned flannel CNI config 的 follow-up live smoke 中恢復 baseline-pod；因此舊的 plain-CRI-O FAIL 不應再被當成最終結論。OpenShell 1.34 與 gVisor 1.34 的負面結果都發生在修正前的 baseline 上，必須在修正後重跑。"
+    "why": "OpenShell + CRI-O 仍是目前最接近正式推薦的路線，因為它在既有 `1.31 + 1.31` 環境上已經留下 baseline、Istio 與 OpenShell control plane 正常的正面證據。不過現在官方基線已切到 `Cilium`，所以包含 plain CRI-O、OpenShell、gVisor、KubeArmor 在內的 CRI-O family 結論，都必須在新基線上重跑後才算恢復有效。"
   },
   "overview": {
     "blockedCandidates": 0,
-    "blockedSummary": "目前最重要的更新不是新增 unsupported，而是修正判讀基準：plain CRI-O 在 K8s 1.31 + CRI-O 1.31 與 K8s 1.34 + CRI-O 1.34 上，已用 pinned flannel CNI config 重新通過 baseline smoke。這代表舊的 bandwidth panic 屬於可修正的 configuration regression。OpenShell 1.34 與 gVisor 1.34 仍需在修正後重跑，現在不應再直接沿用修正前的負面結論。"
+    "blockedSummary": "目前最重要的更新不是某個 solution 新增 failure，而是整個 CRI-O family 的官方比較基線從 Flannel workaround 改成 Cilium。舊的 recovery 與 failure 報告仍保留，但一律降級成 historical baseline evidence。"
   },
   "methodology": [
     "Raw archive 全部保留，供追溯與除錯，不再直接作為遠端閱讀主入口。",
     "Current state data 代表目前最新官方狀態，而不是單次 run 的完整歷史。",
     "GitHub Pages 固定更新同一套分析頁面，首頁先回答現在該選誰，再往下拆 baseline、solution 與 scenario。",
     "所有候選都必須在明確宣告的 guardrail / policy / config 下比較，不用 default behavior 當成成功依據。",
-    "Install / bootstrap 失敗本身就是有效負面結果，後續 scenario 要標記為 BLOCKED，而不是 N/A。"
+    "Install / bootstrap 失敗本身就是有效負面結果，後續 scenario 要標記為 BLOCKED，而不是 N/A。",
+    "所有建在 CRI-O 上的候選，現在都以 `K3s no-flannel + Cilium` 當作正式 CNI baseline；Flannel workaround 僅保留為歷史證據。"
   ],
   "outputModel": [
     {
@@ -41,9 +42,10 @@
     {
       "id": "k8s-1.31-crio-1.31",
       "label": "K8s 1.31 + CRI-O 1.31",
-      "summary": "這是目前已存在最多歷史驗證脈絡的基線，但舊紀錄已退場，必須用新模型重新整理。",
+      "summary": "這條基線仍保留最多歷史脈絡，但 CRI-O family 現在必須以 `Cilium` 重新建立正式證據，不再沿用 Flannel workaround 的正反結論。",
       "highlights": [
         "未來所有 solution 都要在這條基線上重新跑",
+        "CRI-O family 正式 CNI baseline 改成 Cilium",
         "Istio 與 agentic AI scenarios 要納入正式比較",
         "不再用舊 testing 文件直接當官方結論"
       ]
@@ -51,9 +53,10 @@
     {
       "id": "k8s-1.34-crio-1.34",
       "label": "K8s 1.34 + CRI-O 1.34",
-      "summary": "這是新的對照平台世代，未來要和 1.31/1.31 並行維護，而不是混成單一版本故事。",
+      "summary": "這是新的對照平台世代，未來要和 1.31/1.31 並行維護，並且同樣以 `Cilium` 作為 CRI-O family 的正式網路基線。",
       "highlights": [
         "代表下一代平台基線",
+        "CRI-O family 正式 CNI baseline 改成 Cilium",
         "安裝與 bootstrap 成本需要獨立判讀",
         "任何 blocked 都要被正式記錄"
       ]
@@ -120,98 +123,98 @@
       "id": "cri-o",
       "label": "K8s + CRI-O",
       "category": "Candidate Solution",
-      "currentCall": "baseline smoke 已恢復，完整基線判讀待補齊",
-      "summary": "作為最基礎的對照組，它現在已證明先前的跨基線 FAIL 不是 inherent limitation，而是 flannel CNI config regression。最新 live rerun 顯示兩條基線的 nodes-ready 與 baseline-pod 都可恢復。",
-      "interpretation": "這條路線仍主要提供 baseline comparison，不是預設主推薦；但最新證據也顯示，plain CRI-O 不能再被直接判成 unsupported。需要補齊 Istio control plane 與後續 scenario，才能給完整 compatibility / ops 結論。",
+      "currentCall": "Cilium migration pending",
+      "summary": "作為最基礎的對照組，plain CRI-O 先前已證明 Flannel-specific failure 不是 inherent limitation；但現在官方比較基線已切到 Cilium，因此必須在新基線上重新取得 baseline、Istio 與 scenario 證據。",
+      "interpretation": "這條路線仍主要提供 baseline comparison，不是預設主推薦。現階段最重要的不是沿用 Flannel recovery，而是確認 `K3s + CRI-O + Cilium` 在兩條平台基線上能否穩定完成 bootstrap、baseline workload 與 service mesh。 ",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
-          "status": "PROVISIONAL",
-          "note": "2026-06-10 follow-up live smoke：三個節點維持 Ready，baseline-pod PASS。修正方式是 pinned flannel CNI config（flannel + portmap、移除 bandwidth plugin）；Istio control plane 尚未在修正後重跑。"
+          "status": "NOT_TESTED",
+          "note": "官方比較基線已切到 `K3s + CRI-O + Cilium`。先前 pinned flannel override 下的 recovery 只保留為 historical evidence；這條基線需要在 Cilium 上重新跑 nodes-ready、baseline-pod、Istio 與後續 scenarios。"
         },
         "k8s-1.34-crio-1.34": {
-          "status": "PROVISIONAL",
-          "note": "2026-06-10 follow-up live smoke：節點版本已確認為 v1.34.1+k3s1 / cri-o://1.34.9，nodes-wide Ready，baseline-pod PASS。修正方式同樣是 pinned flannel CNI config；Istio control plane 尚未在修正後重跑。"
+          "status": "NOT_TESTED",
+          "note": "這條基線同樣已切到 `Cilium`。舊的 Flannel workaround recovery 仍可作為根因證據，但不再代表 current baseline 狀態。"
         }
       },
       "dimensionRead": [
         "Protection：預期作為對照組，不會是最強防護路線。",
-        "Compatibility：目前已知 nodes Ready 與 baseline workload 都可恢復，但 service mesh 與其他 scenario 還要在修正後基線上重跑。",
-        "Ops：平面的成本仍相對低，但這次也證明 flannel / CRI-O wiring 一旦飄掉，會直接把 baseline 判讀帶偏。"
+        "Compatibility：必須重新確認 Cilium baseline 下的 nodes Ready、baseline workload 與 Istio。",
+        "Ops：這次改線本身就是維運成本證據，因為它代表先前 Flannel workaround 不適合作為長期官方基線。"
       ],
       "scenarioRead": [
         "要用來衡量沒有額外 guardrail 時，filesystem / network / privilege 面會缺多少。",
-        "最新結果代表後續 scenario 有比較基礎了，但 service mesh、filesystem、network 與 privilege 還是要在修正後基線上重新量一次。"
+        "service mesh、filesystem、network 與 privilege 都要在 Cilium baseline 上重新量一次。"
       ]
     },
     {
       "id": "openshell-crio",
       "label": "K8s + OpenShell + CRI-O",
       "category": "Candidate Solution",
-      "currentCall": "仍是暫定主推薦，1.34 需在修正後重跑",
-      "summary": "在新模型下，它暫時仍是最有希望成為主推薦的候選，因為 1.31/1.31 已確認 baseline、Istio 與 OpenShell control plane 皆正常。1.34/1.34 先前的 bootstrap blocked 發生在 plain CRI-O baseline 還帶有 bandwidth regression 的時點，因此目前應視為 rerun pending，而不是最終 failure。",
-      "interpretation": "這條路線的重點不是只看它能不能擋，而是它能不能在 agentic workload、Istio 與日常維運條件下，持續維持可用且精準的 guardrail。1.34/1.34 的下一步應該是在已修正的 flannel CNI baseline 上重跑，而不是直接沿用修正前的 blocked 結論。",
+      "currentCall": "leading candidate, rerun required on Cilium baseline",
+      "summary": "這條路線仍是最接近正式推薦的候選，但先前正面結果建立在舊的 CRI-O network wiring 上。現在官方比較基線已切到 Cilium，因此 1.31 與 1.34 都要在新基線上重建正面證據。",
+      "interpretation": "OpenShell + CRI-O 的關鍵不只是它能不能擋，而是它能不能在 agentic workload、Istio 與日常維運條件下，持續維持可用且精準的 guardrail。切到 Cilium 後，所有正負結果都要重新歸檔。 ",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
-          "status": "PASS",
-          "note": "2026-06-10 初步實測：nodes-ready、baseline-pod、istio-control-plane、openshell-control-plane 全部 PASS。"
+          "status": "NOT_TESTED",
+          "note": "先前 `nodes-ready`、`baseline-pod`、`istio-control-plane`、`openshell-control-plane` 的 PASS 仍保留為歷史正面證據，但官方基線切到 Cilium 後需要完整重跑。"
         },
         "k8s-1.34-crio-1.34": {
           "status": "NOT_TESTED",
-          "note": "2026-06-10 首次觀測曾在 agent-sandbox-controller rollout 時 blocked，但那次發生在 plain CRI-O baseline 仍帶有 bandwidth regression 的時點。plain CRI-O 現已恢復 baseline smoke，因此 OpenShell 1.34 需要在修正後基線上重跑。"
+          "note": "舊的 blocked observation 發生在 Flannel-based baseline 上，現在應重新在 Cilium baseline 上跑 `cluster -> cilium -> openshell controller` 的完整鏈路。"
         }
       },
       "dimensionRead": [
         "Protection：關鍵在 explicit OpenShell policy 是否能精準表達 allowed / blocked。",
-        "Compatibility：1.31 + 1.31 上已初步證明 baseline 與 Istio / OpenShell control plane 可運作；1.34 + 1.34 目前最重要的是在修正後 baseline 上重建同樣證據。",
-        "Ops：policy authoring、觀測與除錯成本都要記錄；這次 plain-CRI-O recovery 也證明 baseline wiring 要先固定，才不會把 controller 問題和底層網路問題混在一起。"
+        "Compatibility：1.31 與 1.34 都要在 Cilium baseline 上重新證明 baseline、Istio 與 OpenShell control plane。",
+        "Ops：policy authoring、觀測與除錯成本都要記錄；這次也證明 baseline wiring 要先固定，才不會把 controller 問題和底層 CNI 問題混在一起。"
       ],
       "scenarioRead": [
         "Workspace 與 network 應是最重要的 allowed-path 驗證。",
-        "service account token、敏感檔案、非授權路徑寫入則是 blocked-path 驗證；這些都要建立在修正後的 1.34 baseline 之上。"
+        "service account token、敏感檔案、非授權路徑寫入則是 blocked-path 驗證；這些都要建立在新的 Cilium baseline 之上。"
       ]
     },
     {
       "id": "gvisor",
       "label": "K8s + gVisor",
       "category": "Candidate Solution",
-      "currentCall": "高風險候選，1.34 runtime verify 需在修正後重跑",
-      "summary": "這條路線代表純 runtime sandbox 候選，重點是看 protection 是否帶來可接受的 compatibility 與 ops 成本。1.34/1.34 先前的 runtime verify failure，同樣發生在修正前的 CRI-O flannel layout 上，因此目前不能直接當成最終 incompatibility。",
-      "interpretation": "如果 gVisor 類路線在 install/bootstrap、runtime verify 或 Istio 疊加時持續產生 FAIL / BLOCKED，這會直接拖累 compatibility 與 operational complexity。但在 plain CRI-O baseline 已恢復後，1.34 gVisor 的下一步是重跑，而不是直接沿用修正前的 FAIL 標籤。",
+      "currentCall": "high-risk candidate, rerun required on Cilium baseline",
+      "summary": "這條路線代表純 runtime sandbox 候選，重點是看 protection 是否帶來可接受的 compatibility 與 ops 成本。由於它目前也建在 CRI-O 上，所以一樣要跟著切到 Cilium baseline。",
+      "interpretation": "如果 gVisor 類路線在 `cluster bootstrap`、`cilium readiness`、`runtime verify` 或 `Istio` 疊加時持續產生 FAIL / BLOCKED，這會直接拖累 compatibility 與 operational complexity。先前 Flannel-based failure 只保留為歷史證據。 ",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
-          "status": "PASS",
-          "note": "2026-06-10 初步實測：nodes-ready、baseline-pod、istio-control-plane 皆 PASS；gVisor 專屬 scenario 尚未重跑。"
+          "status": "NOT_TESTED",
+          "note": "先前 PASS 建立在舊的 CRI-O network wiring 上。切到 Cilium 後，要重新確認 baseline、runtimeClass 與 Istio 疊加。"
         },
         "k8s-1.34-crio-1.34": {
           "status": "NOT_TESTED",
-          "note": "2026-06-10 首次觀測曾在 gvisor RuntimeClass verify 時失敗，但那次同樣落在修正前的 flannel CNI layout。plain CRI-O baseline 現已恢復，因此 gVisor 1.34 runtime verify 需要在修正後基線上重跑。"
+          "note": "舊的 runtime verify failure 屬於 Flannel-based baseline 歷史結果；現在要在 Cilium baseline 上重新確認 worker-side gVisor workload。"
         }
       },
       "dimensionRead": [
         "Protection：預期較強，但不能用想像代替 scenario 驗證。",
-        "Compatibility：Istio、一般 workload 與 agentic 工具鏈是主要風險點；1.34 + 1.34 的關鍵問題現在變成要在修正後 baseline 上確認 worker-side gVisor workload 是否仍失敗。",
-        "Ops：runtime 調整與故障分析成本可能偏高，尤其當 failure 落在 worker-side sandbox / CNI 交界；這次也提醒要先排除共享 baseline regression。"
+        "Compatibility：Istio、一般 workload 與 agentic 工具鏈是主要風險點；現在要先確認 Cilium baseline 下 worker-side gVisor workload 是否仍失敗。",
+        "Ops：runtime 調整與故障分析成本可能偏高，尤其當 failure 落在 worker-side sandbox / CNI 交界。"
       ],
       "scenarioRead": [
         "gVisor 不是只看 runtime probe，而要看真實 agentic workload 下的 allowed / blocked 行為。",
-        "與 Istio 疊加的結果尤其重要；但在 1.34 + 1.34 上，首先要在修正後 baseline 上重新跑乾淨的 runtime verify。"
+        "與 Istio 疊加的結果尤其重要；但第一步是先在 Cilium baseline 上重新跑乾淨的 runtime verify。"
       ]
     },
     {
       "id": "openshell-gvisor",
       "label": "K8s + OpenShell + gVisor",
       "category": "Candidate Solution",
-      "currentCall": "複合候選，需嚴格驗證",
-      "summary": "這是 protection 疊加最多的複合候選，同時也是最容易在 compatibility 與 ops 成本上出問題的路線。",
-      "interpretation": "這條路線不能只因為 protection 看起來強就高分，必須把 install complexity、Istio 相容性與日常維護難度一併算進去。",
+      "currentCall": "stacked candidate, rerun required on Cilium baseline",
+      "summary": "這是 protection 疊加最多的複合候選，同時也是最容易在 compatibility 與 ops 成本上出問題的路線。由於底層同樣依賴 CRI-O，它也要跟著切到 Cilium baseline。",
+      "interpretation": "這條路線不能只因為 protection 看起來強就高分，必須把 install complexity、Cilium readiness、Istio 相容性與日常維護難度一併算進去。",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
-          "status": "PASS",
-          "note": "2026-06-10 初步實測：nodes-ready、baseline-pod、istio-control-plane、openshell-control-plane 皆 PASS；複合 scenario 尚未重跑。"
+          "status": "NOT_TESTED",
+          "note": "先前 PASS 為歷史正面證據；官方基線切到 Cilium 後，必須重建完整 install 與 runtime 證據。"
         },
         "k8s-1.34-crio-1.34": {
           "status": "NOT_TESTED",
-          "note": "高機率是對 compatibility 與 bootstrap 要求最高的候選。"
+          "note": "高機率是對 compatibility 與 bootstrap 要求最高的候選，現在還要加上 Cilium baseline 驗證。"
         }
       },
       "dimensionRead": [
@@ -228,17 +231,17 @@
       "id": "kubearmor",
       "label": "K8s + CRI-O + KubeArmor",
       "category": "Candidate Solution",
-      "currentCall": "以 explicit policy 為前提重測",
-      "summary": "這條路線未來只會在明確 scenario policy 下評估，不再用 default policy 或預設行為判成功。",
-      "interpretation": "KubeArmor 的核心評估點是 policy expressiveness、policy correctness、policy enforcement reliability，以及維運成本，不是單看預設擋不擋。",
+      "currentCall": "explicit-policy rerun required on Cilium baseline",
+      "summary": "這條路線未來只會在明確 scenario policy 下評估，不再用 default policy 或預設行為判成功。因為它也建在 CRI-O 上，所以 baseline 已正式切到 Cilium。",
+      "interpretation": "KubeArmor 的核心評估點是 policy expressiveness、policy correctness、policy enforcement reliability，以及維運成本，不是單看預設擋不擋。所有 policy 結果都要建立在新的 Cilium baseline 之上。",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
-          "status": "PASS",
-          "note": "2026-06-10 初步實測：nodes-ready、baseline-pod、istio-control-plane 皆 PASS；KubeArmor explicit-policy scenarios 尚未重跑。"
+          "status": "NOT_TESTED",
+          "note": "先前 baseline smoke 與 Istio PASS 仍保留為歷史證據，但正式比較要在 Cilium baseline 上重新套 explicit policies。"
         },
         "k8s-1.34-crio-1.34": {
           "status": "NOT_TESTED",
-          "note": "需要驗證新基線是否影響 policy 表達與 enforcement 穩定度。"
+          "note": "需要驗證 Cilium baseline 是否影響 policy 表達與 enforcement 穩定度。"
         }
       },
       "dimensionRead": [

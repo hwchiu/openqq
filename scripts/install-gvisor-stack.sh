@@ -45,20 +45,6 @@ cat > /etc/crio/crio.conf.d/20-gvisor-podsandbox.conf <<CRIOPODCFG
 drop_infra_ctr = false
 CRIOPODCFG
 
-FLANNEL_CONFLIST="/var/lib/rancher/k3s/agent/etc/cni/net.d/10-flannel.conflist"
-if [[ -f "${FLANNEL_CONFLIST}" ]]; then
-  python3 - "${FLANNEL_CONFLIST}" <<'PY'
-import json
-import pathlib
-import sys
-
-path = pathlib.Path(sys.argv[1])
-data = json.loads(path.read_text())
-data["plugins"] = [plugin for plugin in data.get("plugins", []) if plugin.get("type") != "bandwidth"]
-path.write_text(json.dumps(data, indent=2) + "\n")
-PY
-fi
-
 systemctl restart crio
 if systemctl list-unit-files | grep -q '^k3s.service'; then
   systemctl restart k3s
