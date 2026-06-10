@@ -6,6 +6,29 @@ packages:
   - software-properties-common
 
 write_files:
+  - path: /etc/rancher/k3s/10-flannel.conflist
+    permissions: "0644"
+    content: |
+      {
+        "name":"cbr0",
+        "cniVersion":"1.0.0",
+        "plugins":[
+          {
+            "type":"flannel",
+            "delegate":{
+              "hairpinMode":true,
+              "forceAddress":true,
+              "isDefaultGateway":true
+            }
+          },
+          {
+            "type":"portmap",
+            "capabilities":{
+              "portMappings":true
+            }
+          }
+        ]
+      }
   - path: /usr/local/bin/install-k3s-agent.sh
     permissions: "0755"
     content: |
@@ -83,6 +106,7 @@ write_files:
       if [[ '${container_runtime}' == 'crio' ]]; then
         install_crio
         runtime_args+=(--container-runtime-endpoint unix:///var/run/crio/crio.sock)
+        runtime_args+=(--flannel-cni-conf /etc/rancher/k3s/10-flannel.conflist)
       fi
 
       if [[ '${container_runtime}' == 'gvisor' ]]; then
