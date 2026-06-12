@@ -1,0 +1,2 @@
+NAME                      READY   STATUS    RESTARTS   AGE   IP           NODE       NOMINATED NODE   READINESS GATES
+istiod-7d5594ccc9-4bgnq   1/1     Running   0          26s   10.0.1.121   worker-1   <none>           <none>

@@ -8,8 +8,9 @@ source "$ROOT_DIR/scripts/lib-stack.sh"
 
 terraform_apply_stack "$STACK_NAME"
 KUBECONFIG_PATH="$(fetch_kubeconfig_from_stack "$STACK_NAME")"
-wait_for_nodes_ready "$KUBECONFIG_PATH"
+wait_for_node_count "$KUBECONFIG_PATH" 3
 KUBECONFIG_PATH="$KUBECONFIG_PATH" "$ROOT_DIR/scripts/install-cilium-stack.sh"
+wait_for_nodes_ready "$KUBECONFIG_PATH"
 bash "$ROOT_DIR/scripts/install-gvisor-stack.sh" "$STACK_NAME"
 KUBECONFIG_PATH="$KUBECONFIG_PATH" "$ROOT_DIR/scripts/verify-gvisor-runtime.sh"
 OPENSHELL_SKIP_DEFAULT_PATCHER=true KUBECONFIG_PATH="$KUBECONFIG_PATH" "$ROOT_DIR/scripts/install-openshell-stack.sh"

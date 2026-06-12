@@ -1,0 +1,17 @@
+NAME                                      READY   STATUS      RESTARTS   AGE     IP           NODE       NOMINATED NODE   READINESS GATES
+cilium-27vf6                              1/1     Running     0          10m     10.150.0.6   worker-1   <none>           <none>
+cilium-envoy-c9cbb                        1/1     Running     0          10m     10.150.0.5   worker-2   <none>           <none>
+cilium-envoy-tfhr6                        1/1     Running     0          10m     10.150.0.6   worker-1   <none>           <none>
+cilium-envoy-vlzzd                        1/1     Running     0          10m     10.150.0.4   cp-0       <none>           <none>
+cilium-ls7r4                              1/1     Running     0          10m     10.150.0.4   cp-0       <none>           <none>
+cilium-operator-78dbd46477-w4s94          1/1     Running     0          10m     10.150.0.4   cp-0       <none>           <none>
+cilium-vv2ql                              1/1     Running     0          10m     10.150.0.5   worker-2   <none>           <none>
+coredns-7896679cc-mhw2m                   1/1     Running     0          11m     10.0.0.80    worker-1   <none>           <none>
+helm-install-traefik-crd-lhvkr            0/1     Completed   0          11m     10.0.0.2     worker-1   <none>           <none>
+helm-install-traefik-snwgr                0/1     Completed   2          11m     10.0.0.200   worker-1   <none>           <none>
+local-path-provisioner-578895bd58-fmnw6   1/1     Running     0          11m     10.0.0.44    worker-1   <none>           <none>
+metrics-server-7b9c9c4b9c-88qr2           0/1     Running     0          11m     10.0.0.137   worker-1   <none>           <none>
+svclb-traefik-392a3566-68856              2/2     Running     0          9m22s   10.0.1.81    worker-2   <none>           <none>
+svclb-traefik-392a3566-lpvcq              2/2     Running     0          9m22s   10.0.0.20    worker-1   <none>           <none>
+svclb-traefik-392a3566-tl2f8              2/2     Running     0          9m22s   10.0.2.183   cp-0       <none>           <none>
+traefik-6f986b958c-5mcf2                  1/1     Running     0          9m22s   10.0.1.147   worker-2   <none>           <none>

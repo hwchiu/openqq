@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "summary": "Baseline pod completed",
+  "details": {
+    "logs": "matrix-smoke-ok"
+  }
+}

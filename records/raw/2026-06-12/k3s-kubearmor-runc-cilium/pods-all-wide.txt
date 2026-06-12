@@ -1,0 +1,18 @@
+NAMESPACE      NAME                                      READY   STATUS      RESTARTS        AGE     IP             NODE       NOMINATED NODE   READINESS GATES
+default        kubearmor-demo-76c7f7d7fb-s62wk           1/1     Running     0               2d23h   10.240.2.5     worker-2   <none>           <none>
+istio-system   istiod-767844668d-rlctl                   1/1     Running     0               2d23h   10.240.1.6     worker-1   <none>           <none>
+kube-system    coredns-5c5cd8fc79-ltkr4                  1/1     Running     0               3d      10.240.0.175   cp-0       <none>           <none>
+kube-system    helm-install-traefik-bdg2g                0/1     Completed   2 (2d23h ago)   3d      10.240.0.173   cp-0       <none>           <none>
+kube-system    helm-install-traefik-crd-s74rn            0/1     Completed   0               3d      10.240.0.178   cp-0       <none>           <none>
+kube-system    local-path-provisioner-646d4d78cb-j4b8z   1/1     Running     0               3d      10.240.0.177   cp-0       <none>           <none>
+kube-system    metrics-server-564cb4ff68-cl4hp           1/1     Running     0               3d      10.240.0.176   cp-0       <none>           <none>
+kube-system    svclb-traefik-cbc73734-8dc88              2/2     Running     0               2d23h   10.240.1.3     worker-1   <none>           <none>
+kube-system    svclb-traefik-cbc73734-p7822              2/2     Running     0               2d23h   10.240.0.179   cp-0       <none>           <none>
+kube-system    svclb-traefik-cbc73734-z2k9g              2/2     Running     0               2d23h   10.240.2.2     worker-2   <none>           <none>
+kube-system    traefik-79f8d498fd-sthm2                  1/1     Running     0               2d23h   10.240.1.2     worker-1   <none>           <none>
+kubearmor      kubearmor-apparmor-cri-o-c5583-c5bjr      1/1     Running     0               2d23h   10.140.0.5     worker-2   <none>           <none>
+kubearmor      kubearmor-apparmor-cri-o-c5583-hk2t4      1/1     Running     0               2d23h   10.140.0.6     worker-1   <none>           <none>
+kubearmor      kubearmor-apparmor-cri-o-c5583-nsdpt      1/1     Running     0               2d23h   10.140.0.4     cp-0       <none>           <none>
+kubearmor      kubearmor-controller-6689c88df5-zsm2s     1/1     Running     0               2d23h   10.240.1.5     worker-1   <none>           <none>
+kubearmor      kubearmor-operator-58f5b7fc87-mzfsw       1/1     Running     0               3d      10.240.0.174   cp-0       <none>           <none>
+kubearmor      kubearmor-relay-5c4f88f874-blcbh          1/1     Running     0               2d23h   10.240.2.4     worker-2   <none>           <none>

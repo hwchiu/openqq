@@ -186,6 +186,25 @@ wait_for_nodes_ready() {
   fail "nodes did not become Ready for kubeconfig $kubeconfig_path"
 }
 
+wait_for_node_count() {
+  local kubeconfig_path="$1"
+  local expected_count="${2:-1}"
+  local observed_count
+  require_bin kubectl
+
+  for _ in $(seq 1 60); do
+    observed_count="$(
+      kubectl --kubeconfig "$kubeconfig_path" get nodes --no-headers 2>/dev/null | awk 'NF>0{c++} END{print c+0}'
+    )"
+    if [[ "$observed_count" -ge "$expected_count" ]]; then
+      return 0
+    fi
+    sleep 5
+  done
+
+  fail "expected at least $expected_count nodes to register for kubeconfig $kubeconfig_path"
+}
+
 stack_kubeconfig_path() {
   local stack_name="$1"
   printf '%s\n' "$GENERATED_STACKS_DIR/$stack_name/kubeconfig"

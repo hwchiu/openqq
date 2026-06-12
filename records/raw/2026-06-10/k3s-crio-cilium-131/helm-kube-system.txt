@@ -1,0 +1,4 @@
+NAME       	NAMESPACE  	REVISION	UPDATED                                	STATUS  	CHART                        	APP VERSION
+cilium     	kube-system	1       	2026-06-10 23:41:02.802319 +0800 CST   	deployed	cilium-1.19.4                	1.19.4     
+traefik    	kube-system	1       	2026-06-10 15:42:27.265865678 +0000 UTC	deployed	traefik-27.0.201+up27.0.2    	v2.11.10   
+traefik-crd	kube-system	1       	2026-06-10 15:42:25.393855667 +0000 UTC	deployed	traefik-crd-27.0.201+up27.0.2	v2.11.10   

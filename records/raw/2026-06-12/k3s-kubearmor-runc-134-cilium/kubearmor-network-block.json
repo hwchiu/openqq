@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "summary": "KubeArmor did not block TCP egress from /usr/bin/curl",
+  "details": {
+    "stdout": "HTTP/1.1 200 OK\r\nDate: Fri, 12 Jun 2026 12:19:40 GMT\r\nContent-Type: text/html\r\nConnection: keep-alive\r\nServer: cloudflare\r\nLast-Modified: Tue, 09 Jun 2026 21:01:00 GMT\r\nAllow: GET, HEAD\r\nAccept-Ranges: bytes\r\nAge: 12030\r\ncf-cache-status: HIT\r\nCF-RAY: a0a8ce1f1d48d46d-IAD\r\n\r",
+    "stderr": "  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0",
+    "exitCode": 0
+  }
+}

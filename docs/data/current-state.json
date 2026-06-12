@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-06-10T14:10:00+08:00",
+  "generatedAt": "2026-06-12T20:21:00+08:00",
   "recommendation": {
-    "title": "CRI-O family 正式切換到 Cilium baseline，推薦結論暫時保留但需重跑確認",
-    "summary": "GitHub Pages 現在把 `K3s + CRI-O + Cilium` 視為所有 CRI-O family 候選的正式比較基線。先前基於 pinned flannel override 的 recovery 與 workaround 仍保留為歷史證據，但不再作為 current recommendation 的正式依據。",
-    "detail": "在新模型下，每個候選方案都必須在 `K8s 1.31 + CRI-O 1.31` 與 `K8s 1.34 + CRI-O 1.34` 上，以明確宣告的 guardrail / policy / config 重新驗證。這次變更的目的，是把 `Flannel-specific wiring workaround` 從官方比較基線移除，改成 `no-flannel K3s + Cilium`，避免讓暫時修補蓋掉真正的 solution 判讀。",
-    "currentCall": "目前仍暫列 OpenShell + CRI-O 為 leading candidate，但所有建在 CRI-O 上的候選都要在 Cilium baseline 上重跑後，才可恢復正式推薦",
+    "title": "OpenShell + CRI-O 已在兩條正式 Cilium baseline 上重建正面證據",
+    "summary": "GitHub Pages 現在已不再停留在 `Cilium migration pending`，也不再停留在 `OpenShell rerun required`。`K8s + OpenShell + CRI-O` 已在 `1.31/1.31` 與 `1.34/1.34` 上實際完成 `3 nodes Ready`、`baseline-pod PASS`、`OpenShell control plane PASS`、`OpenShell guardrails PASS`，並通過 `Service Mesh / Istio` 情境。",
+    "detail": "在新模型下，solution 固定只有五種候選組合；`Istio` 不再被視為 solution，而是 `Service Mesh` scenario 的一部分。每個候選方案都必須在 `K8s 1.31 + CRI-O 1.31` 與 `K8s 1.34 + CRI-O 1.34` 上，以明確宣告的 guardrail / policy / config 重新驗證。現在 plain CRI-O 與 OpenShell + CRI-O 都已在正式 `no-flannel K3s + Cilium` 基線上建立 live 證據；`KubeArmor` 也已在兩條 baseline 上完成 explicit-policy 驗證，但目前仍只證明 partial protection，有效的 blocking 落在 `file` 與 `service account token`，而不是完整的 network/process 防護。",
+    "currentCall": "目前最強的正式候選已是 OpenShell + CRI-O；接下來要測的是其他候選能否在 protection 提升時，不輸掉 compatibility 與 ops 成本",
     "solutionId": "openshell-crio",
     "solutionLabel": "OpenShell + CRI-O",
-    "why": "OpenShell + CRI-O 仍是目前最接近正式推薦的路線，因為它在既有 `1.31 + 1.31` 環境上已經留下 baseline、Istio 與 OpenShell control plane 正常的正面證據。不過現在官方基線已切到 `Cilium`，所以包含 plain CRI-O、OpenShell、gVisor、KubeArmor 在內的 CRI-O family 結論，都必須在新基線上重跑後才算恢復有效。"
+    "why": "OpenShell + CRI-O 不再只是最接近推薦的路線，而是目前唯一已在兩條正式 `Cilium` baseline 上，同時拿到 `baseline`、`OpenShell guardrails`、以及 `Service Mesh / Istio` 正面 live 證據的候選。plain CRI-O 已把比較底座證明清楚，現在 OpenShell 也把自己的核心 value 證明出來了。"
   },
   "overview": {
     "blockedCandidates": 0,
-    "blockedSummary": "目前最重要的更新不是某個 solution 新增 failure，而是整個 CRI-O family 的官方比較基線從 Flannel workaround 改成 Cilium。舊的 recovery 與 failure 報告仍保留，但一律降級成 historical baseline evidence。"
+    "blockedSummary": "目前最重要的更新是 CRI-O family 的正式 Cilium baseline 已被兩條平台基線實際驗證。接下來 blocked / fail 的解讀，不再能怪到底座不穩，而要回到各候選自己的 install / policy / runtime 行為。"
   },
   "methodology": [
     "Raw archive 全部保留，供追溯與除錯，不再直接作為遠端閱讀主入口。",
@@ -46,7 +46,7 @@
       "highlights": [
         "未來所有 solution 都要在這條基線上重新跑",
         "CRI-O family 正式 CNI baseline 改成 Cilium",
-        "Istio 與 agentic AI scenarios 要納入正式比較",
+        "Service Mesh 與 agentic AI scenarios 要納入正式比較",
         "不再用舊 testing 文件直接當官方結論"
       ]
     },
@@ -77,8 +77,8 @@
       "name": "Service Mesh",
       "focus": "Istio control plane、sidecar injection、in-mesh traffic 與 sandbox 疊加相容性。",
       "currentRead": [
-        "Istio 不是額外加分項，而是 agentic workload 常見現實條件。",
-        "任何 solution + Istio 組合失敗都要直接算進 compatibility。"
+        "Istio 是固定 scenario，不是額外 solution；它代表 agentic workload 常見現實條件。",
+        "任何 solution 在 Service Mesh 情境下失敗，都要直接算進 compatibility。"
       ]
     },
     {
@@ -123,81 +123,81 @@
       "id": "cri-o",
       "label": "K8s + CRI-O",
       "category": "Candidate Solution",
-      "currentCall": "Cilium migration pending",
-      "summary": "作為最基礎的對照組，plain CRI-O 先前已證明 Flannel-specific failure 不是 inherent limitation；但現在官方比較基線已切到 Cilium，因此必須在新基線上重新取得 baseline、Istio 與 scenario 證據。",
-      "interpretation": "這條路線仍主要提供 baseline comparison，不是預設主推薦。現階段最重要的不是沿用 Flannel recovery，而是確認 `K3s + CRI-O + Cilium` 在兩條平台基線上能否穩定完成 bootstrap、baseline workload 與 service mesh。 ",
+      "currentCall": "formal baseline proven on both platform pairs",
+      "summary": "作為最基礎的對照組，plain CRI-O 現在已不只是 historical recovery。`K3s + CRI-O + Cilium` 已在 `1.31/1.31` 與 `1.34/1.34` 上實際完成 `3 nodes Ready`、`baseline-pod PASS`，並通過 `Service Mesh / Istio control plane` 情境。",
+      "interpretation": "這條路線仍主要提供 baseline comparison，不是預設主推薦；但它現在已經提供一條真正成立的正式基線。後續其他候選的成敗，應該回到各自的 sandbox / policy / runtime 行為，而不是再被底層 CNI 問題模糊。 ",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
-          "status": "NOT_TESTED",
-          "note": "官方比較基線已切到 `K3s + CRI-O + Cilium`。先前 pinned flannel override 下的 recovery 只保留為 historical evidence；這條基線需要在 Cilium 上重新跑 nodes-ready、baseline-pod、Istio 與後續 scenarios。"
+          "status": "PASS",
+          "note": "2026-06-11 live validation：`3 nodes Ready`、`Cilium rollout PASS`、`baseline-pod PASS`，以及 `Service Mesh / Istio control plane PASS`。這是新的正式比較基線，不再依賴 Flannel workaround。"
         },
         "k8s-1.34-crio-1.34": {
-          "status": "NOT_TESTED",
-          "note": "這條基線同樣已切到 `Cilium`。舊的 Flannel workaround recovery 仍可作為根因證據，但不再代表 current baseline 狀態。"
+          "status": "PASS",
+          "note": "2026-06-11 live validation：在 `full destroy + clean recreate` 後，`3 nodes Ready`、`Cilium rollout PASS`、`baseline-pod PASS`，以及 `Service Mesh / Istio control plane PASS`。這條結果刻意避開舊 worker CA 汙染。"
         }
       },
       "dimensionRead": [
         "Protection：預期作為對照組，不會是最強防護路線。",
-        "Compatibility：必須重新確認 Cilium baseline 下的 nodes Ready、baseline workload 與 Istio。",
-        "Ops：這次改線本身就是維運成本證據，因為它代表先前 Flannel workaround 不適合作為長期官方基線。"
+        "Compatibility：兩條正式平台基線上的 nodes Ready、baseline workload 與 Service Mesh 情境已經成立。",
+        "Ops：這次改線與 live debugging 本身就是維運成本證據，但至少現在正式基線已被建立。"
       ],
       "scenarioRead": [
         "要用來衡量沒有額外 guardrail 時，filesystem / network / privilege 面會缺多少。",
-        "service mesh、filesystem、network 與 privilege 都要在 Cilium baseline 上重新量一次。"
+        "Service Mesh 情境已先成立；filesystem、network 與 privilege 現在可以在這條基線上重新量一次。"
       ]
     },
     {
       "id": "openshell-crio",
       "label": "K8s + OpenShell + CRI-O",
       "category": "Candidate Solution",
-      "currentCall": "leading candidate, rerun required on Cilium baseline",
-      "summary": "這條路線仍是最接近正式推薦的候選，但先前正面結果建立在舊的 CRI-O network wiring 上。現在官方比較基線已切到 Cilium，因此 1.31 與 1.34 都要在新基線上重建正面證據。",
-      "interpretation": "OpenShell + CRI-O 的關鍵不只是它能不能擋，而是它能不能在 agentic workload、Istio 與日常維運條件下，持續維持可用且精準的 guardrail。切到 Cilium 後，所有正負結果都要重新歸檔。 ",
+      "currentCall": "current leading recommendation, proven on both official baselines",
+      "summary": "這條路線現在不再只是待驗證候選。`K8s + OpenShell + CRI-O` 已在 `1.31/1.31` 與 `1.34/1.34` 的正式 `Cilium` baseline 上，實際完成 `3 nodes Ready`、`baseline-pod PASS`、`OpenShell control plane PASS`、`OpenShell guardrails PASS`，以及 `Service Mesh / Istio` 情境通過。",
+      "interpretation": "OpenShell + CRI-O 的價值不只在它能擋，而是它已經開始證明它能在 agentic workload、Service Mesh 情境與日常維運條件下，同時維持可用與精準 guardrail。現在它的主要風險不再是 baseline wiring，而是後續更細的 scenario 覆蓋是否持續成立。",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
-          "status": "NOT_TESTED",
-          "note": "先前 `nodes-ready`、`baseline-pod`、`istio-control-plane`、`openshell-control-plane` 的 PASS 仍保留為歷史正面證據，但官方基線切到 Cilium 後需要完整重跑。"
+          "status": "PASS",
+          "note": "2026-06-12 live validation：`3 nodes Ready`、`baseline-pod PASS`、`OpenShell control plane PASS`、`OpenShell guardrails PASS`、`Istio control plane PASS`、`Istio sidecar smoke PASS`。"
         },
         "k8s-1.34-crio-1.34": {
-          "status": "NOT_TESTED",
-          "note": "舊的 blocked observation 發生在 Flannel-based baseline 上，現在應重新在 Cilium baseline 上跑 `cluster -> cilium -> openshell controller` 的完整鏈路。"
+          "status": "PASS",
+          "note": "2026-06-12 live validation：`3 nodes Ready`、`baseline-pod PASS`、`OpenShell control plane PASS`、`OpenShell guardrails PASS`，並在安裝 `Istio` 後通過 `control plane` 與 `sidecar smoke`。舊的 blocked observation 降級成歷史基線報告。"
         }
       },
       "dimensionRead": [
         "Protection：關鍵在 explicit OpenShell policy 是否能精準表達 allowed / blocked。",
-        "Compatibility：1.31 與 1.34 都要在 Cilium baseline 上重新證明 baseline、Istio 與 OpenShell control plane。",
-        "Ops：policy authoring、觀測與除錯成本都要記錄；這次也證明 baseline wiring 要先固定，才不會把 controller 問題和底層 CNI 問題混在一起。"
+        "Compatibility：兩條正式平台基線都已證明 baseline、Service Mesh 與 OpenShell control plane 可以同時成立。",
+        "Ops：policy authoring、觀測與除錯成本仍需持續記錄；但至少 baseline wiring 與 OpenShell controller 的大風險已經降下來。"
       ],
       "scenarioRead": [
-        "Workspace 與 network 應是最重要的 allowed-path 驗證。",
-        "service account token、敏感檔案、非授權路徑寫入則是 blocked-path 驗證；這些都要建立在新的 Cilium baseline 之上。"
+        "Workspace 與 network 的 allowed-path 已有第一輪正面證據，因為 guardrails 測試同時驗了 GET allow 與寫入阻擋。",
+        "service account token、敏感檔案、非授權路徑寫入仍要擴大 scenario 覆蓋，但現在這些測試已能建立在通過的正式 baseline 之上。"
       ]
     },
     {
       "id": "gvisor",
       "label": "K8s + gVisor",
       "category": "Candidate Solution",
-      "currentCall": "high-risk candidate, rerun required on Cilium baseline",
-      "summary": "這條路線代表純 runtime sandbox 候選，重點是看 protection 是否帶來可接受的 compatibility 與 ops 成本。由於它目前也建在 CRI-O 上，所以一樣要跟著切到 Cilium baseline。",
-      "interpretation": "如果 gVisor 類路線在 `cluster bootstrap`、`cilium readiness`、`runtime verify` 或 `Istio` 疊加時持續產生 FAIL / BLOCKED，這會直接拖累 compatibility 與 operational complexity。先前 Flannel-based failure 只保留為歷史證據。 ",
+      "currentCall": "formal compatibility risk, failed on both official baselines",
+      "summary": "這條路線代表純 runtime sandbox 候選，但目前在正式 `Cilium` baseline 上已經出現明確的 compatibility 問題。`1.31/1.31` 可以讓一般 baseline pod 完成，卻在 `RuntimeClass gvisor` probe 上失敗；`1.34/1.34` 更進一步，連一般 baseline pod 都因同一條 CNI 路徑的 panic 而無法完成。",
+      "interpretation": "現在的問題已不再是 `gVisor 尚未重跑`，而是它在新的正式比較基線上已經留下兩種負面信號：`1.31` 的 runtime path 失敗，以及 `1.34` 的 baseline workload 失敗。若這種差異持續存在，gVisor 在 compatibility 與 operational complexity 上會被大幅扣分。",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
-          "status": "NOT_TESTED",
-          "note": "先前 PASS 建立在舊的 CRI-O network wiring 上。切到 Cilium 後，要重新確認 baseline、runtimeClass 與 Istio 疊加。"
+          "status": "FAIL",
+          "note": "2026-06-12 live validation：`nodes-ready PASS`、`baseline-pod PASS`，但 `RuntimeClass gvisor` probe 失敗；`Istio control plane PASS`，而 `Istio + gVisor` workload 卡在 `istio-init` / `Init:Error`。"
         },
         "k8s-1.34-crio-1.34": {
-          "status": "NOT_TESTED",
-          "note": "舊的 runtime verify failure 屬於 Flannel-based baseline 歷史結果；現在要在 Cilium baseline 上重新確認 worker-side gVisor workload。"
+          "status": "FAIL",
+          "note": "2026-06-12 live validation：`nodes-ready PASS`，但一般 `baseline-pod` 與 `RuntimeClass gvisor` probe 都在 worker 上撞到 `FailedCreatePodSandBox`，底層是 `bandwidth` CNI plugin panic。"
         }
       },
       "dimensionRead": [
         "Protection：預期較強，但不能用想像代替 scenario 驗證。",
-        "Compatibility：Istio、一般 workload 與 agentic 工具鏈是主要風險點；現在要先確認 Cilium baseline 下 worker-side gVisor workload 是否仍失敗。",
-        "Ops：runtime 調整與故障分析成本可能偏高，尤其當 failure 落在 worker-side sandbox / CNI 交界。"
+        "Compatibility：現在已經有正式負面證據，問題不只在 `Istio + gVisor`，連 `1.34` 的一般 workload 都被打壞。",
+        "Ops：runtime 調整與故障分析成本明顯偏高，尤其 failure 落在 worker-side sandbox / CNI 交界，還牽涉到 plugin panic。"
       ],
       "scenarioRead": [
-        "gVisor 不是只看 runtime probe，而要看真實 agentic workload 下的 allowed / blocked 行為。",
-        "與 Istio 疊加的結果尤其重要；但第一步是先在 Cilium baseline 上重新跑乾淨的 runtime verify。"
+        "gVisor 不是只看 runtime probe，而要看真實 agentic workload 下的 allowed / blocked 行為；目前連前置相容性都還沒站穩。",
+        "與 Service Mesh 疊加的結果仍然重要，但目前更迫切的是先理解 `1.34` 的 baseline workload 為何會被 `bandwidth` plugin panic 直接打斷。"
       ]
     },
     {
@@ -206,7 +206,7 @@
       "category": "Candidate Solution",
       "currentCall": "stacked candidate, rerun required on Cilium baseline",
       "summary": "這是 protection 疊加最多的複合候選，同時也是最容易在 compatibility 與 ops 成本上出問題的路線。由於底層同樣依賴 CRI-O，它也要跟著切到 Cilium baseline。",
-      "interpretation": "這條路線不能只因為 protection 看起來強就高分，必須把 install complexity、Cilium readiness、Istio 相容性與日常維護難度一併算進去。",
+      "interpretation": "這條路線不能只因為 protection 看起來強就高分，必須把 install complexity、Cilium readiness、Service Mesh 相容性與日常維護難度一併算進去。",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
           "status": "NOT_TESTED",
@@ -231,54 +231,27 @@
       "id": "kubearmor",
       "label": "K8s + CRI-O + KubeArmor",
       "category": "Candidate Solution",
-      "currentCall": "explicit-policy rerun required on Cilium baseline",
-      "summary": "這條路線未來只會在明確 scenario policy 下評估，不再用 default policy 或預設行為判成功。因為它也建在 CRI-O 上，所以 baseline 已正式切到 Cilium。",
-      "interpretation": "KubeArmor 的核心評估點是 policy expressiveness、policy correctness、policy enforcement reliability，以及維運成本，不是單看預設擋不擋。所有 policy 結果都要建立在新的 Cilium baseline 之上。",
+      "currentCall": "partial policy effectiveness on both official baselines",
+      "summary": "這條路線現在已經不是完全未測。`1.31/1.31` 與 `1.34/1.34` 上的 explicit-policy 驗證都顯示：`file` 與 `service account token` 可以被擋住，但 `network` 與 `process execution` 仍然沒有被攔下；`Service Mesh / Istio` 情境則維持正常。",
+      "interpretation": "KubeArmor 的核心評估點不是單看預設擋不擋，而是 policy 是否能精準且穩定地描述 scenario。現在兩條 baseline 的 live 結果已經收斂成同一個訊號：它具備部分 protection 價值，但 policy effectiveness 還不夠完整，特別是在 `network` 與 `process` 兩個情境上。",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
-          "status": "NOT_TESTED",
-          "note": "先前 baseline smoke 與 Istio PASS 仍保留為歷史證據，但正式比較要在 Cilium baseline 上重新套 explicit policies。"
+          "status": "PROVISIONAL",
+          "note": "2026-06-12 live validation：`nodes-ready PASS`、`baseline-pod PASS`、`Istio control plane PASS`、`Istio sidecar smoke PASS`；explicit-policy 上 `file` 與 `service account token` 阻擋成功，但 `network` 與 `process execution` 沒擋住。"
         },
         "k8s-1.34-crio-1.34": {
-          "status": "NOT_TESTED",
-          "note": "需要驗證 Cilium baseline 是否影響 policy 表達與 enforcement 穩定度。"
+          "status": "PROVISIONAL",
+          "note": "2026-06-12 live validation：`nodes-ready PASS`、`baseline-pod PASS`、`Istio control plane PASS`、`Istio sidecar smoke PASS`；explicit-policy 上 `file` 與 `service account token` 阻擋成功，但 `network` 與 `process execution` 沒擋住。"
         }
       },
       "dimensionRead": [
-        "Protection：取決於 policy 是否真的能精準描述 scenario。",
-        "Compatibility：allowed behavior 不能因 policy 調整而大面積被破壞。",
-        "Ops：policy 數量、脆弱度與觀測品質都要列入成本。"
+        "Protection：目前在兩條 baseline 都只證明 `file` 與 `service account token` 有效，但 `network` 與 `process` 仍不成立。",
+        "Compatibility：兩條 baseline 上的 `Istio` 與一般 workload 都仍可用，代表它不是靠把所有東西打壞來得到保護效果。",
+        "Ops：policy 數量、脆弱度與觀測品質仍要列入成本；現在已能確認不同 scenario 需要獨立 policy，而非單一預設策略。"
       ],
       "scenarioRead": [
-        "每個 scenario 都應該有對應的 allowed / blocked policy 驗證對。",
-        "default behavior 不再是判分依據。"
-      ]
-    },
-    {
-      "id": "istio",
-      "label": "Istio 視角",
-      "category": "Cross-cutting View",
-      "currentCall": "所有候選都應評估 mesh 疊加效果",
-      "summary": "Istio 不是獨立候選，而是跨所有 solution 的重要相容性條件，特別是 agentic workload 常見的 service mesh 現場。",
-      "interpretation": "未來任何 solution 只要在 Istio control plane、sidecar injection 或 in-mesh traffic 上不穩，都應直接影響 compatibility 判分。",
-      "baselineStatus": {
-        "k8s-1.31-crio-1.31": {
-          "status": "PASS",
-          "note": "2026-06-10 初步實測：四個現有 stack 的 istio-control-plane 皆 PASS。"
-        },
-        "k8s-1.34-crio-1.34": {
-          "status": "NOT_TESTED",
-          "note": "新平台基線上的 Istio 疊加結果需要獨立觀察。"
-        }
-      },
-      "dimensionRead": [
-        "Protection：Istio 本身不是 sandbox，但會改變 dataplane 與流量行為。",
-        "Compatibility：是所有候選的重要現實條件。",
-        "Ops：mesh 疊加會增加故障分析與 rollout 成本。"
-      ],
-      "scenarioRead": [
-        "至少要驗證 control plane、sidecar injection、in-mesh traffic。",
-        "和 sandbox 疊加後的 readiness 與 observability 要列入正式結果。"
+        "每個 scenario 都應該有對應的 allowed / blocked policy 驗證對；現在兩條 baseline 都已證明這條要求是必要的。",
+        "default behavior 不再是判分依據，因為同一候選在不同 scenario 上已經明確分化。"
       ]
     }
   ]

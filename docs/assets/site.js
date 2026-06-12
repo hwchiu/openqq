@@ -5,8 +5,7 @@
     "openshell-crio": "tracks/openshell.html",
     "gvisor": "tracks/gvisor.html",
     "openshell-gvisor": "tracks/openshell-gvisor.html",
-    "kubearmor": "tracks/kubearmor.html",
-    "istio": "tracks/istio.html"
+    "kubearmor": "tracks/kubearmor.html"
   };
 
   function getRoot() {
@@ -349,6 +348,13 @@
           <li><a href="${repoLink("docs/runbooks/experiment-design-template.md")}">Experiment design template</a></li>
           <li><a href="${repoLink("docs/reports/2026-06-10-initial-baseline-status.md")}">Initial baseline status report</a></li>
           <li><a href="${repoLink("docs/reports/2026-06-10-crio-family-cilium-baseline-switch.md")}">CRI-O family Cilium baseline switch</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-11-k3s-crio-cilium-baseline-success.md")}">Plain CRI-O 1.31 Cilium baseline success</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-11-k3s-crio-134-cilium-baseline-success.md")}">Plain CRI-O 1.34 Cilium baseline success</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-12-k3s-openshell-runc-cilium-success.md")}">OpenShell + CRI-O 1.31 Cilium success</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-12-k3s-openshell-runc-134-cilium-success.md")}">OpenShell + CRI-O 1.34 Cilium success</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-12-k3s-gvisor-cilium-failures.md")}">gVisor Cilium failure report</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-12-k3s-kubearmor-runc-cilium-131-policy-results.md")}">KubeArmor 1.31 policy results</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-12-k3s-kubearmor-runc-134-cilium-policy-results.md")}">KubeArmor 1.34 policy results</a></li>
           <li><a href="${repoLink("docs/reports/2026-06-10-k3s-crio-baseline-failure.md")}">Plain CRI-O 1.31 first failure report</a></li>
           <li><a href="${repoLink("docs/reports/2026-06-10-k3s-crio-baseline-recovery.md")}">Plain CRI-O 1.31 recovery report</a></li>
           <li><a href="${repoLink("docs/reports/2026-06-10-k3s-crio-134-baseline-failure.md")}">Plain CRI-O 1.34 first failure report</a></li>

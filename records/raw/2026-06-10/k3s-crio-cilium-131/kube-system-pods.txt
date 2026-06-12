@@ -1,0 +1,17 @@
+NAME                                      READY   STATUS      RESTARTS   AGE     IP           NODE       NOMINATED NODE   READINESS GATES
+cilium-54tx9                              1/1     Running     0          2m39s   10.100.0.5   worker-1   <none>           <none>
+cilium-envoy-69hv2                        1/1     Running     0          2m39s   10.100.0.6   cp-0       <none>           <none>
+cilium-envoy-dfgcg                        1/1     Running     0          2m39s   10.100.0.5   worker-1   <none>           <none>
+cilium-envoy-fswhb                        1/1     Running     0          2m39s   10.100.0.4   worker-2   <none>           <none>
+cilium-mbg5t                              1/1     Running     0          2m39s   10.100.0.6   cp-0       <none>           <none>
+cilium-operator-587f6bd7ff-fnnsq          1/1     Running     0          2m39s   10.100.0.4   worker-2   <none>           <none>
+cilium-s8zmf                              1/1     Running     0          2m39s   10.100.0.4   worker-2   <none>           <none>
+coredns-5c5cd8fc79-29qm5                  1/1     Running     0          11m     10.0.1.225   worker-1   <none>           <none>
+helm-install-traefik-crd-lbkbx            0/1     Completed   0          11m     10.0.1.192   worker-1   <none>           <none>
+helm-install-traefik-gmpc9                0/1     Completed   1          11m     10.0.1.226   worker-1   <none>           <none>
+local-path-provisioner-646d4d78cb-k2rdn   1/1     Running     0          11m     10.0.1.92    worker-1   <none>           <none>
+metrics-server-564cb4ff68-lgcmb           0/1     Running     0          11m     10.0.1.227   worker-1   <none>           <none>
+svclb-traefik-f707b76f-67dg8              2/2     Running     0          85s     10.0.2.25    worker-2   <none>           <none>
+svclb-traefik-f707b76f-pdrvq              2/2     Running     0          85s     10.0.0.8     cp-0       <none>           <none>
+svclb-traefik-f707b76f-xhw9k              2/2     Running     0          85s     10.0.1.186   worker-1   <none>           <none>
+traefik-79f8d498fd-zsgdt                  1/1     Running     0          85s     10.0.2.85    worker-2   <none>           <none>

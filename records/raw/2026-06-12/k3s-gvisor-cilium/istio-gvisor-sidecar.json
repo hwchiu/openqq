@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "summary": "Injected gVisor workloads did not become Ready under Istio",
+  "details": {
+    "namespace": "istio-gvisor-smoke-1781265950",
+    "observation": "Both echo and curl deployments stalled at Init:Error while istio-init restarted and terminated with Error",
+    "pods": "NAME                               READY   STATUS       RESTARTS        AGE     IP             NODE       NOMINATED NODE   READINESS GATES\ncurl-1781265950-6bc95b94b4-2plnf   0/2     Init:Error   1 (2m20s ago)   2m27s   10.210.0.197   cp-0       <none>           <none>\necho-1781265950-7ddd574846-qwdfk   0/2     Init:Error   2 (2m27s ago)   2m29s   10.210.3.25    worker-2   <none>           <none>\n"
+  }
+}

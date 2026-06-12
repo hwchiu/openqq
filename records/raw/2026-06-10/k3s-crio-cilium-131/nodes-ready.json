@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "summary": "3-node cluster healthy (3 nodes Ready)",
+  "details": {
+    "nodeCount": 3
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "summary": "Istio sidecar injection and in-mesh traffic succeeded",
+  "details": {
+    "response": "mesh-ok",
+    "serverContainers": "echo",
+    "clientContainers": "curl",
+    "serverInitContainers": "istio-init istio-proxy",
+    "clientInitContainers": "istio-init istio-proxy"
+  }
+}

@@ -1,0 +1,25 @@
+NAMESPACE              NAME                                                         READY   STATUS              RESTARTS   AGE   IP           NODE       NOMINATED NODE   READINESS GATES
+agent-sandbox-system   agent-sandbox-controller-858946cd5b-z5hrc                    1/1     Running             0          43h   10.0.2.202   cp-0       <none>           <none>
+kube-system            cilium-9zxr4                                                 1/1     Running             0          43h   10.170.0.5   worker-2   <none>           <none>
+kube-system            cilium-c2glp                                                 1/1     Running             0          43h   10.170.0.4   cp-0       <none>           <none>
+kube-system            cilium-envoy-kd6qm                                           1/1     Running             0          43h   10.170.0.4   cp-0       <none>           <none>
+kube-system            cilium-envoy-lkp4g                                           1/1     Running             0          43h   10.170.0.5   worker-2   <none>           <none>
+kube-system            cilium-envoy-qbdtd                                           1/1     Running             0          43h   10.170.0.6   worker-1   <none>           <none>
+kube-system            cilium-operator-78dbd46477-sq9d9                             1/1     Running             0          43h   10.170.0.5   worker-2   <none>           <none>
+kube-system            cilium-w9hfr                                                 1/1     Running             0          43h   10.170.0.6   worker-1   <none>           <none>
+kube-system            coredns-7896679cc-pmxhv                                      1/1     Running             0          43h   10.0.1.202   worker-1   <none>           <none>
+kube-system            helm-install-traefik-crd-jm6ss                               0/1     Completed           0          43h   10.0.1.156   worker-1   <none>           <none>
+kube-system            helm-install-traefik-fbdh6                                   0/1     Completed           2          43h   10.0.1.199   worker-1   <none>           <none>
+kube-system            helper-pod-create-pvc-b2ce158d-35c5-4f29-a9d9-2e8f63459606   0/1     ContainerCreating   0          0s    <none>       cp-0       <none>           <none>
+kube-system            local-path-provisioner-578895bd58-hgxbq                      1/1     Running             0          43h   10.0.1.141   worker-1   <none>           <none>
+kube-system            metrics-server-7b9c9c4b9c-wfhw5                              0/1     Running             0          43h   10.0.1.222   worker-1   <none>           <none>
+kube-system            svclb-openshell-865661ce-fspsl                               2/2     Running             0          43h   10.0.1.220   worker-1   <none>           <none>
+kube-system            svclb-openshell-865661ce-k4hr4                               2/2     Running             0          43h   10.0.2.245   cp-0       <none>           <none>
+kube-system            svclb-openshell-865661ce-qn58s                               2/2     Running             0          43h   10.0.0.128   worker-2   <none>           <none>
+kube-system            svclb-traefik-f60426f3-4v89l                                 2/2     Running             0          43h   10.0.1.5     worker-1   <none>           <none>
+kube-system            svclb-traefik-f60426f3-glmbd                                 2/2     Running             0          43h   10.0.0.106   worker-2   <none>           <none>
+kube-system            svclb-traefik-f60426f3-psw4b                                 2/2     Running             0          43h   10.0.2.83    cp-0       <none>           <none>
+kube-system            traefik-6f986b958c-rtrf9                                     1/1     Running             0          43h   10.0.0.168   worker-2   <none>           <none>
+openshell              matrix-k3s-openshell-runc-134-1781265344                     0/1     Pending             0          1s    <none>       <none>     <none>           <none>
+openshell              openshell-0                                                  1/1     Running             0          43h   10.0.2.67    cp-0       <none>           <none>
+openshell              openshell-sandbox-patcher-5b767f5886-p64lj                   1/1     Running             0          43h   10.0.0.59    worker-2   <none>           <none>

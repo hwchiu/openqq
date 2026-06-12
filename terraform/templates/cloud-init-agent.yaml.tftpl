@@ -83,7 +83,6 @@ write_files:
       if [[ '${container_runtime}' == 'crio' ]]; then
         install_crio
         runtime_args+=(--container-runtime-endpoint unix:///var/run/crio/crio.sock)
-        runtime_args+=(--flannel-backend=none)
       fi
 
       if [[ '${container_runtime}' == 'gvisor' ]]; then
