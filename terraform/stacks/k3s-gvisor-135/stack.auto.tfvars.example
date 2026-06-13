@@ -1,0 +1,6 @@
+# Shared Azure credentials belong in ../common.auto.tfvars or environment variables.
+# This stack intentionally hard-codes its own name, runtime, and CIDR ranges.
+# Override only when you need a different VM SKU or K3s version.
+
+k3s_version = "v1.35.5+k3s1"
+crio_version = "v1.35"

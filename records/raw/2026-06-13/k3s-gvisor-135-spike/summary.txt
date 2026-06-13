@@ -1,0 +1,22 @@
+K3s gVisor 1.35 spike summary
+Date: 2026-06-13
+Stack: k3s-gvisor-135
+Versions:
+- K3s: v1.35.5+k3s1
+- CRI-O: 1.35.4
+- gVisor: runsc release-20260608.0
+
+Observed live results:
+- Terraform apply succeeded and all 3 nodes registered.
+- Cilium installed successfully and all 3 nodes reached Ready.
+- Current repo gVisor wiring (runtime_type=oci, runtime_path=/usr/bin/runsc) allowed verify pod sandbox creation, image pull, container creation, and StartContainer.
+- Short-lived probe pod entered Error with exit code -1 / bogus finished timestamp in Kubernetes view.
+- CRI-O journal repeatedly logged: Failed to find container exit file.
+- runsc list showed the verify container and sandbox stopped, proving the workload actually ran and exited.
+- A long-running sleep pod improved one step further: runsc list showed sandbox/container running, but CRI-O still reported the container as CONTAINER_CREATED and Kubernetes kept the pod in ContainerCreating.
+- Alternative vm+containerd-shim-runsc-v1 trial on cp-0 was worse: CRI-O restart did not recover cleanly and cp-0 became NotReady.
+
+Interpretation:
+- 1.35 is materially better than 1.34 for the repo's current oci/runsc path because workloads now start and run under runsc.
+- It is still not a PASS for Kubernetes compatibility because CRI-O 1.35 does not correctly surface runsc container lifecycle state to kubelet in this setup.
+- The vm+shim path is not a viable fix on 1.35 in the current environment.

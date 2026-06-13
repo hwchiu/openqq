@@ -2,6 +2,8 @@
 
 這份紀錄整理 `k3s-gvisor` 與 `k3s-gvisor-134` 在正式 `Cilium` baseline 上的最新 live 結果。
 
+> Update 2026-06-13: 已另外補做 [K3s + gVisor 1.35 Spike](./2026-06-13-k3s-gvisor-135-spike.md)。`1.35` 確實比 `1.34` 更前進，但仍未跨過 Kubernetes compatibility 門檻，因此不改變這份正式 baseline 報告的主結論。
+
 這次不是歷史 `Flannel` wiring 的延伸觀察，而是針對目前正式比較模型下的重新驗證：
 
 - `K3s --flannel-backend=none`

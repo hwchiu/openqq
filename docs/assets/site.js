@@ -353,6 +353,7 @@
           <li><a href="${repoLink("docs/reports/2026-06-12-k3s-openshell-runc-cilium-success.md")}">OpenShell + CRI-O 1.31 Cilium success</a></li>
           <li><a href="${repoLink("docs/reports/2026-06-12-k3s-openshell-runc-134-cilium-success.md")}">OpenShell + CRI-O 1.34 Cilium success</a></li>
           <li><a href="${repoLink("docs/reports/2026-06-12-k3s-gvisor-cilium-failures.md")}">gVisor Cilium failure report</a></li>
+          <li><a href="${repoLink("docs/reports/2026-06-13-k3s-gvisor-135-spike.md")}">gVisor 1.35 spike report</a></li>
           <li><a href="${repoLink("docs/reports/2026-06-12-k3s-kubearmor-runc-cilium-131-policy-results.md")}">KubeArmor 1.31 policy results</a></li>
           <li><a href="${repoLink("docs/reports/2026-06-12-k3s-kubearmor-runc-134-cilium-policy-results.md")}">KubeArmor 1.34 policy results</a></li>
           <li><a href="${repoLink("docs/reports/2026-06-10-k3s-crio-baseline-failure.md")}">Plain CRI-O 1.31 first failure report</a></li>

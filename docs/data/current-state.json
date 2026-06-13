@@ -179,7 +179,7 @@
       "category": "Candidate Solution",
       "currentCall": "formal compatibility risk, failed on both official baselines",
       "summary": "這條路線代表純 runtime sandbox 候選，但目前在正式 `Cilium` baseline 上已經出現明確的 compatibility 問題。`1.31/1.31` 可以讓一般 baseline pod 完成，卻在 `RuntimeClass gvisor` probe 上失敗；`1.34/1.34` 更進一步，連一般 baseline pod 都因同一條 CNI 路徑的 panic 而無法完成。",
-      "interpretation": "現在的問題已不再是 `gVisor 尚未重跑`，而是它在新的正式比較基線上已經留下兩種負面信號：`1.31` 的 runtime path 失敗，以及 `1.34` 的 baseline workload 失敗。若這種差異持續存在，gVisor 在 compatibility 與 operational complexity 上會被大幅扣分。",
+      "interpretation": "現在的問題已不再是 `gVisor 尚未重跑`，而是它在新的正式比較基線上已經留下兩種負面信號：`1.31` 的 runtime path 失敗，以及 `1.34` 的 baseline workload 失敗。2026-06-13 的 `1.35` spike 雖然證明 workload 已能真正進入 `runsc` 執行，但 `CRI-O` 仍無法把 container lifecycle 乾淨同步回 kubelet，因此這條候選目前仍是 compatibility risk，而不是接近可用。",
       "baselineStatus": {
         "k8s-1.31-crio-1.31": {
           "status": "FAIL",
@@ -197,7 +197,8 @@
       ],
       "scenarioRead": [
         "gVisor 不是只看 runtime probe，而要看真實 agentic workload 下的 allowed / blocked 行為；目前連前置相容性都還沒站穩。",
-        "與 Service Mesh 疊加的結果仍然重要，但目前更迫切的是先理解 `1.34` 的 baseline workload 為何會被 `bandwidth` plugin panic 直接打斷。"
+        "與 Service Mesh 疊加的結果仍然重要，但目前更迫切的是先理解 `1.34` 的 baseline workload 為何會被 `bandwidth` plugin panic 直接打斷。",
+        "`1.35` spike 提供了新證據：問題不只在 CNI，因為即使 platform baseline 健康、runsc 真正把 workload 跑起來，`CRI-O` 仍可能把 pod 卡在 `ContainerCreating`。"
       ]
     },
     {
