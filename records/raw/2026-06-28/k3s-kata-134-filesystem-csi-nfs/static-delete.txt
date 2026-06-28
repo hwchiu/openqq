@@ -1,0 +1,5 @@
+namespace "kata-fs-nfs-1782664911" deleted
+persistentvolume "pv-kata-nfs-1782664911" deleted
+persistentvolumeclaim "pvc-kata-nfs-1782664911" deleted from kata-fs-nfs-1782664911 namespace
+pod "writer" deleted from kata-fs-nfs-1782664911 namespace
+pod "reader" deleted from kata-fs-nfs-1782664911 namespace

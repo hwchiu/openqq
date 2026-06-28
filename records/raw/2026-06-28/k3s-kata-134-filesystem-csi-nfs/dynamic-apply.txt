@@ -1,0 +1,4 @@
+namespace/kata-fs-dyn-1782665124 created
+storageclass.storage.k8s.io/azurefile-csi-nfs-dyn-1782665124 created
+persistentvolumeclaim/pvc-dyn-nfs-1782665124 created
+pod/dyn-kata created

@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kata-fs-nfs-1782664911
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-kata-nfs-1782664911
+  annotations:
+    pv.kubernetes.io/provisioned-by: file.csi.azure.com
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: azurefile-csi-nfs-static
+  mountOptions:
+    - nconnect=4
+    - noresvport
+    - actimeo=30
+  csi:
+    driver: file.csi.azure.com
+    volumeHandle: rg-k3s-kata-134#stkatanfs163923#kata-nfs-share
+    volumeAttributes:
+      resourceGroup: rg-k3s-kata-134
+      storageAccount: stkatanfs163923
+      shareName: kata-nfs-share
+      protocol: nfs
+      mountPermissions: "0777"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-kata-nfs-1782664911
+  namespace: kata-fs-nfs-1782664911
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: azurefile-csi-nfs-static
+  volumeName: pv-kata-nfs-1782664911
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: writer
+  namespace: kata-fs-nfs-1782664911
+spec:
+  runtimeClassName: kata
+  nodeName: worker-1
+  restartPolicy: Never
+  containers:
+    - name: shell
+      image: alpine:3.22
+      command: ["/bin/sh", "-lc", "sleep 365d"]
+      volumeMounts:
+        - name: shared
+          mountPath: /mnt/azurefile
+  volumes:
+    - name: shared
+      persistentVolumeClaim:
+        claimName: pvc-kata-nfs-1782664911
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: reader
+  namespace: kata-fs-nfs-1782664911
+spec:
+  runtimeClassName: kata
+  nodeName: worker-2
+  restartPolicy: Never
+  containers:
+    - name: shell
+      image: alpine:3.22
+      command: ["/bin/sh", "-lc", "sleep 365d"]
+      volumeMounts:
+        - name: shared
+          mountPath: /mnt/azurefile
+  volumes:
+    - name: shared
+      persistentVolumeClaim:
+        claimName: pvc-kata-nfs-1782664911

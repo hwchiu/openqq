@@ -1,0 +1,8 @@
+NAME                                               PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+storageclass.storage.k8s.io/local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  3d10h
+
+NAME                                      CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                            STORAGECLASS               VOLUMEATTRIBUTESCLASS   REASON   AGE
+persistentvolume/pv-kata-nfs-1782664911   100Gi      RWX            Retain           Bound    kata-fs-nfs-1782664911/pvc-kata-nfs-1782664911   azurefile-csi-nfs-static   <unset>                          8m53s
+
+NAMESPACE                NAME                                            STATUS   VOLUME                   CAPACITY   ACCESS MODES   STORAGECLASS               VOLUMEATTRIBUTESCLASS   AGE
+kata-fs-nfs-1782664911   persistentvolumeclaim/pvc-kata-nfs-1782664911   Bound    pv-kata-nfs-1782664911   100Gi      RWX            azurefile-csi-nfs-static   <unset>                 8m52s

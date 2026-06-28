@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kata-fs-dyn-1782665124
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: azurefile-csi-nfs-dyn-1782665124
+provisioner: file.csi.azure.com
+parameters:
+  protocol: nfs
+  skuName: Premium_LRS
+  resourceGroup: rg-k3s-kata-134
+  storageAccount: stkatanfs163923
+  shareNamePrefix: dynkata
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+mountOptions:
+  - nconnect=4
+  - noresvport
+  - actimeo=30
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-dyn-nfs-1782665124
+  namespace: kata-fs-dyn-1782665124
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: azurefile-csi-nfs-dyn-1782665124
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dyn-kata
+  namespace: kata-fs-dyn-1782665124
+spec:
+  runtimeClassName: kata
+  restartPolicy: Never
+  containers:
+    - name: shell
+      image: alpine:3.22
+      command: ["/bin/sh", "-lc", "sleep 365d"]
+      volumeMounts:
+        - name: shared
+          mountPath: /mnt/azurefile
+  volumes:
+    - name: shared
+      persistentVolumeClaim:
+        claimName: pvc-dyn-nfs-1782665124

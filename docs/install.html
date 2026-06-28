@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="說明 Azure 上 K3s 1.34、CRI-O 1.34 與 Kata Containers 環境的安裝方式。"
+      content="說明 Azure 上 K3s 1.34、CRI-O 1.34 與 Kata Containers 環境，以及 Azure Files NFS CSI 驗證入口的安裝方式。"
     />
     <title>OpenQQ Kata on Azure | 安裝</title>
     <link rel="stylesheet" href="assets/site.css" />
@@ -33,7 +33,8 @@
           <h1>如何建立 Azure Kata 驗證環境</h1>
           <p>
             這次驗證使用專用 Terraform stack 與 wrapper script，在 Azure 上建立 3 台 VM、安裝
-            K3s 與 CRI-O、把 Kata 佈署到每個節點，最後再跑 runtime verify。
+            K3s 與 CRI-O、把 Kata 佈署到每個節點，最後再跑 runtime verify。Filesystem mount
+            的 Azure Files NFS CSI 驗證則是在這條 base path 成功後再額外執行。
           </p>
         </section>
 
@@ -69,6 +70,14 @@
             <li>
               Kata install logic：
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/install-kata.sh">scripts/install-kata.sh</a>
+            </li>
+            <li>
+              Filesystem / CSI 驗證 wrapper：
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/verify-azurefile-csi.sh">scripts/verify-azurefile-csi.sh</a>
+            </li>
+            <li>
+              Filesystem / CSI 實際腳本：
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/tests/kata-azurefile-csi-nfs.sh">scripts/tests/kata-azurefile-csi-nfs.sh</a>
             </li>
           </ul>
         </section>
@@ -143,6 +152,31 @@ bash scripts/install-kata.sh
 
 KUBECONFIG_PATH=generated/stacks/k3s-kata-134/kubeconfig \
 bash scripts/verify-kata-runtime.sh</code></pre>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">Filesystem / CSI</div>
+              <h2>如果還要驗證 Azure Files NFS CSI</h2>
+              <p>這不是 base install 的必要步驟，但如果你要重現這次 filesystem mount 驗證，需要再準備 Azure CLI、Helm 與可登入節點的 SSH 金鑰。</p>
+            </div>
+          </div>
+          <ul>
+            <li>先完成本頁前半段的 3 VM、K3s、CRI-O、Kata 安裝。</li>
+            <li>本機需要已完成 <code>az login</code>。</li>
+            <li>本機需要可用的 <code>helm</code>。</li>
+            <li>本機需要可 SSH 到 worker 的私鑰；預設讀取 <code>~/.ssh/id_ed25519</code>，也可改用 <code>AZURE_SSH_PRIVATE_KEY_PATH</code>。</li>
+          </ul>
+          <pre><code>KUBECONFIG_PATH=generated/stacks/k3s-kata-134/kubeconfig \
+TF_DIR=terraform/stacks/k3s-kata-134 \
+bash scripts/tests/kata-azurefile-csi-nfs.sh</code></pre>
+          <p>
+            這支腳本會先安裝 <code>Azure File CSI driver 1.35.4</code>，建立暫時的
+            <code>Premium FileStorage + NFS share</code>，驗證兩個 Kata pod 的 static CSI mount，
+            再補做一次 dynamic provisioning 檢查，最後把 storage account 清掉並把 controller
+            重啟回健康狀態。
+          </p>
         </section>
 
         <section class="page-section">

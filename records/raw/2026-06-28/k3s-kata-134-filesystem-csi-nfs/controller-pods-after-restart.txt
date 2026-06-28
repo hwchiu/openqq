@@ -1,0 +1,4 @@
+NAME                                        READY   STATUS    RESTARTS     AGE   IP           NODE       NOMINATED NODE   READINESS GATES
+csi-azurefile-controller-5fcff8fff7-9l754   5/5     Running   0            2s    10.180.0.6   worker-1   <none>           <none>
+csi-azurefile-controller-5fcff8fff7-xp8q6   5/5     Running   0            11s   10.180.0.4   worker-2   <none>           <none>
+csi-azurefile-controller-6dd6bc9569-pq7v7   0/5     Error     8 (0s ago)   12m   10.180.0.5   cp-0       <none>           <none>

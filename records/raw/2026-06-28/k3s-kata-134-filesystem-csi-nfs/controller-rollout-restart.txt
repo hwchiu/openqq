@@ -1,0 +1,1 @@
+deployment.apps/csi-azurefile-controller restarted

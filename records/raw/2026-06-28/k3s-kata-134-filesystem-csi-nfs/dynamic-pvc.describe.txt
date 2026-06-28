@@ -1,0 +1,31 @@
+Name:          pvc-dyn-nfs-1782665124
+Namespace:     kata-fs-dyn-1782665124
+StorageClass:  azurefile-csi-nfs-dyn-1782665124
+Status:        Pending
+Volume:        
+Labels:        <none>
+Annotations:   volume.beta.kubernetes.io/storage-provisioner: file.csi.azure.com
+               volume.kubernetes.io/storage-provisioner: file.csi.azure.com
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      
+Access Modes:  
+VolumeMode:    Filesystem
+Used By:       dyn-kata
+Events:
+  Type     Reason                Age                   From                                                              Message
+  ----     ------                ----                  ----                                                              -------
+  Normal   Provisioning          2m33s                 file.csi.azure.com_worker-1_1d389932-4bc6-40d0-9da6-282624d9c764  External provisioner is provisioning volume for claim "kata-fs-dyn-1782665124/pvc-dyn-nfs-1782665124"
+  Warning  ProvisioningFailed    2m33s                 file.csi.azure.com_worker-1_1d389932-4bc6-40d0-9da6-282624d9c764  rpc error: code = Unavailable desc = error reading from server: EOF
+  Warning  ProvisioningFailed    2m17s                 file.csi.azure.com_worker-1_01e5dca8-41e1-418f-8f0c-4cfeeb10ce22  rpc error: code = Unavailable desc = error reading from server: read unix @->//csi/csi.sock: read: connection reset by peer
+  Normal   Provisioning          2m17s                 file.csi.azure.com_worker-1_01e5dca8-41e1-418f-8f0c-4cfeeb10ce22  External provisioner is provisioning volume for claim "kata-fs-dyn-1782665124/pvc-dyn-nfs-1782665124"
+  Warning  ProvisioningFailed    116s                  file.csi.azure.com_cp-0_59ef2f7d-35e3-4ed6-b25d-1d74d4076368      rpc error: code = Unavailable desc = error reading from server: EOF
+  Normal   Provisioning          116s                  file.csi.azure.com_cp-0_59ef2f7d-35e3-4ed6-b25d-1d74d4076368      External provisioner is provisioning volume for claim "kata-fs-dyn-1782665124/pvc-dyn-nfs-1782665124"
+  Normal   Provisioning          97s                   file.csi.azure.com_cp-0_b4e82656-ed57-41b2-874f-333894c96655      External provisioner is provisioning volume for claim "kata-fs-dyn-1782665124/pvc-dyn-nfs-1782665124"
+  Warning  ProvisioningFailed    97s                   file.csi.azure.com_cp-0_b4e82656-ed57-41b2-874f-333894c96655      rpc error: code = Unavailable desc = error reading from server: EOF
+  Normal   Provisioning          79s                   file.csi.azure.com_worker-1_3065a3dd-0e7b-41c9-af40-9a8e879c950a  External provisioner is provisioning volume for claim "kata-fs-dyn-1782665124/pvc-dyn-nfs-1782665124"
+  Warning  ProvisioningFailed    79s                   file.csi.azure.com_worker-1_3065a3dd-0e7b-41c9-af40-9a8e879c950a  rpc error: code = Unavailable desc = error reading from server: EOF
+  Normal   Provisioning          55s                   file.csi.azure.com_cp-0_dc4af55d-046a-4fcc-9ef7-067f33ef2c00      External provisioner is provisioning volume for claim "kata-fs-dyn-1782665124/pvc-dyn-nfs-1782665124"
+  Warning  ProvisioningFailed    55s                   file.csi.azure.com_cp-0_dc4af55d-046a-4fcc-9ef7-067f33ef2c00      rpc error: code = Unavailable desc = error reading from server: EOF
+  Normal   Provisioning          22s                   file.csi.azure.com_worker-1_1b907608-b62d-4acb-84af-b71d94dbfc66  External provisioner is provisioning volume for claim "kata-fs-dyn-1782665124/pvc-dyn-nfs-1782665124"
+  Warning  ProvisioningFailed    22s                   file.csi.azure.com_worker-1_1b907608-b62d-4acb-84af-b71d94dbfc66  rpc error: code = Unavailable desc = error reading from server: EOF
+  Normal   ExternalProvisioning  10s (x12 over 2m33s)  persistentvolume-controller                                       Waiting for a volume to be created either by the external provisioner 'file.csi.azure.com' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.

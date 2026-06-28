@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="說明如何驗證 Azure 上 K3s 1.34、CRI-O 1.34 與 Kata Containers 環境。"
+      content="說明如何驗證 Azure 上 K3s 1.34、CRI-O 1.34 與 Kata Containers 環境，以及 Azure Files NFS CSI filesystem mount。"
     />
     <title>OpenQQ Kata on Azure | 驗證</title>
     <link rel="stylesheet" href="assets/site.css" />
@@ -34,6 +34,8 @@
           <p>
             這裡的驗證分成兩層：第一層是 host prerequisite，第二層是 Kubernetes 與節點側的 runtime
             行為。兩層都需要，才能把「有設設定」和「真的跑在 Kata VM sandbox 裡」區分開來。
+            2026-06-28 另外補了一段 Azure Files NFS CSI 驗證，用來回答 Kata pod 能不能真的吃到
+            network filesystem。
           </p>
         </section>
 
@@ -62,7 +64,11 @@ KEEP_NAMESPACE=true \
 scripts/tests/istio-kata-sidecar.sh generated/stacks/k3s-kata-134/kubeconfig k3s-kata-134
 
 KEEP_NAMESPACE=true \
-scripts/tests/networkpolicy-kata-ingress.sh generated/stacks/k3s-kata-134/kubeconfig k3s-kata-134</code></pre>
+scripts/tests/networkpolicy-kata-ingress.sh generated/stacks/k3s-kata-134/kubeconfig k3s-kata-134
+
+KUBECONFIG_PATH=generated/stacks/k3s-kata-134/kubeconfig \
+TF_DIR=terraform/stacks/k3s-kata-134 \
+bash scripts/tests/kata-azurefile-csi-nfs.sh</code></pre>
         </section>
 
         <section class="page-section">
@@ -164,6 +170,78 @@ scripts/tests/networkpolicy-kata-ingress.sh generated/stacks/k3s-kata-134/kubeco
                 class="summary-link"
                 href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/kata-processes.txt"
                 >查看 process list</a
+              >
+            </article>
+          </div>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">Filesystem / CSI</div>
+              <h2>Kata pod 能不能透過 CSI 掛到 NFS 類型 storage</h2>
+              <p>2026-06-28 補跑的是 Azure Files NFS + Azure File CSI driver。這一段同時保存了 static 成功路徑與 dynamic 失敗路徑。</p>
+            </div>
+          </div>
+          <div class="card-grid">
+            <article class="summary-card">
+              <div class="section-label">Driver</div>
+              <div class="verdict">controller / node 都 Ready</div>
+              <p><code>Azure File CSI driver 1.35.4</code> 已在這個 K3s + CRI-O + Kata 叢集上成功拉起 controller 與 3 個 node plugin。</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/csi-driver-pods-final.txt"
+                >查看 driver 狀態</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Static path</div>
+              <div class="verdict">兩個 Kata pod 成功掛載</div>
+              <p>兩個 <code>runtimeClassName: kata</code> pod 分別落在 <code>worker-1</code> 與 <code>worker-2</code>，都成功掛上同一個 Azure Files NFS share。</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/pods-wide.txt"
+                >查看 pod placement</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Guest view</div>
+              <div class="verdict">Kata guest 內看到 virtiofs</div>
+              <p>pod 內的 <code>mount</code> 顯示 <code>/mnt/azurefile type virtiofs</code>，代表 volume 是經由 Kata shared-fs 進入 VM，而不是直接在 guest 內做 hostPath 假象。</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/writer-exec.txt"
+                >查看 pod 內 mount</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Host view</div>
+              <div class="verdict">worker host 端看到 nfs4</div>
+              <p>對應 worker host 端的同一個 volume 則是 <code>st...file.core.windows.net:/... type nfs4</code>，可直接證明 CSI 底層後端真的是 Azure Files NFS。</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/worker-1-nfs-mounts.txt"
+                >查看 host 端 mount</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Cross-node RWX</div>
+              <div class="verdict">共享檔案可跨節點看到</div>
+              <p>reader pod 可以讀到 writer 寫入的檔案並 append 第二行；在這次 <code>actimeo=30</code> 的 mount option 下，writer 端約 35 秒後可重新看到第二行。</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/final-proof-after-35s.txt"
+                >查看最終內容</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Dynamic path</div>
+              <div class="verdict">CreateVolume panic</div>
+              <p>如果改走 dynamic <code>StorageClass -&gt; PVC -&gt; pod</code> provisioning，controller 會在 <code>CreateVolume</code> 時 panic，PVC 會停在 <code>Pending</code>，pod 也無法被排程。</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/dynamic-controller-panic.txt"
+                >查看 panic 摘要</a
               >
             </article>
           </div>
@@ -307,15 +385,26 @@ kata-probe-ok</code></pre>
 "baselineBlocked": "np-ok"
 "allowedAfterPolicy": "np-ok"
 "blockedExitCode": 7</code></pre>
+          <pre><code>none on /mnt/azurefile type virtiofs (rw,relatime)
+...
+"io.kubernetes.cri-o.RuntimeHandler": "kata"</code></pre>
+          <pre><code>stkatanfs163923.file.core.windows.net:/stkatanfs163923/kata-nfs-share \
+on /var/lib/kubelet/plugins/.../globalmount type nfs4 (...vers=4.1...,nconnect=4...)</code></pre>
+          <pre><code>panic: runtime error: invalid memory address or nil pointer dereference
+...
+pkg/azurefile.(*Driver).updateSubnetServiceEndpoints(...)
+pkg/azurefile.(*Driver).CreateVolume(...)</code></pre>
         </section>
 
         <section class="page-section">
           <div class="callout">
             目前這份驗證已能證明 Kata runtime path、node-side proof chain，以及至少一條
             Istio sidecar workload 也能維持 Kata sandbox，並且至少一條標準 Kubernetes
-            NetworkPolicy ingress 規則在 Kata pod 上有真實的 allow / block 效果；但這仍不代表完整
-            workload matrix 都已經跑過。如果你需要 filesystem、更多 network、privilege 或
-            agentic AI 的 coverage，還需要另外執行並記錄那些 scenario。
+            NetworkPolicy ingress 規則在 Kata pod 上有真實的 allow / block 效果。現在也已經有一條
+            filesystem mount 證據鏈：guest 內看見 <code>virtiofs</code>，host 端看見底層
+            <code>nfs4</code>，兩個 Kata pod 可共享同一個 Azure Files NFS share。不過這仍不代表完整
+            filesystem guardrails、更多 network、privilege 或 agentic AI workload matrix
+            都已經跑過；目前 dynamic Azure File provisioning 也仍是一條失敗路徑。
           </div>
         </section>
       </main>

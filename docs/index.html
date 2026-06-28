@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Azure 上 K3s 1.34、CRI-O 1.34 與 Kata Containers 的安裝、驗證與已執行測試。"
+      content="Azure 上 K3s 1.34、CRI-O 1.34 與 Kata Containers 的安裝、驗證、Azure Files NFS CSI 測試與已執行項目。"
     />
     <title>OpenQQ Kata on Azure | 總覽</title>
     <link rel="stylesheet" href="assets/site.css" />
@@ -33,8 +33,9 @@
             <div class="eyebrow">最新 Kata 結果</div>
             <h1>Azure 上的 K3s 1.34 + CRI-O 1.34 + Kata Containers</h1>
             <p class="lede">
-              這份文件只描述已在 Azure 上完成安裝、runtime 驗證、Istio 疊加 smoke，以及
-              NetworkPolicy allow / block smoke 的 Kata Containers 環境。
+              這份文件只描述已在 Azure 上完成安裝、runtime 驗證、Istio 疊加 smoke、
+              NetworkPolicy allow / block smoke，以及 Azure Files NFS CSI filesystem mount 驗證的
+              Kata Containers 環境。
             </p>
             <p>
               內容只聚焦在安裝方式、驗證方式，以及目前實際執行過的測試；不再討論其他 runtime
@@ -56,7 +57,7 @@
             </div>
             <div class="meta-card">
               <span class="meta-label">Runtime 結果</span>
-              <span class="meta-value">Kata runtime、Istio、NetworkPolicy 已驗證</span>
+              <span class="meta-value">Kata runtime、Istio、NetworkPolicy、NFS static CSI 已驗證</span>
             </div>
             <div class="meta-card">
               <span class="meta-label">節點狀態</span>
@@ -83,13 +84,13 @@
             <article class="summary-card">
               <div class="section-label">步驟 2</div>
               <div class="verdict">驗證</div>
-              <p>說明如何確認 Kata 已啟用，以及如何證明 pod 真的是跑在 Kata VM sandbox 裡。</p>
+              <p>說明如何確認 Kata 已啟用，以及如何證明 pod 與 CSI volume 都真的跑在 Kata VM sandbox 路徑裡。</p>
               <a class="summary-link" href="verify.html">查看驗證文件</a>
             </article>
             <article class="summary-card">
               <div class="section-label">步驟 3</div>
               <div class="verdict">測試</div>
-              <p>列出目前已執行與尚未執行的測試，避免把未跑的項目誤讀成已通過。</p>
+              <p>列出目前已執行、執行失敗與尚未執行的測試，避免把未跑或失敗項目誤讀成已通過。</p>
               <a class="summary-link" href="tests.html">查看測試狀態</a>
             </article>
             <article class="summary-card">
@@ -131,6 +132,7 @@
                 <li>Probe 結果：<code>kata-probe-ok</code></li>
                 <li>Mesh smoke：<code>istiod-1.30.2</code> + <code>kata-mesh-ok</code></li>
                 <li>NetworkPolicy：標記 client 可通，未標記 client 被阻擋</li>
+                <li>Filesystem / CSI：Azure Files NFS static 掛載通過，dynamic provisioning 失敗</li>
               </ul>
             </article>
           </div>
@@ -140,10 +142,11 @@
           <div class="callout">
             目前保存的證據已能證明這條 Azure 平台配對上的 Kata runtime path 可用。2026-06-25
             保存的是初次 runtime verify，2026-06-28 除了 node-side live inspect，也另外保存了
-            Kata-backed Istio sidecar smoke 與 Kata-backed NetworkPolicy smoke，用來證明 sidecar
-            疊加後的 pod 仍然對應到 RuntimeHandler=kata，且標準 Kubernetes ingress policy 也真的有
-            allow / block 效果。這份網站目前仍不表示 filesystem guardrails、privilege scenarios
-            或 agentic AI scenarios 已經執行過。
+            Kata-backed Istio sidecar smoke、Kata-backed NetworkPolicy smoke，以及一條
+            Azure Files NFS static CSI 成功路徑與一條 dynamic provisioning 失敗路徑，用來證明
+            Kata workload 可以透過 CSI 使用 NFS 類型 storage，但目前這個 K3s/CRI-O/Kata Azure
+            lab 內的 dynamic Azure File provisioning 仍不是穩定路徑。這份網站目前仍不表示
+            filesystem guardrails、privilege scenarios 或 agentic AI scenarios 已經執行過。
           </div>
         </section>
       </main>

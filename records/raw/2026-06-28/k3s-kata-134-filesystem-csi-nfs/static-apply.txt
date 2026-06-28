@@ -1,0 +1,5 @@
+namespace/kata-fs-nfs-1782664911 created
+persistentvolume/pv-kata-nfs-1782664911 created
+persistentvolumeclaim/pvc-kata-nfs-1782664911 created
+pod/writer created
+pod/reader created

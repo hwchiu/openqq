@@ -1,0 +1,7 @@
+LAST SEEN   TYPE     REASON    OBJECT       MESSAGE
+7s          Normal   Pulled    pod/reader   Container image "alpine:3.22" already present on machine
+7s          Normal   Created   pod/reader   Created container: shell
+7s          Normal   Started   pod/reader   Started container shell
+7s          Normal   Pulled    pod/writer   Container image "alpine:3.22" already present on machine
+7s          Normal   Created   pod/writer   Created container: shell
+7s          Normal   Started   pod/writer   Started container shell

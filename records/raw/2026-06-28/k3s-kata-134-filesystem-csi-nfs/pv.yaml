@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"PersistentVolume","metadata":{"annotations":{"pv.kubernetes.io/provisioned-by":"file.csi.azure.com"},"name":"pv-kata-nfs-1782664911"},"spec":{"accessModes":["ReadWriteMany"],"capacity":{"storage":"100Gi"},"csi":{"driver":"file.csi.azure.com","volumeAttributes":{"mountPermissions":"0777","protocol":"nfs","resourceGroup":"rg-k3s-kata-134","shareName":"kata-nfs-share","storageAccount":"stkatanfs163923"},"volumeHandle":"rg-k3s-kata-134#stkatanfs163923#kata-nfs-share"},"mountOptions":["nconnect=4","noresvport","actimeo=30"],"persistentVolumeReclaimPolicy":"Retain","storageClassName":"azurefile-csi-nfs-static"}}
+    pv.kubernetes.io/bound-by-controller: "yes"
+    pv.kubernetes.io/provisioned-by: file.csi.azure.com
+  creationTimestamp: "2026-06-28T16:41:53Z"
+  finalizers:
+  - kubernetes.io/pv-protection
+  name: pv-kata-nfs-1782664911
+  resourceVersion: "187935"
+  uid: 9a02ae0f-3dba-4057-a5f1-aff2dc79e713
+spec:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 100Gi
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: pvc-kata-nfs-1782664911
+    namespace: kata-fs-nfs-1782664911
+    resourceVersion: "187932"
+    uid: a2850d09-42cc-49bf-ae30-2a8ce846730e
+  csi:
+    driver: file.csi.azure.com
+    volumeAttributes:
+      mountPermissions: "0777"
+      protocol: nfs
+      resourceGroup: rg-k3s-kata-134
+      shareName: kata-nfs-share
+      storageAccount: stkatanfs163923
+    volumeHandle: rg-k3s-kata-134#stkatanfs163923#kata-nfs-share
+  mountOptions:
+  - nconnect=4
+  - noresvport
+  - actimeo=30
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: azurefile-csi-nfs-static
+  volumeMode: Filesystem
+status:
+  lastPhaseTransitionTime: "2026-06-28T16:41:54Z"
+  phase: Bound

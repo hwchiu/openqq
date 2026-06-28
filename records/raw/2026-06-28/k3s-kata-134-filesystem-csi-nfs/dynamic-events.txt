@@ -1,0 +1,17 @@
+LAST SEEN   TYPE      REASON                 OBJECT                                         MESSAGE
+2m34s       Warning   FailedScheduling       pod/dyn-kata                                   0/3 nodes are available: pod has unbound immediate PersistentVolumeClaims. not found
+2m35s       Normal    Provisioning           persistentvolumeclaim/pvc-dyn-nfs-1782665124   External provisioner is provisioning volume for claim "kata-fs-dyn-1782665124/pvc-dyn-nfs-1782665124"
+2m35s       Warning   ProvisioningFailed     persistentvolumeclaim/pvc-dyn-nfs-1782665124   rpc error: code = Unavailable desc = error reading from server: EOF
+2m19s       Normal    Provisioning           persistentvolumeclaim/pvc-dyn-nfs-1782665124   External provisioner is provisioning volume for claim "kata-fs-dyn-1782665124/pvc-dyn-nfs-1782665124"
+2m19s       Warning   ProvisioningFailed     persistentvolumeclaim/pvc-dyn-nfs-1782665124   rpc error: code = Unavailable desc = error reading from server: read unix @->//csi/csi.sock: read: connection reset by peer
+118s        Warning   ProvisioningFailed     persistentvolumeclaim/pvc-dyn-nfs-1782665124   rpc error: code = Unavailable desc = error reading from server: EOF
+118s        Normal    Provisioning           persistentvolumeclaim/pvc-dyn-nfs-1782665124   External provisioner is provisioning volume for claim "kata-fs-dyn-1782665124/pvc-dyn-nfs-1782665124"
+99s         Normal    Provisioning           persistentvolumeclaim/pvc-dyn-nfs-1782665124   External provisioner is provisioning volume for claim "kata-fs-dyn-1782665124/pvc-dyn-nfs-1782665124"
+99s         Warning   ProvisioningFailed     persistentvolumeclaim/pvc-dyn-nfs-1782665124   rpc error: code = Unavailable desc = error reading from server: EOF
+81s         Normal    Provisioning           persistentvolumeclaim/pvc-dyn-nfs-1782665124   External provisioner is provisioning volume for claim "kata-fs-dyn-1782665124/pvc-dyn-nfs-1782665124"
+81s         Warning   ProvisioningFailed     persistentvolumeclaim/pvc-dyn-nfs-1782665124   rpc error: code = Unavailable desc = error reading from server: EOF
+57s         Normal    Provisioning           persistentvolumeclaim/pvc-dyn-nfs-1782665124   External provisioner is provisioning volume for claim "kata-fs-dyn-1782665124/pvc-dyn-nfs-1782665124"
+57s         Warning   ProvisioningFailed     persistentvolumeclaim/pvc-dyn-nfs-1782665124   rpc error: code = Unavailable desc = error reading from server: EOF
+24s         Normal    Provisioning           persistentvolumeclaim/pvc-dyn-nfs-1782665124   External provisioner is provisioning volume for claim "kata-fs-dyn-1782665124/pvc-dyn-nfs-1782665124"
+24s         Warning   ProvisioningFailed     persistentvolumeclaim/pvc-dyn-nfs-1782665124   rpc error: code = Unavailable desc = error reading from server: EOF
+12s         Normal    ExternalProvisioning   persistentvolumeclaim/pvc-dyn-nfs-1782665124   Waiting for a volume to be created either by the external provisioner 'file.csi.azure.com' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.

@@ -1,0 +1,28 @@
+{
+  "addressPrefix": "10.180.0.0/24",
+  "defaultOutboundAccess": true,
+  "delegations": [],
+  "etag": "W/\"7ed42e86-bc2f-42cb-bd18-0c0f7516cb7e\"",
+  "id": "/subscriptions/67638d45-2cd3-41c7-9e70-87082e5ae065/resourceGroups/rg-k3s-kata-134/providers/Microsoft.Network/virtualNetworks/vnet-k3s-kata-134/subnets/snet-k3s-kata-134",
+  "ipConfigurations": [
+    {
+      "id": "/subscriptions/67638d45-2cd3-41c7-9e70-87082e5ae065/resourceGroups/RG-K3S-KATA-134/providers/Microsoft.Network/networkInterfaces/CP-0-NIC/ipConfigurations/IPCONFIG1",
+      "resourceGroup": "RG-K3S-KATA-134"
+    },
+    {
+      "id": "/subscriptions/67638d45-2cd3-41c7-9e70-87082e5ae065/resourceGroups/RG-K3S-KATA-134/providers/Microsoft.Network/networkInterfaces/WORKER-1-NIC/ipConfigurations/IPCONFIG1",
+      "resourceGroup": "RG-K3S-KATA-134"
+    },
+    {
+      "id": "/subscriptions/67638d45-2cd3-41c7-9e70-87082e5ae065/resourceGroups/RG-K3S-KATA-134/providers/Microsoft.Network/networkInterfaces/WORKER-2-NIC/ipConfigurations/IPCONFIG1",
+      "resourceGroup": "RG-K3S-KATA-134"
+    }
+  ],
+  "name": "snet-k3s-kata-134",
+  "privateEndpointNetworkPolicies": "Disabled",
+  "privateLinkServiceNetworkPolicies": "Enabled",
+  "provisioningState": "Succeeded",
+  "resourceGroup": "rg-k3s-kata-134",
+  "serviceEndpoints": [],
+  "type": "Microsoft.Network/virtualNetworks/subnets"
+}

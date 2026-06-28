@@ -1,0 +1,24 @@
+allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"allowVolumeExpansion":true,"apiVersion":"storage.k8s.io/v1","kind":"StorageClass","metadata":{"annotations":{},"name":"azurefile-csi-nfs-dyn-1782665124"},"mountOptions":["nconnect=4","noresvport","actimeo=30"],"parameters":{"protocol":"nfs","resourceGroup":"rg-k3s-kata-134","shareNamePrefix":"dynkata","skuName":"Premium_LRS","storageAccount":"stkatanfs163923"},"provisioner":"file.csi.azure.com","reclaimPolicy":"Delete","volumeBindingMode":"Immediate"}
+  creationTimestamp: "2026-06-28T16:45:26Z"
+  name: azurefile-csi-nfs-dyn-1782665124
+  resourceVersion: "188361"
+  uid: d7b7b7a1-5c7a-46d3-b1ed-ebc4c04c6fc9
+mountOptions:
+- nconnect=4
+- noresvport
+- actimeo=30
+parameters:
+  protocol: nfs
+  resourceGroup: rg-k3s-kata-134
+  shareNamePrefix: dynkata
+  skuName: Premium_LRS
+  storageAccount: stkatanfs163923
+provisioner: file.csi.azure.com
+reclaimPolicy: Delete
+volumeBindingMode: Immediate

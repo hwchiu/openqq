@@ -1,0 +1,14 @@
+{
+  "bypass": null,
+  "defaultAction": null,
+  "ipRules": [],
+  "ipv6Rules": [],
+  "resourceAccessRules": null,
+  "virtualNetworkRules": [
+    {
+      "action": "Allow",
+      "state": "Succeeded",
+      "virtualNetworkResourceId": "/subscriptions/67638d45-2cd3-41c7-9e70-87082e5ae065/resourceGroups/rg-k3s-kata-134/providers/Microsoft.Network/virtualNetworks/vnet-k3s-kata-134/subnets/snet-k3s-kata-134"
+    }
+  ]
+}

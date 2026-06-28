@@ -1,0 +1,60 @@
+Name:                reader
+Namespace:           kata-fs-nfs-1782664911
+Priority:            0
+Runtime Class Name:  kata
+Service Account:     default
+Node:                worker-2/10.180.0.4
+Start Time:          Sun, 28 Jun 2026 16:41:55 +0000
+Labels:              <none>
+Annotations:         <none>
+Status:              Running
+IP:                  10.80.1.8
+IPs:
+  IP:  10.80.1.8
+Containers:
+  shell:
+    Container ID:  cri-o://93bf89620745cde8e4ab3039ba7665c04fd40f47fc6862ea9de6a006d5379818
+    Image:         alpine:3.22
+    Image ID:      docker.io/library/alpine@sha256:14358309a308569c32bdc37e2e0e9694be33a9d99e68afb0f5ff33cc1f695dce
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      /bin/sh
+      -lc
+      sleep 365d
+    State:          Running
+      Started:      Sun, 28 Jun 2026 16:41:58 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /mnt/azurefile from shared (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-shl5v (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  shared:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  pvc-kata-nfs-1782664911
+    ReadOnly:   false
+  kube-api-access-shl5v:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason   Age   From     Message
+  ----    ------   ----  ----     -------
+  Normal  Pulled   6s    kubelet  Container image "alpine:3.22" already present on machine
+  Normal  Created  6s    kubelet  Created container: shell
+  Normal  Started  6s    kubelet  Started container shell

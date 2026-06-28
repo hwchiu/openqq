@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"annotations":{},"name":"pvc-kata-nfs-1782664911","namespace":"kata-fs-nfs-1782664911"},"spec":{"accessModes":["ReadWriteMany"],"resources":{"requests":{"storage":"100Gi"}},"storageClassName":"azurefile-csi-nfs-static","volumeName":"pv-kata-nfs-1782664911"}}
+    pv.kubernetes.io/bind-completed: "yes"
+  creationTimestamp: "2026-06-28T16:41:54Z"
+  finalizers:
+  - kubernetes.io/pvc-protection
+  name: pvc-kata-nfs-1782664911
+  namespace: kata-fs-nfs-1782664911
+  resourceVersion: "187937"
+  uid: a2850d09-42cc-49bf-ae30-2a8ce846730e
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: azurefile-csi-nfs-static
+  volumeMode: Filesystem
+  volumeName: pv-kata-nfs-1782664911
+status:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 100Gi
+  phase: Bound

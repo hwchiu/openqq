@@ -1,0 +1,18 @@
+{
+  "accessTier": "Premium",
+  "enabledProtocols": "NFS",
+  "etag": "\"0x8DED533EB49D4B3\"",
+  "fileSharePaidBursting": {
+    "paidBurstingEnabled": false
+  },
+  "id": "/subscriptions/67638d45-2cd3-41c7-9e70-87082e5ae065/resourceGroups/rg-k3s-kata-134/providers/Microsoft.Storage/storageAccounts/stkatanfs163923/fileServices/default/shares/kata-nfs-share",
+  "lastModifiedTime": "2026-06-28T16:40:10.0000000Z",
+  "leaseState": "available",
+  "leaseStatus": "unlocked",
+  "name": "kata-nfs-share",
+  "resourceGroup": "rg-k3s-kata-134",
+  "rootSquash": "NoRootSquash",
+  "shareQuota": 100,
+  "signedIdentifiers": [],
+  "type": "Microsoft.Storage/storageAccounts/fileServices/shares"
+}

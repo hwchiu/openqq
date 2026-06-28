@@ -1,0 +1,2 @@
+pod/csi-azurefile-controller-6dd6bc9569-pq7v7 condition met
+pod/csi-azurefile-controller-6dd6bc9569-wmsn2 condition met

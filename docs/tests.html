@@ -32,8 +32,8 @@
           <div class="eyebrow">已執行測試</div>
           <h1>目前到底測了哪些東西</h1>
           <p>
-            這一頁只區分兩件事：哪些測試真的跑過，哪些還沒跑。任何沒有出現在「已通過」區塊內的項目，
-            都不應該被理解成已驗證成功。
+            這一頁區分三件事：哪些測試真的跑過而且通過、哪些真的跑過但失敗，以及哪些還沒跑。
+            任何沒有出現在「已通過」區塊內的項目，都不應該被理解成已驗證成功。
           </p>
         </section>
 
@@ -222,6 +222,75 @@
                     <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/blocked-crictl-inspectp.json">blocked-crictl-inspectp.json</a>
                   </td>
                 </tr>
+                <tr>
+                  <td><strong>Azure File CSI driver Ready</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td><code>Azure File CSI driver 1.35.4</code> 的 controller 與 node plugin 都在這個 K3s + CRI-O + Kata 叢集上成功 Ready。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/csi-driver-pods-final.txt">csi-driver-pods-final.txt</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Azure Files NFS static CSI 掛載</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>兩個 <code>runtimeClassName: kata</code> pod 分別落在不同 worker，且都成功掛上同一個 Azure Files NFS share。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/kata-azurefile-csi-nfs.json">kata-azurefile-csi-nfs.json</a>,
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/pods-wide.txt">pods-wide.txt</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Kata guest / host mount view 差異</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>Kata guest 內看到的是 <code>virtiofs</code>，同一個 worker host 端看到的底層 volume 則是 <code>nfs4</code>，可直接證明 CSI volume 是經由 Kata shared-fs 進 VM。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/writer-exec.txt">writer-exec.txt</a>,
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/worker-1-nfs-mounts.txt">worker-1-nfs-mounts.txt</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Azure Files NFS 跨節點共享檔案</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>reader pod 可以讀到 writer 寫入的檔案並 append 第二行；在這次 <code>actimeo=30</code> 的 mount option 下，writer 約 35 秒後可重新看到第二行。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/reader-exec.txt">reader-exec.txt</a>,
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/final-proof-after-35s.txt">final-proof-after-35s.txt</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">已失敗</div>
+              <h2>實際執行但失敗</h2>
+              <p>以下情境已經真的跑過，但在目前這個 Azure Kata lab 內沒有成立。</p>
+            </div>
+          </div>
+          <div class="matrix-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>測試項目</th>
+                  <th>狀態</th>
+                  <th>失敗點</th>
+                  <th>證據</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Azure Files NFS dynamic CSI provisioning</strong></td>
+                  <td><span class="status status-fail">已失敗</span></td>
+                  <td>走 <code>StorageClass -&gt; PVC -&gt; pod</code> 時，PVC 會卡在 <code>Pending</code>，而且 <code>csi-azurefile-controller</code> 在 <code>CreateVolume</code> 期間觸發 panic，必須重啟 controller 才會恢復健康。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/kata-azurefile-csi-nfs.json">kata-azurefile-csi-nfs.json</a>,
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/dynamic-controller-panic.txt">dynamic-controller-panic.txt</a>,
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/dynamic-pvc.describe.txt">dynamic-pvc.describe.txt</a>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -246,9 +315,9 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>Filesystem guardrail scenarios</td>
+                  <td>Filesystem guardrail / protected path policy</td>
                   <td><span class="status status-not-tested">尚未測試</span></td>
-                  <td>目前沒有執行 workspace 或 protected path 行為驗證。</td>
+                  <td>目前只驗證了 filesystem mount capability，還沒執行 workspace、protected path 或 read-only path 的 allow / block 行為驗證。</td>
                 </tr>
                 <tr>
                   <td>Privilege surface scenarios</td>
