@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="How to install the Azure K3s 1.34 + CRI-O 1.34 + Kata Containers environment."
+    />
+    <title>OpenQQ Kata on Azure | Install</title>
+    <link rel="stylesheet" href="assets/site.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <div class="site-header-inner">
+          <a class="brand" href="index.html">
+            <span class="brand-kicker">Kata Containers</span>
+            <span class="brand-title">OpenQQ Azure Verification Docs</span>
+          </a>
+          <nav class="site-nav" aria-label="Primary">
+            <a href="index.html">Overview</a>
+            <a class="active" href="install.html">Install</a>
+            <a href="verify.html">Verify</a>
+            <a href="tests.html">Tests</a>
+            <a href="evidence.html">Evidence</a>
+          </nav>
+        </div>
+      </header>
+      <main class="page stack">
+        <section class="page-hero">
+          <div class="eyebrow">Install</div>
+          <h1>Install the Azure Kata environment</h1>
+          <p>
+            The verified installation path uses a dedicated Terraform stack plus a wrapper script
+            that provisions Azure, installs K3s with CRI-O, installs Kata on every node, and
+            verifies the runtime.
+          </p>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">Required Files</div>
+              <h2>Files used by the install path</h2>
+              <p>These are the exact repo entry points for the Kata Azure environment.</p>
+            </div>
+          </div>
+          <ul>
+            <li>
+              Stack:
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/terraform/stacks/k3s-kata-134/main.tf">terraform/stacks/k3s-kata-134/main.tf</a>
+            </li>
+            <li>
+              Stack variables:
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/terraform/stacks/k3s-kata-134/variables.tf">terraform/stacks/k3s-kata-134/variables.tf</a>
+            </li>
+            <li>
+              Stack example values:
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/terraform/stacks/k3s-kata-134/stack.auto.tfvars.example">terraform/stacks/k3s-kata-134/stack.auto.tfvars.example</a>
+            </li>
+            <li>
+              One-shot install wrapper:
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/install-k3s-kata-134.sh">scripts/install-k3s-kata-134.sh</a>
+            </li>
+            <li>
+              Prerequisite check:
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/check-kata-prereqs.sh">scripts/check-kata-prereqs.sh</a>
+            </li>
+            <li>
+              Kata install logic:
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/install-kata.sh">scripts/install-kata.sh</a>
+            </li>
+          </ul>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">Prerequisites</div>
+              <h2>Prepare Azure input</h2>
+              <p>The simplest path is to use the shared Terraform variables file.</p>
+            </div>
+          </div>
+          <pre><code>cp terraform/stacks/common.auto.tfvars.example terraform/stacks/common.auto.tfvars
+cp terraform/stacks/k3s-kata-134/stack.auto.tfvars.example terraform/stacks/k3s-kata-134/stack.auto.tfvars</code></pre>
+          <pre><code>subscription_id = "00000000-0000-0000-0000-000000000000"
+tenant_id       = "00000000-0000-0000-0000-000000000000"
+admin_username  = "azureuser"
+ssh_public_key  = "ssh-ed25519 AAAA..."</code></pre>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">One-Shot</div>
+              <h2>Run the full install</h2>
+              <p>The wrapper uses the verified defaults for K3s and CRI-O unless you override them.</p>
+            </div>
+          </div>
+          <pre><code>bash scripts/install-k3s-kata-134.sh</code></pre>
+          <ul>
+            <li>K3s default: <code>v1.34.1+k3s1</code></li>
+            <li>CRI-O stream default: <code>v1.34</code></li>
+            <li>VM size in the stack: <code>Standard_D4s_v3</code></li>
+            <li>Kata release default in the install script: <code>3.31.0</code></li>
+          </ul>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">What It Does</div>
+              <h2>Wrapper sequence</h2>
+              <p>The install wrapper performs all required stages in a fixed order.</p>
+            </div>
+          </div>
+          <ol>
+            <li>Apply the Azure stack in <code>terraform/stacks/k3s-kata-134</code>.</li>
+            <li>Fetch the kubeconfig into <code>generated/stacks/k3s-kata-134/kubeconfig</code>.</li>
+            <li>Wait for all 3 nodes to become <code>Ready</code>.</li>
+            <li>Run <code>scripts/check-kata-prereqs.sh</code> to confirm hardware virtualization and <code>/dev/kvm</code>.</li>
+            <li>Run <code>scripts/install-kata.sh</code> on the control plane and both workers.</li>
+            <li>Apply <code>k8s/kata-runtimeclass.yaml</code>.</li>
+            <li>Run <code>scripts/verify-kata-runtime.sh</code> to launch a Kata-backed probe pod.</li>
+          </ol>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">Manual Steps</div>
+              <h2>Run the install in smaller pieces</h2>
+              <p>Use these commands if you want to re-run only part of the flow.</p>
+            </div>
+          </div>
+          <pre><code>KUBECONFIG_PATH=generated/stacks/k3s-kata-134/kubeconfig \
+TF_DIR=terraform/stacks/k3s-kata-134 \
+bash scripts/check-kata-prereqs.sh
+
+KUBECONFIG_PATH=generated/stacks/k3s-kata-134/kubeconfig \
+TF_DIR=terraform/stacks/k3s-kata-134 \
+bash scripts/install-kata.sh
+
+KUBECONFIG_PATH=generated/stacks/k3s-kata-134/kubeconfig \
+bash scripts/verify-kata-runtime.sh</code></pre>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">CRI-O Wiring</div>
+              <h2>What Kata changes on each node</h2>
+              <p>The install script writes two CRI-O drop-ins before restarting services.</p>
+            </div>
+          </div>
+          <pre><code>[crio]
+storage_option = [
+  "overlay.skip_mount_home=true",
+]
+
+[crio.runtime.runtimes.kata]
+runtime_path = "/usr/local/bin/containerd-shim-kata-v2"
+runtime_type = "vm"
+runtime_root = "/run/vc"
+privileged_without_host_devices = true</code></pre>
+        </section>
+      </main>
+      <footer class="site-footer">
+        <div class="site-footer-inner">
+          <div>Install docs for the verified Azure Kata path.</div>
+          <div>Updated 2026-06-28</div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

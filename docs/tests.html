@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Executed test list for the Azure K3s 1.34 + CRI-O 1.34 + Kata Containers environment."
+    />
+    <title>OpenQQ Kata on Azure | Tests</title>
+    <link rel="stylesheet" href="assets/site.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <div class="site-header-inner">
+          <a class="brand" href="index.html">
+            <span class="brand-kicker">Kata Containers</span>
+            <span class="brand-title">OpenQQ Azure Verification Docs</span>
+          </a>
+          <nav class="site-nav" aria-label="Primary">
+            <a href="index.html">Overview</a>
+            <a href="install.html">Install</a>
+            <a href="verify.html">Verify</a>
+            <a class="active" href="tests.html">Tests</a>
+            <a href="evidence.html">Evidence</a>
+          </nav>
+        </div>
+      </header>
+      <main class="page stack">
+        <section class="page-hero">
+          <div class="eyebrow">Executed Tests</div>
+          <h1>What was actually tested</h1>
+          <p>
+            This page separates executed tests from everything that was not run. Nothing below should
+            be read as an implied pass outside the listed evidence.
+          </p>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">Passed</div>
+              <h2>Executed and passed</h2>
+              <p>These checks were run against the latest Azure Kata environment.</p>
+            </div>
+          </div>
+          <div class="matrix-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Test</th>
+                  <th>Status</th>
+                  <th>What it proved</th>
+                  <th>Evidence</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Azure cluster bootstrap</strong></td>
+                  <td><span class="status status-pass">PASS</span></td>
+                  <td>Three VMs came up as a healthy K3s cluster on CRI-O.</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/nodes-wide.txt">nodes-wide.txt</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Kubernetes version capture</strong></td>
+                  <td><span class="status status-pass">PASS</span></td>
+                  <td>The live cluster reported <code>v1.34.1+k3s1</code> and a working control plane.</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/versions.txt">versions.txt</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>/dev/kvm prerequisite</strong></td>
+                  <td><span class="status status-pass">PASS</span></td>
+                  <td>All three VMs exposed hardware virtualization support required by Kata.</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/prereqs.txt">prereqs.txt</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>CRI-O Kata drop-ins</strong></td>
+                  <td><span class="status status-pass">PASS</span></td>
+                  <td>Each node had the storage and Kata runtime CRI-O drop-ins written.</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/crio-kata-dropins.txt">crio-kata-dropins.txt</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>RuntimeClass registration</strong></td>
+                  <td><span class="status status-pass">PASS</span></td>
+                  <td>The cluster accepted a <code>RuntimeClass</code> named <code>kata</code>.</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/runtimeclass-kata.yaml">runtimeclass-kata.yaml</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Kata probe pod completion</strong></td>
+                  <td><span class="status status-pass">PASS</span></td>
+                  <td>A pod using <code>runtimeClassName: kata</code> completed successfully on a worker node.</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-evidence-pod.yaml">kata-evidence-pod.yaml</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Kata guest execution marker</strong></td>
+                  <td><span class="status status-pass">PASS</span></td>
+                  <td>The pod log ended with <code>kata-probe-ok</code> and showed a guest kernel.</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-evidence-logs.txt">kata-evidence-logs.txt</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">Pending</div>
+              <h2>Not tested yet</h2>
+              <p>These scenario families are not covered by the latest stored Kata run.</p>
+            </div>
+          </div>
+          <div class="matrix-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Scenario</th>
+                  <th>Status</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Service mesh scenarios</td>
+                  <td><span class="status status-not-tested">NOT TESTED</span></td>
+                  <td>Istio or other mesh interaction was not executed in this environment.</td>
+                </tr>
+                <tr>
+                  <td>Filesystem guardrail scenarios</td>
+                  <td><span class="status status-not-tested">NOT TESTED</span></td>
+                  <td>No workspace or protected-path behavior test was run.</td>
+                </tr>
+                <tr>
+                  <td>Network guardrail scenarios</td>
+                  <td><span class="status status-not-tested">NOT TESTED</span></td>
+                  <td>No allowed or blocked network policy test was run.</td>
+                </tr>
+                <tr>
+                  <td>Privilege surface scenarios</td>
+                  <td><span class="status status-not-tested">NOT TESTED</span></td>
+                  <td>No hostPath, secret, service account, or runtime socket test was run.</td>
+                </tr>
+                <tr>
+                  <td>Agentic AI scenarios</td>
+                  <td><span class="status status-not-tested">NOT TESTED</span></td>
+                  <td>No real agentic workload validation was executed yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+      <footer class="site-footer">
+        <div class="site-footer-inner">
+          <div>The test list is intentionally limited to executed work.</div>
+          <div>Updated 2026-06-28</div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

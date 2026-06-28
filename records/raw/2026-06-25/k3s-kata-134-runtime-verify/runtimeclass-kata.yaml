@@ -1,0 +1,11 @@
+apiVersion: node.k8s.io/v1
+handler: kata
+kind: RuntimeClass
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"node.k8s.io/v1","handler":"kata","kind":"RuntimeClass","metadata":{"annotations":{},"name":"kata"}}
+  creationTimestamp: "2026-06-25T06:45:12Z"
+  name: kata
+  resourceVersion: "1047"
+  uid: 35e974ad-80fd-4007-9d64-41502bc8493b

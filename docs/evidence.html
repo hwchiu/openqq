@@ -1,21 +1,125 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>OpenQQ Decision Lab | 方法與資料</title>
+    <meta
+      name="description"
+      content="Raw evidence links for the Azure K3s 1.34 + CRI-O 1.34 + Kata Containers verification."
+    />
+    <title>OpenQQ Kata on Azure | Evidence</title>
     <link rel="stylesheet" href="assets/site.css" />
   </head>
-  <body data-page="evidence" data-root=".">
+  <body>
     <div class="site-shell">
-      <header class="site-header"></header>
-      <main class="page stack" id="app">
-        <section id="evidence-hero"></section>
-        <section id="evidence-body"></section>
+      <header class="site-header">
+        <div class="site-header-inner">
+          <a class="brand" href="index.html">
+            <span class="brand-kicker">Kata Containers</span>
+            <span class="brand-title">OpenQQ Azure Verification Docs</span>
+          </a>
+          <nav class="site-nav" aria-label="Primary">
+            <a href="index.html">Overview</a>
+            <a href="install.html">Install</a>
+            <a href="verify.html">Verify</a>
+            <a href="tests.html">Tests</a>
+            <a class="active" href="evidence.html">Evidence</a>
+          </nav>
+        </div>
+      </header>
+      <main class="page stack">
+        <section class="page-hero">
+          <div class="eyebrow">Evidence</div>
+          <h1>Raw artifacts from the latest Kata run</h1>
+          <p>
+            The raw evidence for this environment lives under
+            <code>records/raw/2026-06-25/k3s-kata-134-runtime-verify/</code>. Because GitHub Pages
+            cannot serve that path directly, the links below open the corresponding GitHub files.
+          </p>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">Artifact List</div>
+              <h2>Stored evidence files</h2>
+              <p>Each file captures one part of the install or verification story.</p>
+            </div>
+          </div>
+          <ul class="evidence-list">
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/versions.txt">versions.txt</a>
+              Kubernetes client and server versions plus <code>kubectl cluster-info</code>.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/nodes-wide.txt">nodes-wide.txt</a>
+              Node readiness, OS image, kernel, and CRI-O runtime version.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/prereqs.txt">prereqs.txt</a>
+              The latest stored output of the Kata prerequisite check, including <code>/dev/kvm</code>.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/crio-kata-dropins.txt">crio-kata-dropins.txt</a>
+              The CRI-O storage and Kata runtime drop-ins captured from all nodes.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/runtimeclass-kata.yaml">runtimeclass-kata.yaml</a>
+              The applied <code>RuntimeClass</code> object.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-verify-pod.yaml">kata-verify-pod.yaml</a>
+              The verification pod manifest used by the script.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-evidence-pod.yaml">kata-evidence-pod.yaml</a>
+              The completed pod as captured from the cluster.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-evidence-logs.txt">kata-evidence-logs.txt</a>
+              The pod log with guest kernel details and <code>kata-probe-ok</code>.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/pods-wide.txt">pods-wide.txt</a>
+              Pod placement details from the verification window.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/events.txt">events.txt</a>
+              Kubernetes event stream captured during the verification window.
+            </li>
+          </ul>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">Related Scripts</div>
+              <h2>Scripts that produced the evidence</h2>
+              <p>These repo files define the install and verify behavior behind the artifacts.</p>
+            </div>
+          </div>
+          <ul>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/install-k3s-kata-134.sh">scripts/install-k3s-kata-134.sh</a>
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/check-kata-prereqs.sh">scripts/check-kata-prereqs.sh</a>
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/install-kata.sh">scripts/install-kata.sh</a>
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/verify-kata-runtime.sh">scripts/verify-kata-runtime.sh</a>
+            </li>
+          </ul>
+        </section>
       </main>
-      <footer class="site-footer"></footer>
+      <footer class="site-footer">
+        <div class="site-footer-inner">
+          <div>All evidence links point to the stored GitHub artifacts for the Kata run.</div>
+          <div>Updated 2026-06-28</div>
+        </div>
+      </footer>
     </div>
-    <script src="assets/content.js"></script>
-    <script src="assets/site.js"></script>
   </body>
 </html>

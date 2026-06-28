@@ -1,25 +1,149 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="OpenQQ K8s Sandbox Decision Lab 目前最新分析入口" />
-    <title>OpenQQ Decision Lab | 總覽</title>
+    <meta
+      name="description"
+      content="Kata Containers on Azure with K3s 1.34 and CRI-O 1.34: install, verify, and executed tests."
+    />
+    <title>OpenQQ Kata on Azure | Overview</title>
     <link rel="stylesheet" href="assets/site.css" />
   </head>
-  <body data-page="home" data-root=".">
+  <body>
     <div class="site-shell">
-      <header class="site-header"></header>
-      <main class="page stack" id="app">
-        <section id="home-hero"></section>
-        <section id="current-assessment"></section>
-        <section id="baseline-summary"></section>
-        <section id="scenario-summary"></section>
-        <section id="methodology-summary"></section>
+      <header class="site-header">
+        <div class="site-header-inner">
+          <a class="brand" href="index.html">
+            <span class="brand-kicker">Kata Containers</span>
+            <span class="brand-title">OpenQQ Azure Verification Docs</span>
+          </a>
+          <nav class="site-nav" aria-label="Primary">
+            <a class="active" href="index.html">Overview</a>
+            <a href="install.html">Install</a>
+            <a href="verify.html">Verify</a>
+            <a href="tests.html">Tests</a>
+            <a href="evidence.html">Evidence</a>
+          </nav>
+        </div>
+      </header>
+      <main class="page stack">
+        <section class="hero">
+          <div>
+            <div class="eyebrow">Latest Kata Result</div>
+            <h1>K3s 1.34 + CRI-O 1.34 + Kata Containers on Azure</h1>
+            <p class="lede">
+              This doc set only describes the Kata Containers environment that was installed and
+              verified on Azure.
+            </p>
+            <p>
+              The scope is limited to installation, verification, and the tests that were actually
+              executed. It does not compare Kata against other runtimes or security stacks.
+            </p>
+          </div>
+          <div class="meta-grid">
+            <div class="meta-card">
+              <span class="meta-label">Verified on</span>
+              <span class="meta-value">2026-06-25</span>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">Cloud</span>
+              <span class="meta-value">Azure</span>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">Nodes</span>
+              <span class="meta-value">3 Ready</span>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">Runtime result</span>
+              <span class="meta-value">RuntimeClass kata verified</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">Reading Path</div>
+              <h2>What to read next</h2>
+              <p>Use the pages below in order if you want the shortest path from install to proof.</p>
+            </div>
+          </div>
+          <div class="card-grid">
+            <article class="summary-card">
+              <div class="section-label">Step 1</div>
+              <div class="verdict">Install</div>
+              <p>The exact Azure stack, wrapper script, and manual sub-steps used for this Kata run.</p>
+              <a class="summary-link" href="install.html">Open install guide</a>
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Step 2</div>
+              <div class="verdict">Verify</div>
+              <p>The commands and expected outputs that prove Kata is active and running on the cluster.</p>
+              <a class="summary-link" href="verify.html">Open verification guide</a>
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Step 3</div>
+              <div class="verdict">Tests</div>
+              <p>The executed test list, separated from everything that was not run.</p>
+              <a class="summary-link" href="tests.html">Open test status</a>
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Step 4</div>
+              <div class="verdict">Evidence</div>
+              <p>Direct links to the raw artifacts captured from the latest Kata verification run.</p>
+              <a class="summary-link" href="evidence.html">Open raw evidence</a>
+            </article>
+          </div>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">Environment</div>
+              <h2>Verified environment summary</h2>
+              <p>These values come from the latest live Azure verification artifacts.</p>
+            </div>
+          </div>
+          <div class="card-grid">
+            <article class="summary-card">
+              <div class="section-label">Cluster</div>
+              <div class="verdict">3 VMs on Standard_D4s_v3</div>
+              <ul>
+                <li>Resource group: <code>rg-k3s-kata-134</code></li>
+                <li>Cluster name: <code>k3s-kata-134</code></li>
+                <li>Node names: <code>cp-0</code>, <code>worker-1</code>, <code>worker-2</code></li>
+                <li>OS image: <code>Ubuntu 22.04.5 LTS</code></li>
+                <li>Kernel: <code>6.8.0-1059-azure</code></li>
+              </ul>
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Versions</div>
+              <div class="verdict">K3s 1.34.1 + CRI-O 1.34.9</div>
+              <ul>
+                <li>Kubernetes: <code>v1.34.1+k3s1</code></li>
+                <li>Container runtime: <code>cri-o://1.34.9</code></li>
+                <li>RuntimeClass: <code>kata</code></li>
+                <li>Probe result: <code>kata-probe-ok</code></li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="page-section">
+          <div class="callout">
+            The latest stored result proves a working Kata runtime path on Azure for this exact
+            platform pairing. It does not claim that service mesh, filesystem guardrails, network
+            guardrails, privilege scenarios, or agentic AI scenarios have been executed.
+          </div>
+        </section>
       </main>
-      <footer class="site-footer"></footer>
+      <footer class="site-footer">
+        <div class="site-footer-inner">
+          <div>OpenQQ now publishes a Kata-only reader path for this repository.</div>
+          <div>Updated 2026-06-28</div>
+        </div>
+      </footer>
     </div>
-    <script src="assets/content.js"></script>
-    <script src="assets/site.js"></script>
   </body>
 </html>

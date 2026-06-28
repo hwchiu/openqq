@@ -10,6 +10,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: ${POD_NAME}
+  namespace: default
 spec:
   runtimeClassName: kata
   restartPolicy: Never
@@ -24,10 +25,41 @@ cleanup() {
 }
 trap cleanup EXIT
 
-kubectl --kubeconfig "$KUBECONFIG_PATH" wait --for=jsonpath='{.status.phase}'=Succeeded pod/"$POD_NAME" --timeout=300s
+for _ in $(seq 1 120); do
+  phase="$(
+    kubectl --kubeconfig "$KUBECONFIG_PATH" get pod "$POD_NAME" \
+      -o jsonpath='{.status.phase}' 2>/dev/null || true
+  )"
+
+  if [[ "$phase" == "Succeeded" ]]; then
+    break
+  fi
+
+  if [[ "$phase" == "Failed" ]]; then
+    echo "[ERROR] Kata verification pod failed." >&2
+    kubectl --kubeconfig "$KUBECONFIG_PATH" describe pod "$POD_NAME" >&2 || true
+    exit 1
+  fi
+
+  sleep 2
+done
+
+phase="$(
+  kubectl --kubeconfig "$KUBECONFIG_PATH" get pod "$POD_NAME" \
+    -o jsonpath='{.status.phase}' 2>/dev/null || true
+)"
+
+if [[ "$phase" != "Succeeded" ]]; then
+  echo "[ERROR] Kata verification pod did not succeed in time." >&2
+  kubectl --kubeconfig "$KUBECONFIG_PATH" describe pod "$POD_NAME" >&2 || true
+  exit 1
+fi
 
 echo "=== RuntimeClass ==="
 kubectl --kubeconfig "$KUBECONFIG_PATH" get runtimeclass kata
+
+echo "=== Pod Placement ==="
+kubectl --kubeconfig "$KUBECONFIG_PATH" get pod "$POD_NAME" -o wide
 
 echo "=== Pod Spec ==="
 kubectl --kubeconfig "$KUBECONFIG_PATH" get pod "$POD_NAME" -o yaml | sed -n '1,120p'

@@ -170,20 +170,28 @@ ssh_safe() {
 
 wait_for_nodes_ready() {
   local kubeconfig_path="$1"
+  local expected_node_count="${2:-1}"
   local node_count
+  local ready_count
   require_bin kubectl
   for _ in $(seq 1 60); do
     node_count="$(
       kubectl --kubeconfig "$kubeconfig_path" get nodes --no-headers 2>/dev/null | awk 'NF>0{c++} END{print c+0}'
     )"
-    if [[ "$node_count" -gt 0 ]]; then
+    if [[ "$node_count" -ge "$expected_node_count" ]]; then
       if kubectl --kubeconfig "$kubeconfig_path" wait --for=condition=Ready nodes --all --timeout=600s; then
-        return 0
+        ready_count="$(
+          kubectl --kubeconfig "$kubeconfig_path" get nodes --no-headers 2>/dev/null \
+            | awk '$2 ~ /^Ready/ {c++} END{print c+0}'
+        )"
+        if [[ "$ready_count" -ge "$expected_node_count" ]]; then
+          return 0
+        fi
       fi
     fi
     sleep 5
   done
-  fail "nodes did not become Ready for kubeconfig $kubeconfig_path"
+  fail "nodes did not become Ready for kubeconfig $kubeconfig_path (expected at least $expected_node_count nodes)"
 }
 
 wait_for_node_count() {

@@ -1,75 +1,112 @@
-# OpenQQ K8s Sandbox Decision Lab
+# OpenQQ Kata Containers on Azure
 
-This repository is a `K8s Sandbox Decision Lab` for Azure.
+This repository now documents one verified path: `K3s 1.34 + CRI-O 1.34 + Kata Containers` on Azure.
 
-Its purpose is to compare candidate Kubernetes sandbox or runtime-guardrail solutions and answer a practical decision question:
+The scope is intentionally narrow:
 
-Which solution is currently the best fit for agentic AI workloads?
+1. how the environment was installed
+2. how the environment was verified
+3. what tests were actually executed in the Kata environment
 
-This repo must provide:
+## Reading order
 
-1. a repeatable validation framework
-2. a continuously updated official analysis
-3. a defensible recommendation based on current evidence
+1. [Overview](docs/index.html)
+2. [Install](docs/install.html)
+3. [Verify](docs/verify.html)
+4. [Executed tests](docs/tests.html)
+5. [Raw evidence](docs/evidence.html)
 
-## Fixed baselines
+## Latest verified environment
 
-Every candidate must be evaluated independently on these two platform pairings:
+- Verification date: `2026-06-25`
+- Cloud: Azure
+- Resource group: `rg-k3s-kata-134`
+- Cluster name: `k3s-kata-134`
+- Node count: `3`
+- VM size: `Standard_D4s_v3`
+- OS image: `Ubuntu 22.04.5 LTS`
+- Kernel: `6.8.0-1059-azure`
+- Kubernetes: `v1.34.1+k3s1`
+- Container runtime: `cri-o://1.34.9`
+- Kata runtime result: `RuntimeClass kata` passed and the probe pod logged `kata-probe-ok`
 
-1. `K8s 1.31 + CRI-O 1.31`
-2. `K8s 1.34 + CRI-O 1.34`
+## Install
 
-## Candidate solutions
+Prepare the shared Azure variables in `terraform/stacks/common.auto.tfvars`:
 
-1. `k8s + cri-o`
-2. `k8s + OpenShell + cri-o`
-3. `k8s + gVisor`
-4. `k8s + OpenShell + gVisor`
-5. `k8s + cri-o + KubeArmor`
+```hcl
+subscription_id = "00000000-0000-0000-0000-000000000000"
+tenant_id       = "00000000-0000-0000-0000-000000000000"
+admin_username  = "azureuser"
+ssh_public_key  = "ssh-ed25519 AAAA..."
+```
 
-## Decision dimensions
+Then run the one-shot installer:
 
-Every recommendation must balance:
+```bash
+cp terraform/stacks/common.auto.tfvars.example terraform/stacks/common.auto.tfvars
+cp terraform/stacks/k3s-kata-134/stack.auto.tfvars.example terraform/stacks/k3s-kata-134/stack.auto.tfvars
+bash scripts/install-k3s-kata-134.sh
+```
 
-1. `Isolation and protection capability`
-2. `Compatibility`
-3. `Operational complexity`
+The wrapper script performs these steps in order:
 
-## Fast entry points
+1. `terraform apply` for `terraform/stacks/k3s-kata-134`
+2. wait until all 3 nodes are `Ready`
+3. run `scripts/check-kata-prereqs.sh`
+4. run `scripts/install-kata.sh`
+5. run `scripts/verify-kata-runtime.sh`
 
-1. Current analysis homepage: [docs/index.html](/Users/hwchiu/hwchiu/openqq/docs/index.html)
-2. Baseline matrix: [docs/matrix.html](/Users/hwchiu/hwchiu/openqq/docs/matrix.html)
-3. Scenario view: [docs/failures.html](/Users/hwchiu/hwchiu/openqq/docs/failures.html)
-4. Methodology and data model: [docs/evidence.html](/Users/hwchiu/hwchiu/openqq/docs/evidence.html)
-5. Decision Lab design spec: [docs/superpowers/specs/2026-06-09-k8s-sandbox-decision-lab-design.md](/Users/hwchiu/hwchiu/openqq/docs/superpowers/specs/2026-06-09-k8s-sandbox-decision-lab-design.md)
-6. One-shot installer: [scripts/install-comparison-matrix.sh](/Users/hwchiu/hwchiu/openqq/scripts/install-comparison-matrix.sh)
-7. One-shot test runner: [scripts/run-comparison-matrix-tests.sh](/Users/hwchiu/hwchiu/openqq/scripts/run-comparison-matrix-tests.sh)
-8. One-shot destroy: [scripts/destroy-comparison-matrix.sh](/Users/hwchiu/hwchiu/openqq/scripts/destroy-comparison-matrix.sh)
+The verified stack defaults are:
 
-## Output model
+- `K3s v1.34.1+k3s1`
+- `CRI-O v1.34`
+- `Standard_D4s_v3`
+- `Ubuntu 22.04 LTS`
+- `KATA_VERSION=3.31.0` inside `scripts/install-kata.sh`
 
-This repo now aims for three output layers:
+## Verify
 
-1. `Raw archive`
-   Historical raw results kept for traceability and debugging.
+Re-run the verification steps with:
 
-2. `Current state data`
-   Latest official machine-readable status for GitHub Pages.
+```bash
+KUBECONFIG_PATH=generated/stacks/k3s-kata-134/kubeconfig \
+TF_DIR=terraform/stacks/k3s-kata-134 \
+bash scripts/check-kata-prereqs.sh
 
-3. `GitHub Pages analysis`
-   A continuously updated official reading path, not a pile of one-report-per-run pages.
+KUBECONFIG_PATH=generated/stacks/k3s-kata-134/kubeconfig \
+bash scripts/verify-kata-runtime.sh
+```
 
-## Evaluation rules
+What to expect:
 
-- Compare candidates under explicit guardrail, policy, runtime, or config declarations.
-- Do not use default behavior as the success criterion.
-- Validate both `Allowed behavior` and `Blocked behavior`.
-- Treat install/bootstrap failure as a real negative result.
-- If later scenarios cannot run because a solution failed earlier, classify them as `Blocked by solution failure`.
+- all 3 nodes show `Ready`
+- each node exposes `/dev/kvm`
+- `kubectl get runtimeclass kata` succeeds
+- the verify pod reaches `Succeeded`
+- pod logs include a guest kernel line and `kata-probe-ok`
 
-## Notes
+## Tests executed in the Kata environment
 
-- Each stack has its own Terraform root and state file.
-- Each stack writes kubeconfig under `generated/stacks/<stack-name>/kubeconfig`.
-- The matrix installer can still be used as the orchestration entry point.
-- The Pages site should read latest official state from `docs/data/current-state.json`.
+| Test | Status | Evidence |
+| --- | --- | --- |
+| 3-node Azure cluster bootstrap | PASS | [nodes-wide.txt](records/raw/2026-06-25/k3s-kata-134-runtime-verify/nodes-wide.txt) |
+| Kubernetes and cluster-info capture | PASS | [versions.txt](records/raw/2026-06-25/k3s-kata-134-runtime-verify/versions.txt) |
+| `/dev/kvm` prerequisite on all nodes | PASS | [prereqs.txt](records/raw/2026-06-25/k3s-kata-134-runtime-verify/prereqs.txt) |
+| CRI-O Kata drop-ins present on all nodes | PASS | [crio-kata-dropins.txt](records/raw/2026-06-25/k3s-kata-134-runtime-verify/crio-kata-dropins.txt) |
+| `RuntimeClass kata` object present | PASS | [runtimeclass-kata.yaml](records/raw/2026-06-25/k3s-kata-134-runtime-verify/runtimeclass-kata.yaml) |
+| Kata probe pod completed | PASS | [kata-evidence-pod.yaml](records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-evidence-pod.yaml) |
+| Kata probe log contains `kata-probe-ok` | PASS | [kata-evidence-logs.txt](records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-evidence-logs.txt) |
+| Service mesh scenarios | NOT TESTED YET | Not run in this environment |
+| Filesystem guardrail scenarios | NOT TESTED YET | Not run in this environment |
+| Network guardrail scenarios | NOT TESTED YET | Not run in this environment |
+| Privilege surface scenarios | NOT TESTED YET | Not run in this environment |
+| Agentic AI scenarios | NOT TESTED YET | Not run in this environment |
+
+## Raw evidence
+
+All stored evidence for the latest Kata verification lives under:
+
+- `records/raw/2026-06-25/k3s-kata-134-runtime-verify/`
+
+The GitHub Pages reader is intentionally limited to Kata installation, verification, and executed tests. It does not include cross-solution comparison pages.

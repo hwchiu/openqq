@@ -24,6 +24,13 @@ write_files:
         install -d -m 0755 /opt/cni/bin
         rm -rf /etc/cni/net.d
         ln -sfn /var/lib/rancher/k3s/agent/etc/cni/net.d /etc/cni/net.d
+        install -d -m 0755 /etc/crio/crio.conf.d
+        cat <<'TOML' >/etc/crio/crio.conf.d/01-storage-options.conf
+      [crio]
+      storage_option = [
+        "overlay.skip_mount_home=true",
+      ]
+      TOML
         systemctl enable --now crio
       }
 

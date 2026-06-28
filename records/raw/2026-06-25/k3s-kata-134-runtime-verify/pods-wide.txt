@@ -1,0 +1,11 @@
+NAMESPACE     NAME                                      READY   STATUS      RESTARTS   AGE     IP          NODE       NOMINATED NODE   READINESS GATES
+default       kata-evidence-1782370178                  0/1     Completed   0          10s     10.80.1.4   worker-2   <none>           <none>
+kube-system   coredns-7896679cc-p46np                   1/1     Running     0          10m     10.80.0.2   cp-0       <none>           <none>
+kube-system   helm-install-traefik-crd-hz5dw            0/1     Completed   0          10m     10.80.0.5   cp-0       <none>           <none>
+kube-system   helm-install-traefik-whjhh                0/1     Completed   2          10m     10.80.0.4   cp-0       <none>           <none>
+kube-system   local-path-provisioner-578895bd58-4rfgv   1/1     Running     0          10m     10.80.0.6   cp-0       <none>           <none>
+kube-system   metrics-server-7b9c9c4b9c-4b4bc           1/1     Running     0          10m     10.80.0.3   cp-0       <none>           <none>
+kube-system   svclb-traefik-30b6aef5-8lr26              2/2     Running     0          9m56s   10.80.1.2   worker-2   <none>           <none>
+kube-system   svclb-traefik-30b6aef5-rhzmn              2/2     Running     0          10m     10.80.0.7   cp-0       <none>           <none>
+kube-system   svclb-traefik-30b6aef5-x29d2              2/2     Running     0          9m30s   10.80.3.2   worker-1   <none>           <none>
+kube-system   traefik-6f986b958c-gxtc6                  1/1     Running     0          10m     10.80.0.8   cp-0       <none>           <none>

@@ -59,12 +59,21 @@ code,
 .section-label,
 .status,
 .meta-value,
+.meta-label,
 table,
 .page-tag,
 .summary-link,
 .inline-link,
-.site-footer {
+.site-footer,
+pre {
   font-family: "JetBrains Mono", monospace;
+}
+
+:not(pre) > code {
+  border: 1px solid rgba(127, 144, 165, 0.24);
+  border-radius: 8px;
+  padding: 1px 6px;
+  background: rgba(127, 144, 165, 0.08);
 }
 
 .site-shell {
@@ -256,6 +265,13 @@ h4 {
   color: var(--text);
 }
 
+.meta-label {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 .verdict {
   margin-top: 8px;
   font-size: 1.3rem;
@@ -389,6 +405,34 @@ tr:last-child td {
   padding: 16px 18px 16px 20px;
   border-radius: var(--radius-sm);
   background: rgba(125, 211, 252, 0.08);
+}
+
+pre {
+  overflow-x: auto;
+  margin: 0;
+  padding: 16px 18px;
+  border: 1px solid rgba(127, 144, 165, 0.18);
+  border-radius: var(--radius-md);
+  background: #0b1016;
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.page-section ul,
+.page-section ol,
+.summary-card ul,
+.summary-card ol,
+.track-summary ul,
+.track-summary ol {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--text-soft);
+}
+
+.page-section li + li,
+.summary-card li + li,
+.track-summary li + li {
+  margin-top: 10px;
 }
 
 .page-title-row {

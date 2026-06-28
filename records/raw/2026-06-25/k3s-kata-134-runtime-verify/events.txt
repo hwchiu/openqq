@@ -1,0 +1,160 @@
+NAMESPACE     LAST SEEN   TYPE      REASON                           OBJECT                                         MESSAGE
+kube-system   10m         Normal    Scheduled                        pod/svclb-traefik-30b6aef5-rhzmn               Successfully assigned kube-system/svclb-traefik-30b6aef5-rhzmn to cp-0
+kube-system   10m         Normal    Scheduled                        pod/helm-install-traefik-whjhh                 Successfully assigned kube-system/helm-install-traefik-whjhh to cp-0
+kube-system   10m         Normal    Scheduled                        pod/local-path-provisioner-578895bd58-4rfgv    Successfully assigned kube-system/local-path-provisioner-578895bd58-4rfgv to cp-0
+kube-system   9m27s       Normal    Scheduled                        pod/svclb-traefik-30b6aef5-x29d2               Successfully assigned kube-system/svclb-traefik-30b6aef5-x29d2 to worker-1
+default       9m26s       Normal    Starting                         node/worker-1                                  
+default       104s        Normal    Scheduled                        pod/kata-verify-1782370081                     Successfully assigned default/kata-verify-1782370081 to worker-1
+kube-system   10m         Normal    Scheduled                        pod/helm-install-traefik-crd-hz5dw             Successfully assigned kube-system/helm-install-traefik-crd-hz5dw to cp-0
+default       10m         Normal    Starting                         node/cp-0                                      
+kube-system   10m         Normal    Scheduled                        pod/traefik-6f986b958c-gxtc6                   Successfully assigned kube-system/traefik-6f986b958c-gxtc6 to cp-0
+kube-system   9m52s       Normal    Scheduled                        pod/svclb-traefik-30b6aef5-8lr26               Successfully assigned kube-system/svclb-traefik-30b6aef5-8lr26 to worker-2
+kube-system   10m         Normal    Scheduled                        pod/coredns-7896679cc-p46np                    Successfully assigned kube-system/coredns-7896679cc-p46np to cp-0
+default       9m51s       Normal    Starting                         node/worker-2                                  
+default       4m22s       Normal    Scheduled                        pod/kata-verify-1782369921                     Successfully assigned default/kata-verify-1782369921 to worker-2
+default       6s          Normal    Scheduled                        pod/kata-evidence-1782370178                   Successfully assigned default/kata-evidence-1782370178 to worker-2
+kube-system   10m         Normal    Scheduled                        pod/metrics-server-7b9c9c4b9c-4b4bc            Successfully assigned kube-system/metrics-server-7b9c9c4b9c-4b4bc to cp-0
+default       10m         Normal    CertificateExpirationOK          node/cp-0                                      Node and Certificate Authority certificates managed by k3s are OK
+default       10m         Normal    Starting                         node/cp-0                                      Starting kubelet.
+default       10m         Normal    NodeReady                        node/cp-0                                      Node cp-0 status is now: NodeReady
+default       10m         Normal    NodeAllocatableEnforced          node/cp-0                                      Updated Node Allocatable limit across pods
+default       10m         Normal    NodeHasSufficientPID             node/cp-0                                      Node cp-0 status is now: NodeHasSufficientPID
+default       10m         Normal    NodeHasNoDiskPressure            node/cp-0                                      Node cp-0 status is now: NodeHasNoDiskPressure
+default       10m         Normal    NodeHasSufficientMemory          node/cp-0                                      Node cp-0 status is now: NodeHasSufficientMemory
+kube-system   10m         Normal    AppliedManifest                  addon/ccm                                      Applied manifest at "/var/lib/rancher/k3s/server/manifests/ccm.yaml"
+kube-system   10m         Normal    AppliedManifest                  addon/coredns                                  Applied manifest at "/var/lib/rancher/k3s/server/manifests/coredns.yaml"
+kube-system   10m         Normal    ApplyingManifest                 addon/coredns                                  Applying manifest at "/var/lib/rancher/k3s/server/manifests/coredns.yaml"
+kube-system   10m         Normal    ApplyingManifest                 addon/local-storage                            Applying manifest at "/var/lib/rancher/k3s/server/manifests/local-storage.yaml"
+kube-system   10m         Normal    ApplyingManifest                 addon/ccm                                      Applying manifest at "/var/lib/rancher/k3s/server/manifests/ccm.yaml"
+kube-system   10m         Normal    ApplyingManifest                 addon/resource-reader                          Applying manifest at "/var/lib/rancher/k3s/server/manifests/metrics-server/resource-reader.yaml"
+kube-system   10m         Normal    AppliedManifest                  addon/auth-delegator                           Applied manifest at "/var/lib/rancher/k3s/server/manifests/metrics-server/auth-delegator.yaml"
+kube-system   10m         Normal    ApplyingManifest                 addon/metrics-server-deployment                Applying manifest at "/var/lib/rancher/k3s/server/manifests/metrics-server/metrics-server-deployment.yaml"
+kube-system   10m         Normal    AppliedManifest                  addon/auth-reader                              Applied manifest at "/var/lib/rancher/k3s/server/manifests/metrics-server/auth-reader.yaml"
+kube-system   10m         Normal    ApplyingManifest                 addon/auth-reader                              Applying manifest at "/var/lib/rancher/k3s/server/manifests/metrics-server/auth-reader.yaml"
+kube-system   10m         Normal    AppliedManifest                  addon/metrics-server-deployment                Applied manifest at "/var/lib/rancher/k3s/server/manifests/metrics-server/metrics-server-deployment.yaml"
+kube-system   10m         Normal    ApplyingManifest                 addon/auth-delegator                           Applying manifest at "/var/lib/rancher/k3s/server/manifests/metrics-server/auth-delegator.yaml"
+kube-system   10m         Normal    AppliedManifest                  addon/aggregated-metrics-reader                Applied manifest at "/var/lib/rancher/k3s/server/manifests/metrics-server/aggregated-metrics-reader.yaml"
+kube-system   10m         Normal    AppliedManifest                  addon/local-storage                            Applied manifest at "/var/lib/rancher/k3s/server/manifests/local-storage.yaml"
+kube-system   10m         Normal    ApplyingManifest                 addon/aggregated-metrics-reader                Applying manifest at "/var/lib/rancher/k3s/server/manifests/metrics-server/aggregated-metrics-reader.yaml"
+kube-system   10m         Normal    ApplyingManifest                 addon/metrics-server-service                   Applying manifest at "/var/lib/rancher/k3s/server/manifests/metrics-server/metrics-server-service.yaml"
+kube-system   10m         Normal    ApplyingManifest                 addon/traefik                                  Applying manifest at "/var/lib/rancher/k3s/server/manifests/traefik.yaml"
+kube-system   10m         Normal    AppliedManifest                  addon/traefik                                  Applied manifest at "/var/lib/rancher/k3s/server/manifests/traefik.yaml"
+kube-system   10m         Normal    ApplyingManifest                 addon/metrics-apiservice                       Applying manifest at "/var/lib/rancher/k3s/server/manifests/metrics-server/metrics-apiservice.yaml"
+kube-system   10m         Normal    AppliedManifest                  addon/metrics-apiservice                       Applied manifest at "/var/lib/rancher/k3s/server/manifests/metrics-server/metrics-apiservice.yaml"
+kube-system   10m         Normal    AppliedManifest                  addon/runtimes                                 Applied manifest at "/var/lib/rancher/k3s/server/manifests/runtimes.yaml"
+kube-system   10m         Normal    ApplyingManifest                 addon/runtimes                                 Applying manifest at "/var/lib/rancher/k3s/server/manifests/runtimes.yaml"
+kube-system   10m         Normal    AppliedManifest                  addon/rolebindings                             Applied manifest at "/var/lib/rancher/k3s/server/manifests/rolebindings.yaml"
+kube-system   10m         Normal    ApplyingManifest                 addon/rolebindings                             Applying manifest at "/var/lib/rancher/k3s/server/manifests/rolebindings.yaml"
+kube-system   10m         Normal    AppliedManifest                  addon/resource-reader                          Applied manifest at "/var/lib/rancher/k3s/server/manifests/metrics-server/resource-reader.yaml"
+kube-system   10m         Normal    AppliedManifest                  addon/metrics-server-service                   Applied manifest at "/var/lib/rancher/k3s/server/manifests/metrics-server/metrics-server-service.yaml"
+default       10m         Normal    Synced                           node/cp-0                                      Node synced successfully
+default       10m         Normal    NodePasswordValidationComplete   node/cp-0                                      Deferred node password secret validation complete
+kube-system   10m         Normal    SuccessfulCreate                 job/helm-install-traefik                       Created pod: helm-install-traefik-whjhh
+default       10m         Normal    RegisteredNode                   node/cp-0                                      Node cp-0 event: Registered Node cp-0 in Controller
+kube-system   10m         Normal    SuccessfulCreate                 job/helm-install-traefik-crd                   Created pod: helm-install-traefik-crd-hz5dw
+kube-system   10m         Normal    ScalingReplicaSet                deployment/local-path-provisioner              Scaled up replica set local-path-provisioner-578895bd58 from 0 to 1
+kube-system   10m         Normal    ScalingReplicaSet                deployment/metrics-server                      Scaled up replica set metrics-server-7b9c9c4b9c from 0 to 1
+kube-system   10m         Normal    ScalingReplicaSet                deployment/coredns                             Scaled up replica set coredns-7896679cc from 0 to 1
+kube-system   10m         Normal    SuccessfulCreate                 replicaset/metrics-server-7b9c9c4b9c           Created pod: metrics-server-7b9c9c4b9c-4b4bc
+kube-system   10m         Normal    SuccessfulCreate                 replicaset/local-path-provisioner-578895bd58   Created pod: local-path-provisioner-578895bd58-4rfgv
+kube-system   10m         Normal    SuccessfulCreate                 replicaset/coredns-7896679cc                   Created pod: coredns-7896679cc-p46np
+kube-system   10m         Normal    Pulling                          pod/helm-install-traefik-crd-hz5dw             Pulling image "rancher/klipper-helm:v0.9.8-build20250709"
+kube-system   10m         Normal    Pulling                          pod/coredns-7896679cc-p46np                    Pulling image "rancher/mirrored-coredns-coredns:1.12.3"
+kube-system   10m         Normal    Pulling                          pod/local-path-provisioner-578895bd58-4rfgv    Pulling image "rancher/local-path-provisioner:v0.0.32"
+kube-system   10m         Normal    Pulling                          pod/metrics-server-7b9c9c4b9c-4b4bc            Pulling image "rancher/mirrored-metrics-server:v0.8.0"
+kube-system   10m         Normal    Pulling                          pod/helm-install-traefik-whjhh                 Pulling image "rancher/klipper-helm:v0.9.8-build20250709"
+kube-system   10m         Normal    Pulled                           pod/local-path-provisioner-578895bd58-4rfgv    Successfully pulled image "rancher/local-path-provisioner:v0.0.32" in 4.703s (4.703s including waiting). Image size: 63280597 bytes.
+kube-system   10m         Normal    Pulled                           pod/helm-install-traefik-whjhh                 Successfully pulled image "rancher/klipper-helm:v0.9.8-build20250709" in 11.655s (11.655s including waiting). Image size: 215970579 bytes.
+kube-system   10m         Normal    Pulled                           pod/helm-install-traefik-crd-hz5dw             Successfully pulled image "rancher/klipper-helm:v0.9.8-build20250709" in 11.46s (11.46s including waiting). Image size: 215970579 bytes.
+kube-system   10m         Normal    Created                          pod/local-path-provisioner-578895bd58-4rfgv    Created container: local-path-provisioner
+kube-system   10m         Normal    Started                          pod/local-path-provisioner-578895bd58-4rfgv    Started container local-path-provisioner
+kube-system   10m         Normal    Pulled                           pod/metrics-server-7b9c9c4b9c-4b4bc            Successfully pulled image "rancher/mirrored-metrics-server:v0.8.0" in 11.059s (11.059s including waiting). Image size: 83737288 bytes.
+kube-system   10m         Normal    Created                          pod/metrics-server-7b9c9c4b9c-4b4bc            Created container: metrics-server
+kube-system   10m         Normal    Created                          pod/helm-install-traefik-crd-hz5dw             Created container: helm
+kube-system   10m         Normal    Started                          pod/helm-install-traefik-crd-hz5dw             Started container helm
+kube-system   10m         Normal    Started                          pod/metrics-server-7b9c9c4b9c-4b4bc            Started container metrics-server
+kube-system   10m         Normal    Started                          pod/coredns-7896679cc-p46np                    Started container coredns
+kube-system   10m         Normal    Pulled                           pod/coredns-7896679cc-p46np                    Successfully pulled image "rancher/mirrored-coredns-coredns:1.12.3" in 12.104s (12.104s including waiting). Image size: 75196809 bytes.
+kube-system   10m         Normal    Created                          pod/coredns-7896679cc-p46np                    Created container: coredns
+kube-system   10m         Warning   Unhealthy                        pod/metrics-server-7b9c9c4b9c-4b4bc            Readiness probe failed: Get "https://10.80.0.3:10250/readyz": dial tcp 10.80.0.3:10250: connect: connection refused
+kube-system   10m         Warning   BackOff                          pod/helm-install-traefik-whjhh                 Back-off restarting failed container helm in pod helm-install-traefik-whjhh_kube-system(5129b4a2-1338-4e44-926d-eaab5be35a59)
+kube-system   10m         Normal    ApplyJob                         helmchart/traefik-crd                          Applying HelmChart using Job kube-system/helm-install-traefik-crd
+kube-system   10m         Normal    Completed                        job/helm-install-traefik-crd                   Job completed
+kube-system   10m         Warning   Unhealthy                        pod/metrics-server-7b9c9c4b9c-4b4bc            Readiness probe failed: HTTP probe failed with statuscode: 500
+kube-system   10m         Normal    SuccessfulCreate                 replicaset/traefik-6f986b958c                  Created pod: traefik-6f986b958c-gxtc6
+kube-system   10m         Normal    EnsuringLoadBalancer             service/traefik                                Ensuring load balancer
+kube-system   10m         Normal    Pulled                           pod/helm-install-traefik-whjhh                 Container image "rancher/klipper-helm:v0.9.8-build20250709" already present on machine
+kube-system   10m         Normal    SuccessfulCreate                 daemonset/svclb-traefik-30b6aef5               Created pod: svclb-traefik-30b6aef5-rhzmn
+kube-system   10m         Normal    Started                          pod/helm-install-traefik-whjhh                 Started container helm
+kube-system   10m         Normal    Created                          pod/helm-install-traefik-whjhh                 Created container: helm
+kube-system   10m         Normal    AppliedDaemonSet                 service/traefik                                Applied LoadBalancer DaemonSet kube-system/svclb-traefik-30b6aef5
+kube-system   10m         Normal    ScalingReplicaSet                deployment/traefik                             Scaled up replica set traefik-6f986b958c from 0 to 1
+kube-system   10m         Normal    Pulling                          pod/traefik-6f986b958c-gxtc6                   Pulling image "rancher/mirrored-library-traefik:3.3.6"
+kube-system   10m         Normal    Pulling                          pod/svclb-traefik-30b6aef5-rhzmn               Pulling image "rancher/klipper-lb:v0.4.13"
+kube-system   10m         Normal    Created                          pod/svclb-traefik-30b6aef5-rhzmn               Created container: lb-tcp-443
+kube-system   10m         Normal    Pulled                           pod/svclb-traefik-30b6aef5-rhzmn               Container image "rancher/klipper-lb:v0.4.13" already present on machine
+kube-system   10m         Normal    Started                          pod/svclb-traefik-30b6aef5-rhzmn               Started container lb-tcp-443
+kube-system   10m         Normal    Started                          pod/svclb-traefik-30b6aef5-rhzmn               Started container lb-tcp-80
+kube-system   10m         Normal    ApplyJob                         helmchart/traefik                              Applying HelmChart using Job kube-system/helm-install-traefik
+kube-system   10m         Normal    Created                          pod/svclb-traefik-30b6aef5-rhzmn               Created container: lb-tcp-80
+kube-system   10m         Normal    Pulled                           pod/svclb-traefik-30b6aef5-rhzmn               Successfully pulled image "rancher/klipper-lb:v0.4.13" in 1.94s (1.94s including waiting). Image size: 12720139 bytes.
+kube-system   10m         Normal    Completed                        job/helm-install-traefik                       Job completed
+kube-system   10m         Normal    UpdatedLoadBalancer              service/traefik                                Updated LoadBalancer with new IPs: [] -> [10.180.0.5]
+kube-system   9m59s       Normal    Created                          pod/traefik-6f986b958c-gxtc6                   Created container: traefik
+kube-system   9m59s       Normal    Started                          pod/traefik-6f986b958c-gxtc6                   Started container traefik
+kube-system   9m59s       Normal    Pulled                           pod/traefik-6f986b958c-gxtc6                   Successfully pulled image "rancher/mirrored-library-traefik:3.3.6" in 4.494s (4.494s including waiting). Image size: 224877466 bytes.
+kube-system   9m57s       Normal    UpdatedLoadBalancer              service/traefik                                Updated LoadBalancer with new IPs: [10.180.0.5] -> [10.180.0.5]
+default       9m54s       Normal    Starting                         node/worker-2                                  Starting kubelet.
+default       9m54s       Normal    CertificateExpirationOK          node/worker-2                                  Node and Certificate Authority certificates managed by k3s are OK
+default       9m53s       Normal    NodeHasSufficientMemory          node/worker-2                                  Node worker-2 status is now: NodeHasSufficientMemory
+default       9m53s       Normal    Synced                           node/worker-2                                  Node synced successfully
+default       9m53s       Normal    NodeAllocatableEnforced          node/worker-2                                  Updated Node Allocatable limit across pods
+default       9m53s       Normal    CIDRAssignmentFailed             node/worker-2                                  Node worker-2 status is now: CIDRAssignmentFailed
+default       9m53s       Normal    NodeHasSufficientPID             node/worker-2                                  Node worker-2 status is now: NodeHasSufficientPID
+default       9m53s       Normal    NodeHasNoDiskPressure            node/worker-2                                  Node worker-2 status is now: NodeHasNoDiskPressure
+kube-system   9m53s       Normal    SuccessfulCreate                 daemonset/svclb-traefik-30b6aef5               Created pod: svclb-traefik-30b6aef5-8lr26
+default       9m52s       Normal    RegisteredNode                   node/worker-2                                  Node worker-2 event: Registered Node worker-2 in Controller
+kube-system   9m49s       Normal    Pulling                          pod/svclb-traefik-30b6aef5-8lr26               Pulling image "rancher/klipper-lb:v0.4.13"
+kube-system   9m48s       Normal    Created                          pod/svclb-traefik-30b6aef5-8lr26               Created container: lb-tcp-443
+kube-system   9m48s       Normal    Pulled                           pod/svclb-traefik-30b6aef5-8lr26               Successfully pulled image "rancher/klipper-lb:v0.4.13" in 1.274s (1.274s including waiting). Image size: 12720139 bytes.
+kube-system   9m48s       Normal    Started                          pod/svclb-traefik-30b6aef5-8lr26               Started container lb-tcp-443
+kube-system   9m48s       Normal    Started                          pod/svclb-traefik-30b6aef5-8lr26               Started container lb-tcp-80
+kube-system   9m48s       Normal    Created                          pod/svclb-traefik-30b6aef5-8lr26               Created container: lb-tcp-80
+kube-system   9m48s       Normal    Pulled                           pod/svclb-traefik-30b6aef5-8lr26               Container image "rancher/klipper-lb:v0.4.13" already present on machine
+kube-system   9m47s       Normal    UpdatedLoadBalancer              service/traefik                                Updated LoadBalancer with new IPs: [10.180.0.5] -> [10.180.0.4 10.180.0.5]
+default       9m28s       Normal    NodeHasNoDiskPressure            node/worker-1                                  Node worker-1 status is now: NodeHasNoDiskPressure
+default       9m28s       Normal    CertificateExpirationOK          node/worker-1                                  Node and Certificate Authority certificates managed by k3s are OK
+default       9m28s       Normal    Starting                         node/worker-1                                  Starting kubelet.
+default       9m28s       Normal    NodeHasSufficientMemory          node/worker-1                                  Node worker-1 status is now: NodeHasSufficientMemory
+default       9m28s       Normal    NodeAllocatableEnforced          node/worker-1                                  Updated Node Allocatable limit across pods
+default       9m28s       Normal    NodeHasSufficientPID             node/worker-1                                  Node worker-1 status is now: NodeHasSufficientPID
+default       9m27s       Normal    Synced                           node/worker-1                                  Node synced successfully
+kube-system   9m27s       Normal    SuccessfulCreate                 daemonset/svclb-traefik-30b6aef5               Created pod: svclb-traefik-30b6aef5-x29d2
+default       9m27s       Normal    RegisteredNode                   node/worker-1                                  Node worker-1 event: Registered Node worker-1 in Controller
+kube-system   9m23s       Normal    Pulling                          pod/svclb-traefik-30b6aef5-x29d2               Pulling image "rancher/klipper-lb:v0.4.13"
+kube-system   9m22s       Normal    Started                          pod/svclb-traefik-30b6aef5-x29d2               Started container lb-tcp-80
+kube-system   9m22s       Normal    Started                          pod/svclb-traefik-30b6aef5-x29d2               Started container lb-tcp-443
+kube-system   9m22s       Normal    Pulled                           pod/svclb-traefik-30b6aef5-x29d2               Container image "rancher/klipper-lb:v0.4.13" already present on machine
+kube-system   9m22s       Normal    Created                          pod/svclb-traefik-30b6aef5-x29d2               Created container: lb-tcp-80
+kube-system   9m22s       Normal    Pulled                           pod/svclb-traefik-30b6aef5-x29d2               Successfully pulled image "rancher/klipper-lb:v0.4.13" in 1.216s (1.216s including waiting). Image size: 12720139 bytes.
+kube-system   9m22s       Normal    Created                          pod/svclb-traefik-30b6aef5-x29d2               Created container: lb-tcp-443
+kube-system   9m21s       Normal    UpdatedLoadBalancer              service/traefik                                Updated LoadBalancer with new IPs: [10.180.0.4 10.180.0.5] -> [10.180.0.4 10.180.0.5 10.180.0.6]
+default       7m43s       Warning   ContainerGCFailed                node/cp-0                                      rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial unix /var/run/crio/crio.sock: connect: no such file or directory"
+default       6m28s       Warning   ContainerGCFailed                node/worker-1                                  rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial unix /var/run/crio/crio.sock: connect: no such file or directory"
+default       6m13s       Normal    NodeNotReady                     node/worker-1                                  Node worker-1 status is now: NodeNotReady
+default       6m3s        Normal    NodeReady                        node/worker-1                                  Node worker-1 status is now: NodeReady
+default       4m54s       Warning   ImageGCFailed                    node/worker-2                                  rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial unix /var/run/crio/crio.sock: connect: no such file or directory"
+default       4m54s       Warning   ContainerGCFailed                node/worker-2                                  rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial unix /var/run/crio/crio.sock: connect: no such file or directory"
+default       4m44s       Normal    NodeNotReady                     node/worker-2                                  Node worker-2 status is now: NodeNotReady
+default       4m34s       Normal    NodeReady                        node/worker-2                                  Node worker-2 status is now: NodeReady
+default       4m20s       Normal    Pulling                          pod/kata-verify-1782369921                     Pulling image "alpine:3.22"
+default       4m19s       Normal    Started                          pod/kata-verify-1782369921                     Started container probe
+default       4m19s       Normal    Created                          pod/kata-verify-1782369921                     Created container: probe
+default       4m19s       Normal    Pulled                           pod/kata-verify-1782369921                     Successfully pulled image "alpine:3.22" in 989ms (989ms including waiting). Image size: 8587361 bytes.
+default       102s        Normal    Pulling                          pod/kata-verify-1782370081                     Pulling image "alpine:3.22"
+default       101s        Normal    Pulled                           pod/kata-verify-1782370081                     Successfully pulled image "alpine:3.22" in 956ms (956ms including waiting). Image size: 8587361 bytes.
+default       101s        Normal    Created                          pod/kata-verify-1782370081                     Created container: probe
+default       101s        Normal    Started                          pod/kata-verify-1782370081                     Started container probe
+default       5s          Normal    Pulled                           pod/kata-evidence-1782370178                   Container image "alpine:3.22" already present on machine
+default       4s          Normal    Started                          pod/kata-evidence-1782370178                   Started container probe
+default       4s          Normal    Created                          pod/kata-evidence-1782370178                   Created container: probe

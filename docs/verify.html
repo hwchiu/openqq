@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="How to verify the Azure K3s 1.34 + CRI-O 1.34 + Kata Containers environment."
+    />
+    <title>OpenQQ Kata on Azure | Verify</title>
+    <link rel="stylesheet" href="assets/site.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <div class="site-header-inner">
+          <a class="brand" href="index.html">
+            <span class="brand-kicker">Kata Containers</span>
+            <span class="brand-title">OpenQQ Azure Verification Docs</span>
+          </a>
+          <nav class="site-nav" aria-label="Primary">
+            <a href="index.html">Overview</a>
+            <a href="install.html">Install</a>
+            <a class="active" href="verify.html">Verify</a>
+            <a href="tests.html">Tests</a>
+            <a href="evidence.html">Evidence</a>
+          </nav>
+        </div>
+      </header>
+      <main class="page stack">
+        <section class="page-hero">
+          <div class="eyebrow">Verify</div>
+          <h1>Verify that Kata is active</h1>
+          <p>
+            Verification has two layers: host prerequisites and Kubernetes runtime behavior. Both
+            were run on the latest Azure environment.
+          </p>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">Quick Commands</div>
+              <h2>Re-run the latest checks</h2>
+              <p>These commands match the scripts used during the latest verification run.</p>
+            </div>
+          </div>
+          <pre><code>KUBECONFIG_PATH=generated/stacks/k3s-kata-134/kubeconfig \
+TF_DIR=terraform/stacks/k3s-kata-134 \
+bash scripts/check-kata-prereqs.sh
+
+kubectl --kubeconfig generated/stacks/k3s-kata-134/kubeconfig get nodes -o wide
+kubectl --kubeconfig generated/stacks/k3s-kata-134/kubeconfig get runtimeclass kata -o yaml
+
+KUBECONFIG_PATH=generated/stacks/k3s-kata-134/kubeconfig \
+bash scripts/verify-kata-runtime.sh</code></pre>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">Expected Result</div>
+              <h2>What success looks like</h2>
+              <p>The latest Azure run produced the outputs summarized below.</p>
+            </div>
+          </div>
+          <div class="card-grid">
+            <article class="summary-card">
+              <div class="section-label">Prereq check</div>
+              <div class="verdict">All nodes expose /dev/kvm</div>
+              <p>The check script confirmed VT-x and <code>KVM_PRESENT</code> on all three VMs.</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/prereqs.txt"
+                >Open prereq evidence</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Node health</div>
+              <div class="verdict">3 nodes Ready</div>
+              <p>The cluster remained healthy after Kata was installed and CRI-O was restarted.</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/nodes-wide.txt"
+                >Open node status</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">RuntimeClass</div>
+              <div class="verdict">kata present</div>
+              <p>The cluster has a <code>RuntimeClass</code> named <code>kata</code> with handler <code>kata</code>.</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/runtimeclass-kata.yaml"
+                >Open RuntimeClass</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Probe pod</div>
+              <div class="verdict">kata-probe-ok</div>
+              <p>The verification pod completed and logged a guest kernel plus the final success marker.</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-evidence-logs.txt"
+                >Open probe log</a
+              >
+            </article>
+          </div>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">Output Snippets</div>
+              <h2>Short excerpts from the latest run</h2>
+              <p>These excerpts are the key signals to look for during a fresh verification.</p>
+            </div>
+          </div>
+          <pre><code>NAME       STATUS   ROLES           VERSION        CONTAINER-RUNTIME
+cp-0       Ready    control-plane   v1.34.1+k3s1   cri-o://1.34.9
+worker-1   Ready    &lt;none&gt;          v1.34.1+k3s1   cri-o://1.34.9
+worker-2   Ready    &lt;none&gt;          v1.34.1+k3s1   cri-o://1.34.9</code></pre>
+          <pre><code>apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+handler: kata
+metadata:
+  name: kata</code></pre>
+          <pre><code>Linux kata-evidence-1782370178 6.18.28 #1 SMP Mon May 18 17:38:40 UTC 2026 x86_64 Linux
+Linux version 6.18.28 (@9c2c3bbf4d6b) ...
+kata-probe-ok</code></pre>
+        </section>
+
+        <section class="page-section">
+          <div class="callout">
+            The verification currently proves the runtime path, not the full workload matrix. If you
+            need service mesh, filesystem, network, privilege, or agentic AI coverage, that is
+            additional work and should be documented separately after those scenarios are executed.
+          </div>
+        </section>
+      </main>
+      <footer class="site-footer">
+        <div class="site-footer-inner">
+          <div>Verification docs for the latest Azure Kata run.</div>
+          <div>Updated 2026-06-28</div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
