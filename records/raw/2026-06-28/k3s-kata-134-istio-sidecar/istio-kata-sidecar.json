@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "summary": "Istio sidecar injection worked with RuntimeClass kata",
+  "details": {
+    "stack": "k3s-kata-134",
+    "namespace": "istio-kata-smoke-1782659096",
+    "response": "kata-mesh-ok",
+    "serverContainers": "echo",
+    "clientContainers": "curl",
+    "serverInitContainers": "istio-init istio-proxy",
+    "clientInitContainers": "istio-init istio-proxy",
+    "serverPod": "echo-1782659096-7677bb4584-62k88",
+    "clientPod": "curl-1782659096-5858fcd455-r45w5",
+    "serverNode": "worker-1",
+    "clientNode": "worker-1",
+    "serverRuntimeClass": "kata",
+    "clientRuntimeClass": "kata"
+  }
+}

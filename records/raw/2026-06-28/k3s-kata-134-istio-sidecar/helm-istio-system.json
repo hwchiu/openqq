@@ -1,0 +1,1 @@
+[{"name":"istio-base","namespace":"istio-system","revision":"1","updated":"2026-06-28 15:04:17.188117441 +0000 UTC","status":"deployed","chart":"base-1.30.2","app_version":"1.30.2"},{"name":"istiod","namespace":"istio-system","revision":"1","updated":"2026-06-28 15:04:27.992873593 +0000 UTC","status":"deployed","chart":"istiod-1.30.2","app_version":"1.30.2"}]

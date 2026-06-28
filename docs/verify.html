@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-Hant">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="How to verify the Azure K3s 1.34 + CRI-O 1.34 + Kata Containers environment."
+      content="說明如何驗證 Azure 上 K3s 1.34、CRI-O 1.34 與 Kata Containers 環境。"
     />
-    <title>OpenQQ Kata on Azure | Verify</title>
+    <title>OpenQQ Kata on Azure | 驗證</title>
     <link rel="stylesheet" href="assets/site.css" />
   </head>
   <body>
@@ -16,33 +16,33 @@
         <div class="site-header-inner">
           <a class="brand" href="index.html">
             <span class="brand-kicker">Kata Containers</span>
-            <span class="brand-title">OpenQQ Azure Verification Docs</span>
+            <span class="brand-title">OpenQQ Azure Kata 驗證文件</span>
           </a>
           <nav class="site-nav" aria-label="Primary">
-            <a href="index.html">Overview</a>
-            <a href="install.html">Install</a>
-            <a class="active" href="verify.html">Verify</a>
-            <a href="tests.html">Tests</a>
-            <a href="evidence.html">Evidence</a>
+            <a href="index.html">總覽</a>
+            <a href="install.html">安裝</a>
+            <a class="active" href="verify.html">驗證</a>
+            <a href="tests.html">測試</a>
+            <a href="evidence.html">證據</a>
           </nav>
         </div>
       </header>
       <main class="page stack">
         <section class="page-hero">
-          <div class="eyebrow">Verify</div>
-          <h1>Verify that Kata is active</h1>
+          <div class="eyebrow">驗證</div>
+          <h1>如何確認 Kata 已經真的啟用</h1>
           <p>
-            Verification has two layers: host prerequisites and Kubernetes runtime behavior. Both
-            were run on the latest Azure environment.
+            這裡的驗證分成兩層：第一層是 host prerequisite，第二層是 Kubernetes 與節點側的 runtime
+            行為。兩層都需要，才能把「有設設定」和「真的跑在 Kata VM sandbox 裡」區分開來。
           </p>
         </section>
 
         <section class="page-section">
           <div class="section-header">
             <div>
-              <div class="section-label">Quick Commands</div>
-              <h2>Re-run the latest checks</h2>
-              <p>These commands match the scripts used during the latest verification run.</p>
+              <div class="section-label">快速指令</div>
+              <h2>如何重跑目前的驗證</h2>
+              <p>以下指令與 repo 中目前保存的驗證流程一致。</p>
             </div>
           </div>
           <pre><code>KUBECONFIG_PATH=generated/stacks/k3s-kata-134/kubeconfig \
@@ -53,56 +53,62 @@ kubectl --kubeconfig generated/stacks/k3s-kata-134/kubeconfig get nodes -o wide
 kubectl --kubeconfig generated/stacks/k3s-kata-134/kubeconfig get runtimeclass kata -o yaml
 
 KUBECONFIG_PATH=generated/stacks/k3s-kata-134/kubeconfig \
-bash scripts/verify-kata-runtime.sh</code></pre>
+bash scripts/verify-kata-runtime.sh
+
+PATH="$HOME/.local/bin:$PATH" \
+scripts/install-istio-stack.sh k3s-kata-134 generated/stacks/k3s-kata-134/kubeconfig
+
+KEEP_NAMESPACE=true \
+scripts/tests/istio-kata-sidecar.sh generated/stacks/k3s-kata-134/kubeconfig k3s-kata-134</code></pre>
         </section>
 
         <section class="page-section">
           <div class="section-header">
             <div>
-              <div class="section-label">Expected Result</div>
-              <h2>What success looks like</h2>
-              <p>The latest Azure run produced the outputs summarized below.</p>
+              <div class="section-label">基本成功條件</div>
+              <h2>最小 verify 應該看到什麼</h2>
+              <p>這是 2026-06-25 runtime verify 已經保存下來的基本成功訊號。</p>
             </div>
           </div>
           <div class="card-grid">
             <article class="summary-card">
               <div class="section-label">Prereq check</div>
-              <div class="verdict">All nodes expose /dev/kvm</div>
-              <p>The check script confirmed VT-x and <code>KVM_PRESENT</code> on all three VMs.</p>
+              <div class="verdict">所有節點都有 /dev/kvm</div>
+              <p>check script 已確認 3 台 VM 都支援 VT-x，並且節點上都存在 <code>KVM_PRESENT</code>。</p>
               <a
                 class="summary-link"
                 href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/prereqs.txt"
-                >Open prereq evidence</a
+                >查看 prereq 證據</a
               >
             </article>
             <article class="summary-card">
               <div class="section-label">Node health</div>
-              <div class="verdict">3 nodes Ready</div>
-              <p>The cluster remained healthy after Kata was installed and CRI-O was restarted.</p>
+              <div class="verdict">3 個節點 Ready</div>
+              <p>安裝 Kata 並重啟 CRI-O 後，叢集仍維持健康狀態。</p>
               <a
                 class="summary-link"
                 href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/nodes-wide.txt"
-                >Open node status</a
+                >查看節點狀態</a
               >
             </article>
             <article class="summary-card">
               <div class="section-label">RuntimeClass</div>
-              <div class="verdict">kata present</div>
-              <p>The cluster has a <code>RuntimeClass</code> named <code>kata</code> with handler <code>kata</code>.</p>
+              <div class="verdict">kata 已註冊</div>
+              <p>叢集內存在名為 <code>kata</code> 的 <code>RuntimeClass</code>，handler 也是 <code>kata</code>。</p>
               <a
                 class="summary-link"
                 href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/runtimeclass-kata.yaml"
-                >Open RuntimeClass</a
+                >查看 RuntimeClass</a
               >
             </article>
             <article class="summary-card">
               <div class="section-label">Probe pod</div>
               <div class="verdict">kata-probe-ok</div>
-              <p>The verification pod completed and logged a guest kernel plus the final success marker.</p>
+              <p>驗證 pod 完成執行，log 內含 guest kernel 與最終成功標記。</p>
               <a
                 class="summary-link"
                 href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-evidence-logs.txt"
-                >Open probe log</a
+                >查看 probe log</a
               >
             </article>
           </div>
@@ -111,50 +117,50 @@ bash scripts/verify-kata-runtime.sh</code></pre>
         <section class="page-section">
           <div class="section-header">
             <div>
-              <div class="section-label">Stronger Proof</div>
-              <h2>How to prove the pod was actually using Kata</h2>
-              <p>The 2026-06-28 live inspect adds node-side evidence, not just Kubernetes-side success.</p>
+              <div class="section-label">更強證明</div>
+              <h2>如何證明這個 pod 真的跑在 Kata 裡</h2>
+              <p>2026-06-28 的 live inspect 補上了節點側證據，不再只停留在 Kubernetes 層的成功。</p>
             </div>
           </div>
           <div class="card-grid">
             <article class="summary-card">
-              <div class="section-label">Requested runtime</div>
+              <div class="section-label">Pod spec</div>
               <div class="verdict">runtimeClassName: kata</div>
-              <p>The running proof pod explicitly requested the Kata runtime class in its pod spec.</p>
+              <p>live proof pod 的 spec 明確指定 <code>runtimeClassName: kata</code>。</p>
               <a
                 class="summary-link"
                 href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/pod.yaml"
-                >Open live pod YAML</a
+                >查看 pod YAML</a
               >
             </article>
             <article class="summary-card">
               <div class="section-label">Guest kernel</div>
-              <div class="verdict">Different from the Azure host</div>
-              <p>The pod saw guest kernel <code>6.18.28</code>, while the worker node kernel was <code>6.8.0-1059-azure</code>.</p>
+              <div class="verdict">與 Azure host kernel 不同</div>
+              <p>pod 內看到的是 guest kernel <code>6.18.28</code>，不是 worker node 的 <code>6.8.0-1059-azure</code>。</p>
               <a
                 class="summary-link"
                 href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/pod-logs.txt"
-                >Open live pod log</a
+                >查看 pod log</a
               >
             </article>
             <article class="summary-card">
               <div class="section-label">CRI-O sandbox</div>
               <div class="verdict">RuntimeHandler = kata</div>
-              <p>The worker node <code>crictl inspectp</code> output recorded <code>io.kubernetes.cri-o.RuntimeHandler</code> as <code>kata</code>.</p>
+              <p>worker node 上的 <code>crictl inspectp</code> 明確記錄 <code>io.kubernetes.cri-o.RuntimeHandler</code> 為 <code>kata</code>。</p>
               <a
                 class="summary-link"
                 href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/crictl-inspectp.json"
-                >Open inspectp output</a
+                >查看 inspectp 輸出</a
               >
             </article>
             <article class="summary-card">
               <div class="section-label">VM process chain</div>
               <div class="verdict">shim + qemu + virtiofsd</div>
-              <p>The worker node process list showed <code>containerd-shim-kata-v2</code>, <code>qemu-system-x86_64</code>, and <code>virtiofsd</code> for the same sandbox ID.</p>
+              <p>worker node 的 process list 出現同一個 sandbox ID 對應的 <code>containerd-shim-kata-v2</code>、<code>qemu-system-x86_64</code> 與 <code>virtiofsd</code>。</p>
               <a
                 class="summary-link"
                 href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/kata-processes.txt"
-                >Open process list</a
+                >查看 process list</a
               >
             </article>
           </div>
@@ -163,9 +169,61 @@ bash scripts/verify-kata-runtime.sh</code></pre>
         <section class="page-section">
           <div class="section-header">
             <div>
-              <div class="section-label">Output Snippets</div>
-              <h2>Short excerpts from the stored evidence</h2>
-              <p>These excerpts are the key signals to look for during a fresh verification.</p>
+              <div class="section-label">Istio 疊加</div>
+              <h2>sidecar 加上去之後，怎麼知道它還是 Kata</h2>
+              <p>這一段是 2026-06-28 另外補跑的 Istio smoke，證明 sidecar workload 不是偷偷掉回預設 runtime。</p>
+            </div>
+          </div>
+          <div class="card-grid">
+            <article class="summary-card">
+              <div class="section-label">Control plane</div>
+              <div class="verdict">istiod-1.30.2 Ready</div>
+              <p>Istio control plane 在同一個 Azure Kata 叢集上成功啟動。</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/istio-control-plane.json"
+                >查看 control plane 結果</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Kata + Mesh</div>
+              <div class="verdict">kata-mesh-ok</div>
+              <p>echo / curl pod 成功完成 sidecar injection，並在 mesh 內回應 <code>kata-mesh-ok</code>。</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/istio-kata-sidecar.json"
+                >查看 smoke 結果</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">雙 pod spec</div>
+              <div class="verdict">兩邊都還是 kata</div>
+              <p>server / client pod 的 spec 都保留 <code>runtimeClassName: kata</code>，也都帶有 <code>istio-init</code> 與 <code>istio-proxy</code>。</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/server-pod.yaml"
+                >查看 server pod</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">雙 sandbox inspect</div>
+              <div class="verdict">RuntimeHandler = kata</div>
+              <p>server / client 的 <code>crictl inspectp</code> 都同時看到 <code>sidecar.istio.io/status</code> 與 <code>io.kubernetes.cri-o.RuntimeHandler = "kata"</code>。</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/server-crictl-inspectp.json"
+                >查看 inspectp 證據</a
+              >
+            </article>
+          </div>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">證據片段</div>
+              <h2>幾個最關鍵的輸出片段</h2>
+              <p>如果要快速人工判讀，下面這幾段是最有辨識力的訊號。</p>
             </div>
           </div>
           <pre><code>NAME       STATUS   ROLES           VERSION        CONTAINER-RUNTIME
@@ -185,20 +243,25 @@ kata-probe-ok</code></pre>
           <pre><code>/opt/kata/bin/containerd-shim-kata-v2 ... -id 769dc7194af9076fd1d1c849decbb10afa4e222a664b74941043c33f047a6a6e
 /opt/kata/bin/qemu-system-x86_64 -name sandbox-769dc7194af9076fd1d1c849decbb10afa4e222a664b74941043c33f047a6a6e
 /opt/kata/libexec/virtiofsd ... /sandboxes/769dc7194af9076fd1d1c849decbb10afa4e222a664b74941043c33f047a6a6e/...</code></pre>
+          <pre><code>"summary": "Istio sidecar injection worked with RuntimeClass kata"
+"response": "kata-mesh-ok"
+"serverRuntimeClass": "kata"
+"clientRuntimeClass": "kata"</code></pre>
         </section>
 
         <section class="page-section">
           <div class="callout">
-            The verification currently proves the runtime path, not the full workload matrix. If you
-            need service mesh, filesystem, network, privilege, or agentic AI coverage, that is
-            additional work and should be documented separately after those scenarios are executed.
+            目前這份驗證已能證明 Kata runtime path、node-side proof chain，以及至少一條
+            Istio sidecar workload 也能維持 Kata sandbox；但這仍不代表完整 workload matrix
+            都已經跑過。如果你需要 filesystem、network、privilege 或 agentic AI 的 coverage，
+            還需要另外執行並記錄那些 scenario。
           </div>
         </section>
       </main>
       <footer class="site-footer">
         <div class="site-footer-inner">
-          <div>Verification docs for the latest Azure Kata run.</div>
-          <div>Updated 2026-06-28</div>
+          <div>這一頁描述的是目前已保存的 Azure Kata 驗證證據。</div>
+          <div>更新時間 2026-06-28</div>
         </div>
       </footer>
     </div>

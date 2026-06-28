@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-Hant">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Kata Containers on Azure with K3s 1.34 and CRI-O 1.34: install, verify, and executed tests."
+      content="Azure 上 K3s 1.34、CRI-O 1.34 與 Kata Containers 的安裝、驗證與已執行測試。"
     />
-    <title>OpenQQ Kata on Azure | Overview</title>
+    <title>OpenQQ Kata on Azure | 總覽</title>
     <link rel="stylesheet" href="assets/site.css" />
   </head>
   <body>
@@ -16,51 +16,51 @@
         <div class="site-header-inner">
           <a class="brand" href="index.html">
             <span class="brand-kicker">Kata Containers</span>
-            <span class="brand-title">OpenQQ Azure Verification Docs</span>
+            <span class="brand-title">OpenQQ Azure Kata 驗證文件</span>
           </a>
           <nav class="site-nav" aria-label="Primary">
-            <a class="active" href="index.html">Overview</a>
-            <a href="install.html">Install</a>
-            <a href="verify.html">Verify</a>
-            <a href="tests.html">Tests</a>
-            <a href="evidence.html">Evidence</a>
+            <a class="active" href="index.html">總覽</a>
+            <a href="install.html">安裝</a>
+            <a href="verify.html">驗證</a>
+            <a href="tests.html">測試</a>
+            <a href="evidence.html">證據</a>
           </nav>
         </div>
       </header>
       <main class="page stack">
         <section class="hero">
           <div>
-            <div class="eyebrow">Latest Kata Result</div>
-            <h1>K3s 1.34 + CRI-O 1.34 + Kata Containers on Azure</h1>
+            <div class="eyebrow">最新 Kata 結果</div>
+            <h1>Azure 上的 K3s 1.34 + CRI-O 1.34 + Kata Containers</h1>
             <p class="lede">
-              This doc set only describes the Kata Containers environment that was installed and
-              verified on Azure.
+              這份文件只描述已在 Azure 上完成安裝、runtime 驗證，以及 Istio 疊加 smoke 的 Kata
+              Containers 環境。
             </p>
             <p>
-              The scope is limited to installation, verification, and the tests that were actually
-              executed. It does not compare Kata against other runtimes or security stacks.
+              內容只聚焦在安裝方式、驗證方式，以及目前實際執行過的測試；不再討論其他 runtime
+              或 security stack 的比較。
             </p>
           </div>
           <div class="meta-grid">
             <div class="meta-card">
-              <span class="meta-label">Verified on</span>
+              <span class="meta-label">初次驗證</span>
               <span class="meta-value">2026-06-25</span>
             </div>
             <div class="meta-card">
-              <span class="meta-label">Live inspect</span>
+              <span class="meta-label">補強檢查</span>
               <span class="meta-value">2026-06-28</span>
             </div>
             <div class="meta-card">
-              <span class="meta-label">Cloud</span>
+              <span class="meta-label">雲端平台</span>
               <span class="meta-value">Azure</span>
             </div>
             <div class="meta-card">
-              <span class="meta-label">Runtime result</span>
-              <span class="meta-value">RuntimeClass kata verified</span>
+              <span class="meta-label">Runtime 結果</span>
+              <span class="meta-value">Kata runtime 與 Istio sidecar 已驗證</span>
             </div>
             <div class="meta-card">
-              <span class="meta-label">Nodes</span>
-              <span class="meta-value">3 Ready</span>
+              <span class="meta-label">節點狀態</span>
+              <span class="meta-value">3 個節點 Ready</span>
             </div>
           </div>
         </section>
@@ -68,35 +68,35 @@
         <section class="page-section">
           <div class="section-header">
             <div>
-              <div class="section-label">Reading Path</div>
-              <h2>What to read next</h2>
-              <p>Use the pages below in order if you want the shortest path from install to proof.</p>
+              <div class="section-label">閱讀路徑</div>
+              <h2>下一步該看哪裡</h2>
+              <p>如果你想用最短路徑理解這個環境，建議照下面順序閱讀。</p>
             </div>
           </div>
           <div class="card-grid">
             <article class="summary-card">
-              <div class="section-label">Step 1</div>
-              <div class="verdict">Install</div>
-              <p>The exact Azure stack, wrapper script, and manual sub-steps used for this Kata run.</p>
-              <a class="summary-link" href="install.html">Open install guide</a>
+              <div class="section-label">步驟 1</div>
+              <div class="verdict">安裝</div>
+              <p>說明這次 Kata 驗證使用的 Azure stack、wrapper script 與手動分段執行方式。</p>
+              <a class="summary-link" href="install.html">查看安裝文件</a>
             </article>
             <article class="summary-card">
-              <div class="section-label">Step 2</div>
-              <div class="verdict">Verify</div>
-              <p>The commands and expected outputs that prove Kata is active and running on the cluster.</p>
-              <a class="summary-link" href="verify.html">Open verification guide</a>
+              <div class="section-label">步驟 2</div>
+              <div class="verdict">驗證</div>
+              <p>說明如何確認 Kata 已啟用，以及如何證明 pod 真的是跑在 Kata VM sandbox 裡。</p>
+              <a class="summary-link" href="verify.html">查看驗證文件</a>
             </article>
             <article class="summary-card">
-              <div class="section-label">Step 3</div>
-              <div class="verdict">Tests</div>
-              <p>The executed test list, separated from everything that was not run.</p>
-              <a class="summary-link" href="tests.html">Open test status</a>
+              <div class="section-label">步驟 3</div>
+              <div class="verdict">測試</div>
+              <p>列出目前已執行與尚未執行的測試，避免把未跑的項目誤讀成已通過。</p>
+              <a class="summary-link" href="tests.html">查看測試狀態</a>
             </article>
             <article class="summary-card">
-              <div class="section-label">Step 4</div>
-              <div class="verdict">Evidence</div>
-              <p>Direct links to the raw artifacts captured from the latest Kata verification run.</p>
-              <a class="summary-link" href="evidence.html">Open raw evidence</a>
+              <div class="section-label">步驟 4</div>
+              <div class="verdict">證據</div>
+              <p>直接連到這次 Kata 驗證與補強檢查保存下來的 raw artifacts。</p>
+              <a class="summary-link" href="evidence.html">查看原始證據</a>
             </article>
           </div>
         </section>
@@ -104,31 +104,32 @@
         <section class="page-section">
           <div class="section-header">
             <div>
-              <div class="section-label">Environment</div>
-              <h2>Verified environment summary</h2>
-              <p>These values come from the latest live Azure verification artifacts.</p>
+              <div class="section-label">環境摘要</div>
+              <h2>已驗證環境資訊</h2>
+              <p>以下資訊來自這次 Azure live verification 保存下來的 artifacts。</p>
             </div>
           </div>
           <div class="card-grid">
             <article class="summary-card">
-              <div class="section-label">Cluster</div>
-              <div class="verdict">3 VMs on Standard_D4s_v3</div>
+              <div class="section-label">叢集</div>
+              <div class="verdict">3 台 Standard_D4s_v3 VM</div>
               <ul>
-                <li>Resource group: <code>rg-k3s-kata-134</code></li>
-                <li>Cluster name: <code>k3s-kata-134</code></li>
-                <li>Node names: <code>cp-0</code>, <code>worker-1</code>, <code>worker-2</code></li>
-                <li>OS image: <code>Ubuntu 22.04.5 LTS</code></li>
-                <li>Kernel: <code>6.8.0-1059-azure</code></li>
+                <li>Resource group：<code>rg-k3s-kata-134</code></li>
+                <li>Cluster 名稱：<code>k3s-kata-134</code></li>
+                <li>節點名稱：<code>cp-0</code>、<code>worker-1</code>、<code>worker-2</code></li>
+                <li>作業系統：<code>Ubuntu 22.04.5 LTS</code></li>
+                <li>Host kernel：<code>6.8.0-1059-azure</code></li>
               </ul>
             </article>
             <article class="summary-card">
-              <div class="section-label">Versions</div>
+              <div class="section-label">版本</div>
               <div class="verdict">K3s 1.34.1 + CRI-O 1.34.9</div>
               <ul>
-                <li>Kubernetes: <code>v1.34.1+k3s1</code></li>
-                <li>Container runtime: <code>cri-o://1.34.9</code></li>
-                <li>RuntimeClass: <code>kata</code></li>
-                <li>Probe result: <code>kata-probe-ok</code></li>
+                <li>Kubernetes：<code>v1.34.1+k3s1</code></li>
+                <li>Container runtime：<code>cri-o://1.34.9</code></li>
+                <li>RuntimeClass：<code>kata</code></li>
+                <li>Probe 結果：<code>kata-probe-ok</code></li>
+                <li>Mesh smoke：<code>istiod-1.30.2</code> + <code>kata-mesh-ok</code></li>
               </ul>
             </article>
           </div>
@@ -136,19 +137,18 @@
 
         <section class="page-section">
           <div class="callout">
-            The latest stored result proves a working Kata runtime path on Azure for this exact
-            platform pairing. The original runtime verify was captured on 2026-06-25, and an
-            additional node-side live inspect was captured on 2026-06-28 to prove the running pod
-            was backed by Kata shim and qemu processes. This site does not claim that service mesh,
-            filesystem guardrails, network guardrails, privilege scenarios, or agentic AI scenarios
-            have been executed.
+            目前保存的證據已能證明這條 Azure 平台配對上的 Kata runtime path 可用。2026-06-25
+            保存的是初次 runtime verify，2026-06-28 除了 node-side live inspect，也另外保存了
+            Kata-backed Istio sidecar smoke，用來證明 sidecar 疊加後的 pod 仍然對應到
+            RuntimeHandler=kata 與 Kata shim / qemu process。這份網站目前仍不表示 filesystem
+            guardrails、network guardrails、privilege scenarios 或 agentic AI scenarios 已經執行過。
           </div>
         </section>
       </main>
       <footer class="site-footer">
         <div class="site-footer-inner">
-          <div>OpenQQ now publishes a Kata-only reader path for this repository.</div>
-          <div>Updated 2026-06-28</div>
+          <div>OpenQQ 目前只發佈 Kata 專用的閱讀路徑。</div>
+          <div>更新時間 2026-06-28</div>
         </div>
       </footer>
     </div>

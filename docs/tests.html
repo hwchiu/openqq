@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-Hant">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Executed test list for the Azure K3s 1.34 + CRI-O 1.34 + Kata Containers environment."
+      content="列出 Azure 上 K3s 1.34、CRI-O 1.34 與 Kata Containers 環境中已執行的測試。"
     />
-    <title>OpenQQ Kata on Azure | Tests</title>
+    <title>OpenQQ Kata on Azure | 測試</title>
     <link rel="stylesheet" href="assets/site.css" />
   </head>
   <body>
@@ -16,132 +16,174 @@
         <div class="site-header-inner">
           <a class="brand" href="index.html">
             <span class="brand-kicker">Kata Containers</span>
-            <span class="brand-title">OpenQQ Azure Verification Docs</span>
+            <span class="brand-title">OpenQQ Azure Kata 驗證文件</span>
           </a>
           <nav class="site-nav" aria-label="Primary">
-            <a href="index.html">Overview</a>
-            <a href="install.html">Install</a>
-            <a href="verify.html">Verify</a>
-            <a class="active" href="tests.html">Tests</a>
-            <a href="evidence.html">Evidence</a>
+            <a href="index.html">總覽</a>
+            <a href="install.html">安裝</a>
+            <a href="verify.html">驗證</a>
+            <a class="active" href="tests.html">測試</a>
+            <a href="evidence.html">證據</a>
           </nav>
         </div>
       </header>
       <main class="page stack">
         <section class="page-hero">
-          <div class="eyebrow">Executed Tests</div>
-          <h1>What was actually tested</h1>
+          <div class="eyebrow">已執行測試</div>
+          <h1>目前到底測了哪些東西</h1>
           <p>
-            This page separates executed tests from everything that was not run. Nothing below should
-            be read as an implied pass outside the listed evidence.
+            這一頁只區分兩件事：哪些測試真的跑過，哪些還沒跑。任何沒有出現在「已通過」區塊內的項目，
+            都不應該被理解成已驗證成功。
           </p>
         </section>
 
         <section class="page-section">
           <div class="section-header">
             <div>
-              <div class="section-label">Passed</div>
-              <h2>Executed and passed</h2>
-              <p>These checks were run against the latest Azure Kata environment.</p>
+              <div class="section-label">已通過</div>
+              <h2>實際執行且通過</h2>
+              <p>以下檢查都已在目前的 Azure Kata 環境上實際執行過。</p>
             </div>
           </div>
           <div class="matrix-scroll">
             <table>
               <thead>
                 <tr>
-                  <th>Test</th>
-                  <th>Status</th>
-                  <th>What it proved</th>
-                  <th>Evidence</th>
+                  <th>測試項目</th>
+                  <th>狀態</th>
+                  <th>證明了什麼</th>
+                  <th>證據</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td><strong>Azure cluster bootstrap</strong></td>
-                  <td><span class="status status-pass">PASS</span></td>
-                  <td>Three VMs came up as a healthy K3s cluster on CRI-O.</td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>3 台 VM 已成功形成健康的 K3s + CRI-O 叢集。</td>
                   <td>
                     <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/nodes-wide.txt">nodes-wide.txt</a>
                   </td>
                 </tr>
                 <tr>
-                  <td><strong>Kubernetes version capture</strong></td>
-                  <td><span class="status status-pass">PASS</span></td>
-                  <td>The live cluster reported <code>v1.34.1+k3s1</code> and a working control plane.</td>
+                  <td><strong>Kubernetes 版本擷取</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>live cluster 版本為 <code>v1.34.1+k3s1</code>，且 control plane 正常。</td>
                   <td>
                     <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/versions.txt">versions.txt</a>
                   </td>
                 </tr>
                 <tr>
                   <td><strong>/dev/kvm prerequisite</strong></td>
-                  <td><span class="status status-pass">PASS</span></td>
-                  <td>All three VMs exposed hardware virtualization support required by Kata.</td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>3 個節點都具備 Kata 需要的硬體虛擬化支援。</td>
                   <td>
                     <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/prereqs.txt">prereqs.txt</a>
                   </td>
                 </tr>
                 <tr>
                   <td><strong>CRI-O Kata drop-ins</strong></td>
-                  <td><span class="status status-pass">PASS</span></td>
-                  <td>Each node had the storage and Kata runtime CRI-O drop-ins written.</td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>每個節點都已寫入 storage 與 Kata runtime 的 CRI-O drop-ins。</td>
                   <td>
                     <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/crio-kata-dropins.txt">crio-kata-dropins.txt</a>
                   </td>
                 </tr>
                 <tr>
-                  <td><strong>RuntimeClass registration</strong></td>
-                  <td><span class="status status-pass">PASS</span></td>
-                  <td>The cluster accepted a <code>RuntimeClass</code> named <code>kata</code>.</td>
+                  <td><strong>RuntimeClass 註冊</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>叢集內成功建立名為 <code>kata</code> 的 <code>RuntimeClass</code>。</td>
                   <td>
                     <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/runtimeclass-kata.yaml">runtimeclass-kata.yaml</a>
                   </td>
                 </tr>
                 <tr>
-                  <td><strong>Kata probe pod completion</strong></td>
-                  <td><span class="status status-pass">PASS</span></td>
-                  <td>A pod using <code>runtimeClassName: kata</code> completed successfully on a worker node.</td>
+                  <td><strong>Kata probe pod 完成</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>使用 <code>runtimeClassName: kata</code> 的 pod 已在 worker node 上成功完成執行。</td>
                   <td>
                     <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-evidence-pod.yaml">kata-evidence-pod.yaml</a>
                   </td>
                 </tr>
                 <tr>
                   <td><strong>Kata guest execution marker</strong></td>
-                  <td><span class="status status-pass">PASS</span></td>
-                  <td>The pod log ended with <code>kata-probe-ok</code> and showed a guest kernel.</td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>pod log 內含 <code>kata-probe-ok</code>，並出現 guest kernel 資訊。</td>
                   <td>
                     <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-evidence-logs.txt">kata-evidence-logs.txt</a>
                   </td>
                 </tr>
                 <tr>
-                  <td><strong>Live pod requested Kata runtime</strong></td>
-                  <td><span class="status status-pass">PASS</span></td>
-                  <td>The live inspect pod spec explicitly set <code>runtimeClassName: kata</code>.</td>
+                  <td><strong>Live proof pod 指定 Kata runtime</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>live inspect pod 的 spec 明確設定 <code>runtimeClassName: kata</code>。</td>
                   <td>
                     <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/pod.yaml">pod.yaml</a>
                   </td>
                 </tr>
                 <tr>
                   <td><strong>CRI-O sandbox runtime handler</strong></td>
-                  <td><span class="status status-pass">PASS</span></td>
-                  <td>The worker node <code>crictl inspectp</code> output recorded <code>RuntimeHandler=kata</code>.</td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>worker node 的 <code>crictl inspectp</code> 記錄了 <code>RuntimeHandler=kata</code>。</td>
                   <td>
                     <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/crictl-inspectp.json">crictl-inspectp.json</a>
                   </td>
                 </tr>
                 <tr>
                   <td><strong>Node-side Kata VM processes</strong></td>
-                  <td><span class="status status-pass">PASS</span></td>
-                  <td>The worker node launched <code>containerd-shim-kata-v2</code>, <code>qemu-system-x86_64</code>, and <code>virtiofsd</code> for the same sandbox.</td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>worker node 上可看到同一個 sandbox 對應的 <code>containerd-shim-kata-v2</code>、<code>qemu-system-x86_64</code> 與 <code>virtiofsd</code>。</td>
                   <td>
                     <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/kata-processes.txt">kata-processes.txt</a>
                   </td>
                 </tr>
                 <tr>
                   <td><strong>CRI-O journal sandbox start</strong></td>
-                  <td><span class="status status-pass">PASS</span></td>
-                  <td>The CRI-O journal showed the sandbox ID and container start sequence for the proof pod.</td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td><code>crio</code> journal 記錄了 proof pod 的 sandbox ID 與 container 啟動流程。</td>
                   <td>
                     <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/crio-journal.txt">crio-journal.txt</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Istio control plane Ready</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>同一個 Azure Kata 叢集上成功啟動 <code>istiod-1.30.2</code>。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/istio-control-plane.json">istio-control-plane.json</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Kata + Istio sidecar smoke</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>echo / curl workload 完成 sidecar injection，並在 mesh 內回應 <code>kata-mesh-ok</code>。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/istio-kata-sidecar.json">istio-kata-sidecar.json</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Kata + Istio pod spec 仍保留 runtimeClass</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>server / client pod 都同時具備 <code>runtimeClassName: kata</code> 與 <code>istio-init</code> / <code>istio-proxy</code>。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/server-pod.yaml">server-pod.yaml</a>,
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/client-pod.yaml">client-pod.yaml</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Kata + Istio sandbox runtime handler</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>server / client 的 <code>crictl inspectp</code> 都顯示 <code>RuntimeHandler=kata</code>。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/server-crictl-inspectp.json">server-crictl-inspectp.json</a>,
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/client-crictl-inspectp.json">client-crictl-inspectp.json</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Kata + Istio node-side VM processes</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>同一個 worker node 上可看到兩個 sidecar workload sandbox 對應的 <code>containerd-shim-kata-v2</code>、<code>qemu-system-x86_64</code> 與 <code>virtiofsd</code>。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/kata-processes.txt">kata-processes.txt</a>
                   </td>
                 </tr>
               </tbody>
@@ -152,9 +194,9 @@
         <section class="page-section">
           <div class="section-header">
             <div>
-              <div class="section-label">Pending</div>
-              <h2>Not tested yet</h2>
-              <p>These scenario families are not covered by the latest stored Kata run.</p>
+              <div class="section-label">尚未測試</div>
+              <h2>目前還沒跑的 scenario</h2>
+              <p>以下這些情境在目前保存的 Kata run 中都還沒有執行。</p>
             </div>
           </div>
           <div class="matrix-scroll">
@@ -162,35 +204,30 @@
               <thead>
                 <tr>
                   <th>Scenario</th>
-                  <th>Status</th>
-                  <th>Notes</th>
+                  <th>狀態</th>
+                  <th>備註</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>Service mesh scenarios</td>
-                  <td><span class="status status-not-tested">NOT TESTED</span></td>
-                  <td>Istio or other mesh interaction was not executed in this environment.</td>
-                </tr>
-                <tr>
                   <td>Filesystem guardrail scenarios</td>
-                  <td><span class="status status-not-tested">NOT TESTED</span></td>
-                  <td>No workspace or protected-path behavior test was run.</td>
+                  <td><span class="status status-not-tested">尚未測試</span></td>
+                  <td>目前沒有執行 workspace 或 protected path 行為驗證。</td>
                 </tr>
                 <tr>
                   <td>Network guardrail scenarios</td>
-                  <td><span class="status status-not-tested">NOT TESTED</span></td>
-                  <td>No allowed or blocked network policy test was run.</td>
+                  <td><span class="status status-not-tested">尚未測試</span></td>
+                  <td>目前沒有執行 allowed / blocked network policy 驗證。</td>
                 </tr>
                 <tr>
                   <td>Privilege surface scenarios</td>
-                  <td><span class="status status-not-tested">NOT TESTED</span></td>
-                  <td>No hostPath, secret, service account, or runtime socket test was run.</td>
+                  <td><span class="status status-not-tested">尚未測試</span></td>
+                  <td>目前沒有執行 hostPath、secret、service account 或 runtime socket 驗證。</td>
                 </tr>
                 <tr>
                   <td>Agentic AI scenarios</td>
-                  <td><span class="status status-not-tested">NOT TESTED</span></td>
-                  <td>No real agentic workload validation was executed yet.</td>
+                  <td><span class="status status-not-tested">尚未測試</span></td>
+                  <td>目前沒有執行真實 agentic workload 驗證。</td>
                 </tr>
               </tbody>
             </table>
@@ -199,8 +236,8 @@
       </main>
       <footer class="site-footer">
         <div class="site-footer-inner">
-          <div>The test list is intentionally limited to executed work.</div>
-          <div>Updated 2026-06-28</div>
+          <div>這份測試清單只反映實際已執行的工作。</div>
+          <div>更新時間 2026-06-28</div>
         </div>
       </footer>
     </div>

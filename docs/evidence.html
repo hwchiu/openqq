@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-Hant">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Raw evidence links for the Azure K3s 1.34 + CRI-O 1.34 + Kata Containers verification."
+      content="Azure 上 K3s 1.34、CRI-O 1.34 與 Kata Containers 驗證的 raw evidence 連結。"
     />
-    <title>OpenQQ Kata on Azure | Evidence</title>
+    <title>OpenQQ Kata on Azure | 證據</title>
     <link rel="stylesheet" href="assets/site.css" />
   </head>
   <body>
@@ -16,78 +16,76 @@
         <div class="site-header-inner">
           <a class="brand" href="index.html">
             <span class="brand-kicker">Kata Containers</span>
-            <span class="brand-title">OpenQQ Azure Verification Docs</span>
+            <span class="brand-title">OpenQQ Azure Kata 驗證文件</span>
           </a>
           <nav class="site-nav" aria-label="Primary">
-            <a href="index.html">Overview</a>
-            <a href="install.html">Install</a>
-            <a href="verify.html">Verify</a>
-            <a href="tests.html">Tests</a>
-            <a class="active" href="evidence.html">Evidence</a>
+            <a href="index.html">總覽</a>
+            <a href="install.html">安裝</a>
+            <a href="verify.html">驗證</a>
+            <a href="tests.html">測試</a>
+            <a class="active" href="evidence.html">證據</a>
           </nav>
         </div>
       </header>
       <main class="page stack">
         <section class="page-hero">
-          <div class="eyebrow">Evidence</div>
-          <h1>Raw artifacts from the latest Kata run</h1>
+          <div class="eyebrow">原始證據</div>
+          <h1>這次 Kata 驗證保存了哪些 artifacts</h1>
           <p>
-            The raw evidence for this environment is split into two stored snapshots:
-            <code>records/raw/2026-06-25/k3s-kata-134-runtime-verify/</code> for the original
-            runtime verify and <code>records/raw/2026-06-28/kata-proof-3-live-inspect/</code> for a
-            stronger live proof chain. Because GitHub Pages cannot serve those paths directly, the
-            links below open the corresponding GitHub files.
+            目前的 raw evidence 分成三批：`2026-06-25` 保存初次 runtime verify，`2026-06-28`
+            保存 node-side live inspect，另外同一天也保存了一次 `Istio + Kata` smoke。由於 GitHub Pages
+            不會直接提供 `records/raw` 路徑，所以以下連結會直接打到 GitHub blob。
           </p>
         </section>
 
         <section class="page-section">
           <div class="section-header">
             <div>
-              <div class="section-label">Artifact List</div>
-              <h2>Stored evidence files</h2>
-              <p>Each file captures one part of the install or verification story.</p>
+              <div class="section-label">2026-06-25 Runtime Verify</div>
+              <h2>初次 runtime verify 保存的檔案</h2>
+              <p>這一批證據主要證明叢集成功安裝 Kata，並且基本 verify pod 可完成執行。</p>
             </div>
           </div>
           <ul class="evidence-list">
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/versions.txt">versions.txt</a>
-              Kubernetes client and server versions plus <code>kubectl cluster-info</code>.
+              Kubernetes client/server 版本與 <code>kubectl cluster-info</code>。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/nodes-wide.txt">nodes-wide.txt</a>
-              Node readiness, OS image, kernel, and CRI-O runtime version.
+              節點 readiness、OS image、kernel 與 CRI-O runtime 版本。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/prereqs.txt">prereqs.txt</a>
-              The latest stored output of the Kata prerequisite check, including <code>/dev/kvm</code>.
+              Kata prerequisite check，包括 <code>/dev/kvm</code>。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/crio-kata-dropins.txt">crio-kata-dropins.txt</a>
-              The CRI-O storage and Kata runtime drop-ins captured from all nodes.
+              每個節點上的 CRI-O storage 與 Kata runtime drop-ins。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/runtimeclass-kata.yaml">runtimeclass-kata.yaml</a>
-              The applied <code>RuntimeClass</code> object.
+              已套用的 <code>RuntimeClass</code> 物件。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-verify-pod.yaml">kata-verify-pod.yaml</a>
-              The verification pod manifest used by the script.
+              verify script 使用的 pod manifest。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-evidence-pod.yaml">kata-evidence-pod.yaml</a>
-              The completed pod as captured from the cluster.
+              已完成的 pod 狀態與 spec。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-evidence-logs.txt">kata-evidence-logs.txt</a>
-              The pod log with guest kernel details and <code>kata-probe-ok</code>.
+              pod 內的 guest kernel 與 <code>kata-probe-ok</code>。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/pods-wide.txt">pods-wide.txt</a>
-              Pod placement details from the verification window.
+              驗證視窗內的 pod placement 資訊。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/events.txt">events.txt</a>
-              Kubernetes event stream captured during the verification window.
+              驗證期間的 Kubernetes event stream。
             </li>
           </ul>
         </section>
@@ -96,42 +94,50 @@
           <div class="section-header">
             <div>
               <div class="section-label">2026-06-28 Live Inspect</div>
-              <h2>Node-side proof that the pod was using Kata</h2>
-              <p>These artifacts were captured from a long-running live proof pod and the worker node that hosted it.</p>
+              <h2>證明 pod 真正在使用 Kata 的節點側證據</h2>
+              <p>這一批證據來自一個長時間存活的 proof pod，以及承載它的 worker node。</p>
             </div>
           </div>
           <ul class="evidence-list">
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/pod-wide.txt">pod-wide.txt</a>
-              Live pod placement showing <code>kata-proof-3</code> running on <code>worker-2</code>.
+              顯示 <code>kata-proof-3</code> 實際跑在 <code>worker-2</code>。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/pod.yaml">pod.yaml</a>
-              Live pod spec with <code>runtimeClassName: kata</code>.
+              live pod spec，內含 <code>runtimeClassName: kata</code>。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/pod-logs.txt">pod-logs.txt</a>
-              Guest-kernel output from inside the running Kata pod.
+              從 pod 內看到的 guest kernel 輸出。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/crictl-inspectp.json">crictl-inspectp.json</a>
-              CRI-O sandbox inspection showing <code>io.kubernetes.cri-o.RuntimeHandler = "kata"</code>.
+              sandbox inspect 證據，內含 <code>io.kubernetes.cri-o.RuntimeHandler = "kata"</code>。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/crictl-inspect.json">crictl-inspect.json</a>
-              CRI-O container inspection tied to the same sandbox ID.
+              container inspect 證據，可對應同一個 sandbox ID。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/kata-processes.txt">kata-processes.txt</a>
-              Worker-node process list showing <code>containerd-shim-kata-v2</code>, <code>qemu-system-x86_64</code>, and <code>virtiofsd</code>.
+              worker node 上的 <code>containerd-shim-kata-v2</code>、<code>qemu-system-x86_64</code> 與 <code>virtiofsd</code>。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/crio-journal.txt">crio-journal.txt</a>
-              CRI-O journal lines for sandbox creation and container start on the Kata proof pod.
+              <code>crio</code> journal 中 proof pod 的 sandbox 與 container 啟動記錄。
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/sandbox-id.txt">sandbox-id.txt</a>
-              The sandbox ID used to correlate Kubernetes, CRI-O, shim, and qemu evidence.
+              用來串起 Kubernetes、CRI-O、shim 與 qemu 證據的 sandbox ID。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/node-name.txt">node-name.txt</a>
+              這次 proof pod 落在哪個節點上。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/node-host.txt">node-host.txt</a>
+              承載 proof pod 的 worker node 對外 IP。
             </li>
           </ul>
         </section>
@@ -139,9 +145,73 @@
         <section class="page-section">
           <div class="section-header">
             <div>
-              <div class="section-label">Related Scripts</div>
-              <h2>Scripts that produced the evidence</h2>
-              <p>These repo files define the install and verify behavior behind the artifacts.</p>
+              <div class="section-label">2026-06-28 Istio + Kata</div>
+              <h2>Kata sidecar workload 的 mesh 驗證證據</h2>
+              <p>這一批證據證明 Istio sidecar 疊加到 workload 之後，pod 仍然維持 Kata runtime。</p>
+            </div>
+          </div>
+          <ul class="evidence-list">
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/istio-chart-version.txt">istio-chart-version.txt</a>
+              這次 live 安裝採用的 Istio chart 版本字串。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/istio-install.log">istio-install.log</a>
+              安裝 <code>istio-base</code> 與 <code>istiod</code> 時留下的完整 transcript。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/istio-control-plane.json">istio-control-plane.json</a>
+              <code>istiod</code> control plane Ready 結果。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/helm-istio-system.json">helm-istio-system.json</a>
+              Istio system namespace 內的 Helm release 狀態。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/istio-system-pods.txt">istio-system-pods.txt</a>
+              `istio-system` 內實際運行中的 pod。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/istio-kata-sidecar.json">istio-kata-sidecar.json</a>
+              smoke 測試結果，包含 namespace、server/client pod 名稱、node 與回應內容。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/pods-wide.txt">pods-wide.txt</a>
+              smoke namespace 內的 pod placement 與狀態。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/server-pod.yaml">server-pod.yaml</a>
+              echo pod 的完整 spec，內含 <code>runtimeClassName: kata</code> 與 <code>sidecar.istio.io/status</code>。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/client-pod.yaml">client-pod.yaml</a>
+              curl pod 的完整 spec，內含 <code>runtimeClassName: kata</code> 與 <code>sidecar.istio.io/status</code>。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/server-crictl-inspectp.json">server-crictl-inspectp.json</a>
+              server sandbox 的 CRI-O inspect 證據，內含 <code>RuntimeHandler = "kata"</code>。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/client-crictl-inspectp.json">client-crictl-inspectp.json</a>
+              client sandbox 的 CRI-O inspect 證據，內含 <code>RuntimeHandler = "kata"</code>。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/kata-processes.txt">kata-processes.txt</a>
+              worker node 上兩個 sandbox 對應的 <code>containerd-shim-kata-v2</code>、<code>qemu-system-x86_64</code> 與 <code>virtiofsd</code>。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/crio-journal.txt">crio-journal.txt</a>
+              `crio` journal 裡 server / client pod 的 sandbox 與 sidecar container 啟動紀錄。
+            </li>
+          </ul>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">相關腳本</div>
+              <h2>哪些腳本產生了這些證據</h2>
+              <p>以下 repo 檔案定義了目前保存的 install 與 verify 行為。</p>
             </div>
           </div>
           <ul>
@@ -157,13 +227,22 @@
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/verify-kata-runtime.sh">scripts/verify-kata-runtime.sh</a>
             </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/install-istio-stack.sh">scripts/install-istio-stack.sh</a>
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/tests/istio-sidecar-smoke.sh">scripts/tests/istio-sidecar-smoke.sh</a>
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/tests/istio-kata-sidecar.sh">scripts/tests/istio-kata-sidecar.sh</a>
+            </li>
           </ul>
         </section>
       </main>
       <footer class="site-footer">
         <div class="site-footer-inner">
-          <div>All evidence links point to the stored GitHub artifacts for the Kata run.</div>
-          <div>Updated 2026-06-28</div>
+          <div>所有證據連結都對應到 GitHub 上已保存的 raw artifacts。</div>
+          <div>更新時間 2026-06-28</div>
         </div>
       </footer>
     </div>

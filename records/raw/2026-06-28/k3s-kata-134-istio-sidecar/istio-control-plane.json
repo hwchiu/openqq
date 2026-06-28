@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "summary": "Istio control plane ready (istiod-1.30.2)",
+  "details": {
+    "chart": "istiod-1.30.2"
+  }
+}
