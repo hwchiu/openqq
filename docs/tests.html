@@ -112,6 +112,38 @@
                     <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/kata-evidence-logs.txt">kata-evidence-logs.txt</a>
                   </td>
                 </tr>
+                <tr>
+                  <td><strong>Live pod requested Kata runtime</strong></td>
+                  <td><span class="status status-pass">PASS</span></td>
+                  <td>The live inspect pod spec explicitly set <code>runtimeClassName: kata</code>.</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/pod.yaml">pod.yaml</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>CRI-O sandbox runtime handler</strong></td>
+                  <td><span class="status status-pass">PASS</span></td>
+                  <td>The worker node <code>crictl inspectp</code> output recorded <code>RuntimeHandler=kata</code>.</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/crictl-inspectp.json">crictl-inspectp.json</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Node-side Kata VM processes</strong></td>
+                  <td><span class="status status-pass">PASS</span></td>
+                  <td>The worker node launched <code>containerd-shim-kata-v2</code>, <code>qemu-system-x86_64</code>, and <code>virtiofsd</code> for the same sandbox.</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/kata-processes.txt">kata-processes.txt</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>CRI-O journal sandbox start</strong></td>
+                  <td><span class="status status-pass">PASS</span></td>
+                  <td>The CRI-O journal showed the sandbox ID and container start sequence for the proof pod.</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/crio-journal.txt">crio-journal.txt</a>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>

@@ -1,0 +1,2 @@
+NAME           READY   STATUS    RESTARTS   AGE   IP          NODE       NOMINATED NODE   READINESS GATES
+kata-proof-3   1/1     Running   0          4s    10.80.1.6   worker-2   <none>           <none>

@@ -1,0 +1,466 @@
+{
+  "info": {
+    "pid": 193396,
+    "privileged": false,
+    "runtimeSpec": {
+      "annotations": {
+        "io.container.manager": "cri-o",
+        "io.kubernetes.container.hash": "32ed5918",
+        "io.kubernetes.container.name": "probe",
+        "io.kubernetes.container.restartCount": "0",
+        "io.kubernetes.container.terminationMessagePath": "/dev/termination-log",
+        "io.kubernetes.container.terminationMessagePolicy": "File",
+        "io.kubernetes.cri-o.Annotations": "{\"io.kubernetes.container.hash\":\"32ed5918\",\"io.kubernetes.container.restartCount\":\"0\",\"io.kubernetes.container.terminationMessagePath\":\"/dev/termination-log\",\"io.kubernetes.container.terminationMessagePolicy\":\"File\",\"io.kubernetes.pod.terminationGracePeriod\":\"30\"}",
+        "io.kubernetes.cri-o.ContainerID": "fd815a0825702195ad252a44722b9ba54c8e9d04fde4f57385a672d13be1b42f",
+        "io.kubernetes.cri-o.ContainerType": "container",
+        "io.kubernetes.cri-o.Created": "2026-06-28T14:21:05.323711075Z",
+        "io.kubernetes.cri-o.IP.0": "10.80.1.6",
+        "io.kubernetes.cri-o.Image": "b66e0ce64844f5c6435b0c4bfd965558199ab0f53270846861c979cb1ac29365",
+        "io.kubernetes.cri-o.ImageName": "docker.io/library/alpine:3.22",
+        "io.kubernetes.cri-o.ImageRef": "b66e0ce64844f5c6435b0c4bfd965558199ab0f53270846861c979cb1ac29365",
+        "io.kubernetes.cri-o.Labels": "{\"io.kubernetes.container.name\":\"probe\",\"io.kubernetes.pod.name\":\"kata-proof-3\",\"io.kubernetes.pod.namespace\":\"default\",\"io.kubernetes.pod.uid\":\"07f49bd9-55eb-4b13-b91f-40958beaf452\"}",
+        "io.kubernetes.cri-o.LogPath": "/var/log/pods/default_kata-proof-3_07f49bd9-55eb-4b13-b91f-40958beaf452/probe/0.log",
+        "io.kubernetes.cri-o.Metadata": "{\"name\":\"probe\"}",
+        "io.kubernetes.cri-o.MountPoint": "/var/lib/containers/storage/overlay/fe9b59303df6fdfdb4bdbc8935bc3d6e42deed78c5d9e19184a66240c53e5672/merged",
+        "io.kubernetes.cri-o.Name": "k8s_probe_kata-proof-3_default_07f49bd9-55eb-4b13-b91f-40958beaf452_0",
+        "io.kubernetes.cri-o.PlatformRuntimePath": "",
+        "io.kubernetes.cri-o.ResolvPath": "/run/containers/storage/overlay-containers/769dc7194af9076fd1d1c849decbb10afa4e222a664b74941043c33f047a6a6e/userdata/resolv.conf",
+        "io.kubernetes.cri-o.SandboxID": "769dc7194af9076fd1d1c849decbb10afa4e222a664b74941043c33f047a6a6e",
+        "io.kubernetes.cri-o.SandboxName": "k8s_kata-proof-3_default_07f49bd9-55eb-4b13-b91f-40958beaf452_0",
+        "io.kubernetes.cri-o.SeccompProfilePath": "Unconfined",
+        "io.kubernetes.cri-o.Stdin": "false",
+        "io.kubernetes.cri-o.StdinOnce": "false",
+        "io.kubernetes.cri-o.TTY": "false",
+        "io.kubernetes.cri-o.Volumes": "[{\"container_path\":\"/etc/hosts\",\"host_path\":\"/var/lib/kubelet/pods/07f49bd9-55eb-4b13-b91f-40958beaf452/etc-hosts\",\"readonly\":false,\"recursive_read_only\":false,\"propagation\":0,\"selinux_relabel\":false},{\"container_path\":\"/dev/termination-log\",\"host_path\":\"/var/lib/kubelet/pods/07f49bd9-55eb-4b13-b91f-40958beaf452/containers/probe/e6eb664d\",\"readonly\":false,\"recursive_read_only\":false,\"propagation\":0,\"selinux_relabel\":false},{\"container_path\":\"/var/run/secrets/kubernetes.io/serviceaccount\",\"host_path\":\"/var/lib/kubelet/pods/07f49bd9-55eb-4b13-b91f-40958beaf452/volumes/kubernetes.io~projected/kube-api-access-p8tlh\",\"readonly\":true,\"recursive_read_only\":false,\"propagation\":0,\"selinux_relabel\":false}]",
+        "io.kubernetes.pod.name": "kata-proof-3",
+        "io.kubernetes.pod.namespace": "default",
+        "io.kubernetes.pod.terminationGracePeriod": "30",
+        "io.kubernetes.pod.uid": "07f49bd9-55eb-4b13-b91f-40958beaf452",
+        "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"annotations\":{},\"name\":\"kata-proof-3\",\"namespace\":\"default\"},\"spec\":{\"containers\":[{\"command\":[\"/bin/sh\",\"-lc\",\"uname -a; cat /proc/version; cat /sys/class/dmi/id/product_name 2\\u003e/dev/null || true; cat /sys/class/dmi/id/sys_vendor 2\\u003e/dev/null || true; sleep 600\"],\"image\":\"alpine:3.22\",\"name\":\"probe\"}],\"restartPolicy\":\"Never\",\"runtimeClassName\":\"kata\"}}\n",
+        "kubernetes.io/config.seen": "2026-06-28T14:21:02.720488210Z",
+        "kubernetes.io/config.source": "api",
+        "org.systemd.property.After": "['crio.service']",
+        "org.systemd.property.DefaultDependencies": "true",
+        "org.systemd.property.TimeoutStopUSec": "uint64 30000000"
+      },
+      "hostname": "kata-proof-3",
+      "linux": {
+        "cgroupsPath": "kubepods-besteffort-pod07f49bd9_55eb_4b13_b91f_40958beaf452.slice:crio:fd815a0825702195ad252a44722b9ba54c8e9d04fde4f57385a672d13be1b42f",
+        "maskedPaths": [
+          "/proc/acpi",
+          "/proc/asound",
+          "/proc/interrupts",
+          "/proc/kcore",
+          "/proc/keys",
+          "/proc/latency_stats",
+          "/proc/sched_debug",
+          "/proc/scsi",
+          "/proc/timer_list",
+          "/proc/timer_stats",
+          "/sys/devices/virtual/powercap",
+          "/sys/firmware",
+          "/sys/fs/selinux"
+        ],
+        "namespaces": [
+          {
+            "type": "pid"
+          },
+          {
+            "path": "/var/run/netns/18f2b28c-07b9-4a98-a60d-5a71eb6abd50",
+            "type": "network"
+          },
+          {
+            "path": "/var/run/ipcns/18f2b28c-07b9-4a98-a60d-5a71eb6abd50",
+            "type": "ipc"
+          },
+          {
+            "path": "/var/run/utsns/18f2b28c-07b9-4a98-a60d-5a71eb6abd50",
+            "type": "uts"
+          },
+          {
+            "type": "mount"
+          },
+          {
+            "type": "cgroup"
+          }
+        ],
+        "readonlyPaths": [
+          "/proc/bus",
+          "/proc/fs",
+          "/proc/irq",
+          "/proc/sys",
+          "/proc/sysrq-trigger"
+        ],
+        "resources": {
+          "cpu": {
+            "period": 100000,
+            "quota": 0,
+            "shares": 2
+          },
+          "devices": [
+            {
+              "access": "rwm",
+              "allow": false
+            }
+          ],
+          "hugepageLimits": [
+            {
+              "limit": 0,
+              "pageSize": "2MB"
+            },
+            {
+              "limit": 0,
+              "pageSize": "1GB"
+            }
+          ],
+          "pids": {
+            "limit": -1
+          },
+          "unified": {
+            "memory.oom.group": "1",
+            "memory.swap.max": "0"
+          }
+        }
+      },
+      "mounts": [
+        {
+          "destination": "/proc",
+          "options": [
+            "nosuid",
+            "noexec",
+            "nodev"
+          ],
+          "source": "proc",
+          "type": "proc"
+        },
+        {
+          "destination": "/dev",
+          "options": [
+            "nosuid",
+            "strictatime",
+            "mode=755",
+            "size=65536k"
+          ],
+          "source": "tmpfs",
+          "type": "tmpfs"
+        },
+        {
+          "destination": "/dev/pts",
+          "options": [
+            "nosuid",
+            "noexec",
+            "newinstance",
+            "ptmxmode=0666",
+            "mode=0620",
+            "gid=5"
+          ],
+          "source": "devpts",
+          "type": "devpts"
+        },
+        {
+          "destination": "/dev/mqueue",
+          "options": [
+            "nosuid",
+            "noexec",
+            "nodev"
+          ],
+          "source": "mqueue",
+          "type": "mqueue"
+        },
+        {
+          "destination": "/sys",
+          "options": [
+            "nosuid",
+            "noexec",
+            "nodev",
+            "ro"
+          ],
+          "source": "sysfs",
+          "type": "sysfs"
+        },
+        {
+          "destination": "/sys/fs/cgroup",
+          "options": [
+            "nosuid",
+            "noexec",
+            "nodev",
+            "relatime",
+            "ro"
+          ],
+          "source": "cgroup",
+          "type": "cgroup"
+        },
+        {
+          "destination": "/dev/shm",
+          "options": [
+            "rw",
+            "bind"
+          ],
+          "source": "/run/containers/storage/overlay-containers/769dc7194af9076fd1d1c849decbb10afa4e222a664b74941043c33f047a6a6e/userdata/shm",
+          "type": "bind"
+        },
+        {
+          "destination": "/etc/resolv.conf",
+          "options": [
+            "rw",
+            "bind",
+            "nodev",
+            "nosuid",
+            "noexec"
+          ],
+          "source": "/run/containers/storage/overlay-containers/769dc7194af9076fd1d1c849decbb10afa4e222a664b74941043c33f047a6a6e/userdata/resolv.conf",
+          "type": "bind"
+        },
+        {
+          "destination": "/etc/hostname",
+          "options": [
+            "rw",
+            "bind"
+          ],
+          "source": "/run/containers/storage/overlay-containers/769dc7194af9076fd1d1c849decbb10afa4e222a664b74941043c33f047a6a6e/userdata/hostname",
+          "type": "bind"
+        },
+        {
+          "destination": "/run/.containerenv",
+          "options": [
+            "rw",
+            "bind"
+          ],
+          "source": "/var/lib/containers/storage/overlay-containers/769dc7194af9076fd1d1c849decbb10afa4e222a664b74941043c33f047a6a6e/userdata/.containerenv",
+          "type": "bind"
+        },
+        {
+          "destination": "/etc/hosts",
+          "options": [
+            "rbind",
+            "rprivate",
+            "rw",
+            "bind"
+          ],
+          "source": "/var/lib/kubelet/pods/07f49bd9-55eb-4b13-b91f-40958beaf452/etc-hosts",
+          "type": "bind"
+        },
+        {
+          "destination": "/dev/termination-log",
+          "options": [
+            "rbind",
+            "rprivate",
+            "rw",
+            "bind"
+          ],
+          "source": "/var/lib/kubelet/pods/07f49bd9-55eb-4b13-b91f-40958beaf452/containers/probe/e6eb664d",
+          "type": "bind"
+        },
+        {
+          "destination": "/var/run/secrets/kubernetes.io/serviceaccount",
+          "options": [
+            "rbind",
+            "rprivate",
+            "ro",
+            "bind"
+          ],
+          "source": "/var/lib/kubelet/pods/07f49bd9-55eb-4b13-b91f-40958beaf452/volumes/kubernetes.io~projected/kube-api-access-p8tlh",
+          "type": "bind"
+        }
+      ],
+      "ociVersion": "1.2.1",
+      "process": {
+        "apparmorProfile": "crio-default",
+        "args": [
+          "/bin/sh",
+          "-lc",
+          "uname -a; cat /proc/version; cat /sys/class/dmi/id/product_name 2\u003e/dev/null || true; cat /sys/class/dmi/id/sys_vendor 2\u003e/dev/null || true; sleep 600"
+        ],
+        "capabilities": {
+          "bounding": [
+            "CAP_CHOWN",
+            "CAP_DAC_OVERRIDE",
+            "CAP_FSETID",
+            "CAP_FOWNER",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_KILL"
+          ],
+          "effective": [
+            "CAP_CHOWN",
+            "CAP_DAC_OVERRIDE",
+            "CAP_FSETID",
+            "CAP_FOWNER",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_KILL"
+          ],
+          "permitted": [
+            "CAP_CHOWN",
+            "CAP_DAC_OVERRIDE",
+            "CAP_FSETID",
+            "CAP_FOWNER",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_KILL"
+          ]
+        },
+        "cwd": "/",
+        "env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "TERM=xterm",
+          "HOSTNAME=kata-proof-3",
+          "KUBERNETES_PORT_443_TCP_ADDR=10.81.0.1",
+          "KUBERNETES_SERVICE_HOST=10.81.0.1",
+          "KUBERNETES_SERVICE_PORT=443",
+          "KUBERNETES_SERVICE_PORT_HTTPS=443",
+          "KUBERNETES_PORT=tcp://10.81.0.1:443",
+          "KUBERNETES_PORT_443_TCP=tcp://10.81.0.1:443",
+          "KUBERNETES_PORT_443_TCP_PROTO=tcp",
+          "KUBERNETES_PORT_443_TCP_PORT=443",
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ],
+        "oomScoreAdj": 1000,
+        "user": {
+          "additionalGids": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            6,
+            10,
+            11,
+            20,
+            26,
+            27
+          ],
+          "gid": 0,
+          "uid": 0
+        }
+      },
+      "root": {
+        "path": "/var/lib/containers/storage/overlay/fe9b59303df6fdfdb4bdbc8935bc3d6e42deed78c5d9e19184a66240c53e5672/merged"
+      }
+    },
+    "sandboxID": "769dc7194af9076fd1d1c849decbb10afa4e222a664b74941043c33f047a6a6e"
+  },
+  "status": {
+    "annotations": {
+      "io.kubernetes.container.hash": "32ed5918",
+      "io.kubernetes.container.restartCount": "0",
+      "io.kubernetes.container.terminationMessagePath": "/dev/termination-log",
+      "io.kubernetes.container.terminationMessagePolicy": "File",
+      "io.kubernetes.pod.terminationGracePeriod": "30"
+    },
+    "createdAt": "2026-06-28T14:21:05.323618174Z",
+    "exitCode": 0,
+    "finishedAt": "0001-01-01T00:00:00Z",
+    "id": "fd815a0825702195ad252a44722b9ba54c8e9d04fde4f57385a672d13be1b42f",
+    "image": {
+      "annotations": {},
+      "image": "docker.io/library/alpine:3.22",
+      "runtimeHandler": "",
+      "userSpecifiedImage": ""
+    },
+    "imageId": "b66e0ce64844f5c6435b0c4bfd965558199ab0f53270846861c979cb1ac29365",
+    "imageRef": "docker.io/library/alpine@sha256:14358309a308569c32bdc37e2e0e9694be33a9d99e68afb0f5ff33cc1f695dce",
+    "labels": {
+      "io.kubernetes.container.name": "probe",
+      "io.kubernetes.pod.name": "kata-proof-3",
+      "io.kubernetes.pod.namespace": "default",
+      "io.kubernetes.pod.uid": "07f49bd9-55eb-4b13-b91f-40958beaf452"
+    },
+    "logPath": "/var/log/pods/default_kata-proof-3_07f49bd9-55eb-4b13-b91f-40958beaf452/probe/0.log",
+    "message": "",
+    "metadata": {
+      "attempt": 0,
+      "name": "probe"
+    },
+    "mounts": [
+      {
+        "containerPath": "/etc/hosts",
+        "gidMappings": [],
+        "hostPath": "/var/lib/kubelet/pods/07f49bd9-55eb-4b13-b91f-40958beaf452/etc-hosts",
+        "imageSubPath": "",
+        "propagation": "PROPAGATION_PRIVATE",
+        "readonly": false,
+        "recursiveReadOnly": false,
+        "selinuxRelabel": false,
+        "uidMappings": []
+      },
+      {
+        "containerPath": "/dev/termination-log",
+        "gidMappings": [],
+        "hostPath": "/var/lib/kubelet/pods/07f49bd9-55eb-4b13-b91f-40958beaf452/containers/probe/e6eb664d",
+        "imageSubPath": "",
+        "propagation": "PROPAGATION_PRIVATE",
+        "readonly": false,
+        "recursiveReadOnly": false,
+        "selinuxRelabel": false,
+        "uidMappings": []
+      },
+      {
+        "containerPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+        "gidMappings": [],
+        "hostPath": "/var/lib/kubelet/pods/07f49bd9-55eb-4b13-b91f-40958beaf452/volumes/kubernetes.io~projected/kube-api-access-p8tlh",
+        "imageSubPath": "",
+        "propagation": "PROPAGATION_PRIVATE",
+        "readonly": true,
+        "recursiveReadOnly": false,
+        "selinuxRelabel": false,
+        "uidMappings": []
+      }
+    ],
+    "reason": "",
+    "resources": {
+      "linux": {
+        "cpuPeriod": "100000",
+        "cpuQuota": "0",
+        "cpuShares": "2",
+        "cpusetCpus": "",
+        "cpusetMems": "",
+        "hugepageLimits": [
+          {
+            "limit": "0",
+            "pageSize": "2MB"
+          },
+          {
+            "limit": "0",
+            "pageSize": "1GB"
+          }
+        ],
+        "memoryLimitInBytes": "0",
+        "memorySwapLimitInBytes": "0",
+        "oomScoreAdj": "1000",
+        "unified": {
+          "memory.oom.group": "1",
+          "memory.swap.max": "0"
+        }
+      }
+    },
+    "startedAt": "2026-06-28T14:21:05.439358738Z",
+    "state": "CONTAINER_RUNNING",
+    "stopSignal": "RUNTIME_DEFAULT",
+    "user": {
+      "linux": {
+        "gid": "0",
+        "supplementalGroups": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "6",
+          "10",
+          "11",
+          "20",
+          "26",
+          "27"
+        ],
+        "uid": "0"
+      }
+    }
+  }
+}

@@ -1,0 +1,2 @@
+Linux kata-proof-3 6.18.28 #1 SMP Mon May 18 17:38:40 UTC 2026 x86_64 Linux
+Linux version 6.18.28 (@9c2c3bbf4d6b) (gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0, GNU ld (GNU Binutils for Ubuntu) 2.38) #1 SMP Mon May 18 17:38:40 UTC 2026

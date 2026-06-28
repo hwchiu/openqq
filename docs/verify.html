@@ -111,8 +111,60 @@ bash scripts/verify-kata-runtime.sh</code></pre>
         <section class="page-section">
           <div class="section-header">
             <div>
+              <div class="section-label">Stronger Proof</div>
+              <h2>How to prove the pod was actually using Kata</h2>
+              <p>The 2026-06-28 live inspect adds node-side evidence, not just Kubernetes-side success.</p>
+            </div>
+          </div>
+          <div class="card-grid">
+            <article class="summary-card">
+              <div class="section-label">Requested runtime</div>
+              <div class="verdict">runtimeClassName: kata</div>
+              <p>The running proof pod explicitly requested the Kata runtime class in its pod spec.</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/pod.yaml"
+                >Open live pod YAML</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Guest kernel</div>
+              <div class="verdict">Different from the Azure host</div>
+              <p>The pod saw guest kernel <code>6.18.28</code>, while the worker node kernel was <code>6.8.0-1059-azure</code>.</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/pod-logs.txt"
+                >Open live pod log</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">CRI-O sandbox</div>
+              <div class="verdict">RuntimeHandler = kata</div>
+              <p>The worker node <code>crictl inspectp</code> output recorded <code>io.kubernetes.cri-o.RuntimeHandler</code> as <code>kata</code>.</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/crictl-inspectp.json"
+                >Open inspectp output</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">VM process chain</div>
+              <div class="verdict">shim + qemu + virtiofsd</div>
+              <p>The worker node process list showed <code>containerd-shim-kata-v2</code>, <code>qemu-system-x86_64</code>, and <code>virtiofsd</code> for the same sandbox ID.</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/kata-processes.txt"
+                >Open process list</a
+              >
+            </article>
+          </div>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
               <div class="section-label">Output Snippets</div>
-              <h2>Short excerpts from the latest run</h2>
+              <h2>Short excerpts from the stored evidence</h2>
               <p>These excerpts are the key signals to look for during a fresh verification.</p>
             </div>
           </div>
@@ -128,6 +180,11 @@ metadata:
           <pre><code>Linux kata-evidence-1782370178 6.18.28 #1 SMP Mon May 18 17:38:40 UTC 2026 x86_64 Linux
 Linux version 6.18.28 (@9c2c3bbf4d6b) ...
 kata-probe-ok</code></pre>
+          <pre><code>"io.kubernetes.cri-o.RuntimeHandler": "kata"
+"io.kubernetes.cri-o.SandboxID": "769dc7194af9076fd1d1c849decbb10afa4e222a664b74941043c33f047a6a6e"</code></pre>
+          <pre><code>/opt/kata/bin/containerd-shim-kata-v2 ... -id 769dc7194af9076fd1d1c849decbb10afa4e222a664b74941043c33f047a6a6e
+/opt/kata/bin/qemu-system-x86_64 -name sandbox-769dc7194af9076fd1d1c849decbb10afa4e222a664b74941043c33f047a6a6e
+/opt/kata/libexec/virtiofsd ... /sandboxes/769dc7194af9076fd1d1c849decbb10afa4e222a664b74941043c33f047a6a6e/...</code></pre>
         </section>
 
         <section class="page-section">

@@ -32,9 +32,11 @@
           <div class="eyebrow">Evidence</div>
           <h1>Raw artifacts from the latest Kata run</h1>
           <p>
-            The raw evidence for this environment lives under
-            <code>records/raw/2026-06-25/k3s-kata-134-runtime-verify/</code>. Because GitHub Pages
-            cannot serve that path directly, the links below open the corresponding GitHub files.
+            The raw evidence for this environment is split into two stored snapshots:
+            <code>records/raw/2026-06-25/k3s-kata-134-runtime-verify/</code> for the original
+            runtime verify and <code>records/raw/2026-06-28/kata-proof-3-live-inspect/</code> for a
+            stronger live proof chain. Because GitHub Pages cannot serve those paths directly, the
+            links below open the corresponding GitHub files.
           </p>
         </section>
 
@@ -86,6 +88,50 @@
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-25/k3s-kata-134-runtime-verify/events.txt">events.txt</a>
               Kubernetes event stream captured during the verification window.
+            </li>
+          </ul>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <div class="section-label">2026-06-28 Live Inspect</div>
+              <h2>Node-side proof that the pod was using Kata</h2>
+              <p>These artifacts were captured from a long-running live proof pod and the worker node that hosted it.</p>
+            </div>
+          </div>
+          <ul class="evidence-list">
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/pod-wide.txt">pod-wide.txt</a>
+              Live pod placement showing <code>kata-proof-3</code> running on <code>worker-2</code>.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/pod.yaml">pod.yaml</a>
+              Live pod spec with <code>runtimeClassName: kata</code>.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/pod-logs.txt">pod-logs.txt</a>
+              Guest-kernel output from inside the running Kata pod.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/crictl-inspectp.json">crictl-inspectp.json</a>
+              CRI-O sandbox inspection showing <code>io.kubernetes.cri-o.RuntimeHandler = "kata"</code>.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/crictl-inspect.json">crictl-inspect.json</a>
+              CRI-O container inspection tied to the same sandbox ID.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/kata-processes.txt">kata-processes.txt</a>
+              Worker-node process list showing <code>containerd-shim-kata-v2</code>, <code>qemu-system-x86_64</code>, and <code>virtiofsd</code>.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/crio-journal.txt">crio-journal.txt</a>
+              CRI-O journal lines for sandbox creation and container start on the Kata proof pod.
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/kata-proof-3-live-inspect/sandbox-id.txt">sandbox-id.txt</a>
+              The sandbox ID used to correlate Kubernetes, CRI-O, shim, and qemu evidence.
             </li>
           </ul>
         </section>

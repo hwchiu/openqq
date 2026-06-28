@@ -1,0 +1,140 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"name":"kata-proof-3","namespace":"default"},"spec":{"containers":[{"command":["/bin/sh","-lc","uname -a; cat /proc/version; cat /sys/class/dmi/id/product_name 2\u003e/dev/null || true; cat /sys/class/dmi/id/sys_vendor 2\u003e/dev/null || true; sleep 600"],"image":"alpine:3.22","name":"probe"}],"restartPolicy":"Never","runtimeClassName":"kata"}}
+  creationTimestamp: "2026-06-28T14:21:02Z"
+  generation: 1
+  name: kata-proof-3
+  namespace: default
+  resourceVersion: "177793"
+  uid: 07f49bd9-55eb-4b13-b91f-40958beaf452
+spec:
+  containers:
+  - command:
+    - /bin/sh
+    - -lc
+    - uname -a; cat /proc/version; cat /sys/class/dmi/id/product_name 2>/dev/null
+      || true; cat /sys/class/dmi/id/sys_vendor 2>/dev/null || true; sleep 600
+    image: alpine:3.22
+    imagePullPolicy: IfNotPresent
+    name: probe
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-p8tlh
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: worker-2
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Never
+  runtimeClassName: kata
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: kube-api-access-p8tlh
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-28T14:21:05Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-28T14:21:02Z"
+    observedGeneration: 1
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-28T14:21:05Z"
+    observedGeneration: 1
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-28T14:21:05Z"
+    observedGeneration: 1
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-28T14:21:02Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: cri-o://fd815a0825702195ad252a44722b9ba54c8e9d04fde4f57385a672d13be1b42f
+    image: docker.io/library/alpine:3.22
+    imageID: docker.io/library/alpine@sha256:14358309a308569c32bdc37e2e0e9694be33a9d99e68afb0f5ff33cc1f695dce
+    lastState: {}
+    name: probe
+    ready: true
+    resources: {}
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2026-06-28T14:21:05Z"
+    user:
+      linux:
+        gid: 0
+        supplementalGroups:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 6
+        - 10
+        - 11
+        - 20
+        - 26
+        - 27
+        uid: 0
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-p8tlh
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 10.180.0.4
+  hostIPs:
+  - ip: 10.180.0.4
+  observedGeneration: 1
+  phase: Running
+  podIP: 10.80.1.6
+  podIPs:
+  - ip: 10.80.1.6
+  qosClass: BestEffort
+  startTime: "2026-06-28T14:21:02Z"
