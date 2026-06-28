@@ -1,0 +1,4 @@
+NAME      READY   STATUS    RESTARTS   AGE   IP           NODE       NOMINATED NODE   READINESS GATES
+allowed   1/1     Running   0          31s   10.80.3.16   worker-1   <none>           <none>
+blocked   1/1     Running   0          31s   10.80.3.17   worker-1   <none>           <none>
+server    1/1     Running   0          32s   10.80.3.15   worker-1   <none>           <none>

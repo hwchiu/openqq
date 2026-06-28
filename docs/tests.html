@@ -186,6 +186,42 @@
                     <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-istio-sidecar/kata-processes.txt">kata-processes.txt</a>
                   </td>
                 </tr>
+                <tr>
+                  <td><strong>Kata + NetworkPolicy ingress smoke</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>baseline 時兩個 Kata client 都可連線；套用 ingress policy 後，只有標記 client 可通，未標記 client 被阻擋。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/networkpolicy-kata-ingress.json">networkpolicy-kata-ingress.json</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Kata + NetworkPolicy rule 定義</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td><code>allow-only-labeled</code> 只允許帶有 <code>access=allowed</code> label 的 pod ingress 到 server。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/networkpolicy.yaml">networkpolicy.yaml</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Kata + NetworkPolicy pod spec 保留 runtimeClass</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>server / allowed / blocked 三個 pod 都保留 <code>runtimeClassName: kata</code>。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/server-pod.yaml">server-pod.yaml</a>,
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/allowed-pod.yaml">allowed-pod.yaml</a>,
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/blocked-pod.yaml">blocked-pod.yaml</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Kata + NetworkPolicy sandbox runtime handler</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>server / allowed / blocked 三個 sandbox 的 <code>crictl inspectp</code> 都顯示 <code>RuntimeHandler=kata</code>。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/server-crictl-inspectp.json">server-crictl-inspectp.json</a>,
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/allowed-crictl-inspectp.json">allowed-crictl-inspectp.json</a>,
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/blocked-crictl-inspectp.json">blocked-crictl-inspectp.json</a>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -213,11 +249,6 @@
                   <td>Filesystem guardrail scenarios</td>
                   <td><span class="status status-not-tested">尚未測試</span></td>
                   <td>目前沒有執行 workspace 或 protected path 行為驗證。</td>
-                </tr>
-                <tr>
-                  <td>Network guardrail scenarios</td>
-                  <td><span class="status status-not-tested">尚未測試</span></td>
-                  <td>目前沒有執行 allowed / blocked network policy 驗證。</td>
                 </tr>
                 <tr>
                   <td>Privilege surface scenarios</td>

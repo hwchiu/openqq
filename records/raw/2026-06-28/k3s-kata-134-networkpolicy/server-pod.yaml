@@ -1,0 +1,132 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"labels":{"app":"server"},"name":"server","namespace":"np-kata-1782661004"},"spec":{"containers":[{"args":["-text=np-ok"],"image":"hashicorp/http-echo:1.0.0","name":"server","ports":[{"containerPort":5678}]}],"runtimeClassName":"kata"}}
+  creationTimestamp: "2026-06-28T15:36:46Z"
+  generation: 1
+  labels:
+    app: server
+  name: server
+  namespace: np-kata-1782661004
+  resourceVersion: "182451"
+  uid: be9e4953-8007-475a-9077-0bee1a9a6c7d
+spec:
+  containers:
+  - args:
+    - -text=np-ok
+    image: hashicorp/http-echo:1.0.0
+    imagePullPolicy: IfNotPresent
+    name: server
+    ports:
+    - containerPort: 5678
+      protocol: TCP
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-h5cx9
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: worker-1
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  runtimeClassName: kata
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: kube-api-access-h5cx9
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-28T15:36:50Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-28T15:36:46Z"
+    observedGeneration: 1
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-28T15:36:50Z"
+    observedGeneration: 1
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-28T15:36:50Z"
+    observedGeneration: 1
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-28T15:36:46Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: cri-o://4180faaacc07be9ad42156f18b1bc2b1c9e54ba63d6f63c92ccba7a937795e42
+    image: docker.io/hashicorp/http-echo:1.0.0
+    imageID: docker.io/hashicorp/http-echo@sha256:2c213d6c05a0f68adfe9c7fe1a78a314e5c4fee783e2ee8592d49f10d0c4513f
+    lastState: {}
+    name: server
+    ready: true
+    resources: {}
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2026-06-28T15:36:50Z"
+    user:
+      linux:
+        gid: 65532
+        supplementalGroups:
+        - 65532
+        uid: 65532
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-h5cx9
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 10.180.0.6
+  hostIPs:
+  - ip: 10.180.0.6
+  observedGeneration: 1
+  phase: Running
+  podIP: 10.80.3.15
+  podIPs:
+  - ip: 10.80.3.15
+  qosClass: BestEffort
+  startTime: "2026-06-28T15:36:46Z"

@@ -21,6 +21,7 @@
 - 初次 runtime verify：`2026-06-25`
 - 補強 node-side live inspect：`2026-06-28`
 - Kata + Istio sidecar smoke：`2026-06-28`
+- Kata + NetworkPolicy smoke：`2026-06-28`
 - 雲端平台：Azure
 - Resource group：`rg-k3s-kata-134`
 - Cluster 名稱：`k3s-kata-134`
@@ -32,6 +33,7 @@
 - Container runtime：`cri-o://1.34.9`
 - Kata 驗證結果：`RuntimeClass kata` 建立成功，probe pod 輸出 `kata-probe-ok`
 - Service mesh 驗證結果：`Istio control plane ready (istiod-1.30.2)`，Kata-backed echo / curl pod 回應 `kata-mesh-ok`
+- NetworkPolicy 驗證結果：baseline 時兩個 Kata client 都可連線，套用 ingress policy 後只有標記過的 client 可連，未標記 client 會被阻擋
 
 ## 安裝方式
 
@@ -107,6 +109,14 @@ bash scripts/verify-kata-runtime.sh
 - server / client pod 都帶有 `sidecar.istio.io/status`
 - node-side process list 同時出現兩個 Istio workload sandbox 對應的 `containerd-shim-kata-v2`、`qemu-system-x86_64` 與 `virtiofsd`
 
+同一天也另外保存了 `Kata + NetworkPolicy` 的 live 證據，用來證明標準 Kubernetes ingress policy 在 Kata pod 上有實際的 allow / block 效果：
+
+- baseline 階段 `allowed` 與 `blocked` 兩個 Kata client 都可以連到 server service，回應都是 `np-ok`
+- 套用 `allow-only-labeled` ingress `NetworkPolicy` 之後，帶有 `access=allowed` label 的 Kata client 仍可連線
+- 未帶 label 的 Kata client 會收到 `curl: (7) Failed to connect ...`
+- server / allowed / blocked 三個 pod 的 spec 都保留 `runtimeClassName: kata`
+- server / allowed / blocked 三個 sandbox 的 `crictl inspectp` 都記錄 `io.kubernetes.cri-o.RuntimeHandler = "kata"`
+
 ## Kata 環境中已執行的測試
 
 | 測試項目 | 狀態 | 證據 |
@@ -127,8 +137,11 @@ bash scripts/verify-kata-runtime.sh
 | Kata + Istio server / client pod 保留 `runtimeClassName: kata` | 通過 | [server-pod.yaml](records/raw/2026-06-28/k3s-kata-134-istio-sidecar/server-pod.yaml), [client-pod.yaml](records/raw/2026-06-28/k3s-kata-134-istio-sidecar/client-pod.yaml) |
 | Kata + Istio server / client sandbox 顯示 `RuntimeHandler=kata` | 通過 | [server-crictl-inspectp.json](records/raw/2026-06-28/k3s-kata-134-istio-sidecar/server-crictl-inspectp.json), [client-crictl-inspectp.json](records/raw/2026-06-28/k3s-kata-134-istio-sidecar/client-crictl-inspectp.json) |
 | Kata + Istio node-side shim / qemu / virtiofsd process chain | 通過 | [kata-processes.txt](records/raw/2026-06-28/k3s-kata-134-istio-sidecar/kata-processes.txt) |
+| Kata + NetworkPolicy ingress smoke | 通過 | [networkpolicy-kata-ingress.json](records/raw/2026-06-28/k3s-kata-134-networkpolicy/networkpolicy-kata-ingress.json) |
+| Kata + NetworkPolicy rule 定義 | 通過 | [networkpolicy.yaml](records/raw/2026-06-28/k3s-kata-134-networkpolicy/networkpolicy.yaml) |
+| Kata + NetworkPolicy server / client pod 保留 `runtimeClassName: kata` | 通過 | [server-pod.yaml](records/raw/2026-06-28/k3s-kata-134-networkpolicy/server-pod.yaml), [allowed-pod.yaml](records/raw/2026-06-28/k3s-kata-134-networkpolicy/allowed-pod.yaml), [blocked-pod.yaml](records/raw/2026-06-28/k3s-kata-134-networkpolicy/blocked-pod.yaml) |
+| Kata + NetworkPolicy server / client sandbox 顯示 `RuntimeHandler=kata` | 通過 | [server-crictl-inspectp.json](records/raw/2026-06-28/k3s-kata-134-networkpolicy/server-crictl-inspectp.json), [allowed-crictl-inspectp.json](records/raw/2026-06-28/k3s-kata-134-networkpolicy/allowed-crictl-inspectp.json), [blocked-crictl-inspectp.json](records/raw/2026-06-28/k3s-kata-134-networkpolicy/blocked-crictl-inspectp.json) |
 | Filesystem guardrail scenarios | 尚未測試 | 此環境未執行 |
-| Network guardrail scenarios | 尚未測試 | 此環境未執行 |
 | Privilege surface scenarios | 尚未測試 | 此環境未執行 |
 | Agentic AI scenarios | 尚未測試 | 此環境未執行 |
 
@@ -139,5 +152,6 @@ bash scripts/verify-kata-runtime.sh
 - `records/raw/2026-06-25/k3s-kata-134-runtime-verify/`
 - `records/raw/2026-06-28/kata-proof-3-live-inspect/`
 - `records/raw/2026-06-28/k3s-kata-134-istio-sidecar/`
+- `records/raw/2026-06-28/k3s-kata-134-networkpolicy/`
 
 GitHub Pages 現在只聚焦在 Kata 的安裝、驗證與已執行測試，不再包含跨 solution 的比較頁面。

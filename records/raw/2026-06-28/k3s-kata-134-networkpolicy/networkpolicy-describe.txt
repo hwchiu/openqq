@@ -1,0 +1,13 @@
+Name:         allow-only-labeled
+Namespace:    np-kata-1782661004
+Created on:   2026-06-28 15:36:56 +0000 UTC
+Labels:       <none>
+Annotations:  <none>
+Spec:
+  PodSelector:     app=server
+  Allowing ingress traffic:
+    To Port: <any> (traffic allowed to all ports)
+    From:
+      PodSelector: access=allowed
+  Not affecting egress traffic
+  Policy Types: Ingress

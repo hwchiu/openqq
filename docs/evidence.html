@@ -32,9 +32,9 @@
           <div class="eyebrow">原始證據</div>
           <h1>這次 Kata 驗證保存了哪些 artifacts</h1>
           <p>
-            目前的 raw evidence 分成三批：`2026-06-25` 保存初次 runtime verify，`2026-06-28`
-            保存 node-side live inspect，另外同一天也保存了一次 `Istio + Kata` smoke。由於 GitHub Pages
-            不會直接提供 `records/raw` 路徑，所以以下連結會直接打到 GitHub blob。
+            目前的 raw evidence 分成四批：`2026-06-25` 保存初次 runtime verify，`2026-06-28`
+            保存 node-side live inspect，另外同一天也保存了一次 `Istio + Kata` smoke 與一次
+            `NetworkPolicy + Kata` smoke。由於 GitHub Pages 不會直接提供 `records/raw` 路徑，所以以下連結會直接打到 GitHub blob。
           </p>
         </section>
 
@@ -209,6 +209,70 @@
         <section class="page-section">
           <div class="section-header">
             <div>
+              <div class="section-label">2026-06-28 NetworkPolicy + Kata</div>
+              <h2>Kata pod 的 Kubernetes ingress policy 驗證證據</h2>
+              <p>這一批證據證明標準 Kubernetes ingress `NetworkPolicy` 在 Kata workload 上有真實的 allow / block 效果。</p>
+            </div>
+          </div>
+          <ul class="evidence-list">
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/networkpolicy-kata-ingress.json">networkpolicy-kata-ingress.json</a>
+              smoke 測試結果，包含 baseline allow、policy 後 allow，以及 policy 後 blocked client 的 exit code 與 stderr。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/networkpolicy.yaml">networkpolicy.yaml</a>
+              實際套用的 ingress policy 定義。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/networkpolicy-describe.txt">networkpolicy-describe.txt</a>
+              `kubectl describe networkpolicy` 的人工判讀版本。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/pods-wide.txt">pods-wide.txt</a>
+              smoke namespace 內三個 Kata pod 的 placement 與狀態。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/server-pod.yaml">server-pod.yaml</a>
+              server pod 的 spec，內含 <code>runtimeClassName: kata</code>。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/allowed-pod.yaml">allowed-pod.yaml</a>
+              帶有 <code>access=allowed</code> label 的 client pod spec。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/blocked-pod.yaml">blocked-pod.yaml</a>
+              未帶 label 的 blocked client pod spec。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/server-svc.yaml">server-svc.yaml</a>
+              供 client 存取的 ClusterIP service。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/server-crictl-inspectp.json">server-crictl-inspectp.json</a>
+              server sandbox 的 CRI-O inspect 證據，內含 <code>RuntimeHandler = "kata"</code>。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/allowed-crictl-inspectp.json">allowed-crictl-inspectp.json</a>
+              allowed client sandbox 的 CRI-O inspect 證據。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/blocked-crictl-inspectp.json">blocked-crictl-inspectp.json</a>
+              blocked client sandbox 的 CRI-O inspect 證據。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/kata-processes.txt">kata-processes.txt</a>
+              worker node 上三個 sandbox 對應的 <code>containerd-shim-kata-v2</code>、<code>qemu-system-x86_64</code> 與 <code>virtiofsd</code>。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/crio-journal.txt">crio-journal.txt</a>
+              `crio` journal 裡三個 network policy probe pod 的 sandbox 與 container 啟動紀錄。
+            </li>
+          </ul>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
               <div class="section-label">相關腳本</div>
               <h2>哪些腳本產生了這些證據</h2>
               <p>以下 repo 檔案定義了目前保存的 install 與 verify 行為。</p>
@@ -235,6 +299,9 @@
             </li>
             <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/tests/istio-kata-sidecar.sh">scripts/tests/istio-kata-sidecar.sh</a>
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/tests/networkpolicy-kata-ingress.sh">scripts/tests/networkpolicy-kata-ingress.sh</a>
             </li>
           </ul>
         </section>

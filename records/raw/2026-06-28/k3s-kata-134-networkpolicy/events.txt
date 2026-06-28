@@ -1,0 +1,13 @@
+LAST SEEN   TYPE     REASON      OBJECT        MESSAGE
+35s         Normal   Scheduled   pod/allowed   Successfully assigned np-kata-1782661004/allowed to worker-1
+34s         Normal   Scheduled   pod/blocked   Successfully assigned np-kata-1782661004/blocked to worker-1
+36s         Normal   Scheduled   pod/server    Successfully assigned np-kata-1782661004/server to worker-1
+33s         Normal   Pulled      pod/server    Container image "hashicorp/http-echo:1.0.0" already present on machine
+32s         Normal   Pulled      pod/allowed   Container image "curlimages/curl:8.8.0" already present on machine
+32s         Normal   Created     pod/server    Created container: server
+32s         Normal   Started     pod/server    Started container server
+31s         Normal   Created     pod/allowed   Created container: curl
+31s         Normal   Started     pod/allowed   Started container curl
+31s         Normal   Pulled      pod/blocked   Container image "curlimages/curl:8.8.0" already present on machine
+31s         Normal   Created     pod/blocked   Created container: curl
+31s         Normal   Started     pod/blocked   Started container curl

@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "summary": "Kata ingress NetworkPolicy allowed labeled traffic and blocked unlabeled traffic",
+  "details": {
+    "stack": "k3s-kata-134",
+    "namespace": "np-kata-1782661004",
+    "baselineAllowed": "np-ok",
+    "baselineBlocked": "np-ok",
+    "allowedAfterPolicy": "np-ok",
+    "blockedExitCode": 7,
+    "blockedStdout": "",
+    "blockedStderr": "curl: (7) Failed to connect to server.np-kata-1782661004.svc.cluster.local port 80 after 14 ms: Couldn't connect to server\ncommand terminated with exit code 7",
+    "serverNode": "worker-1",
+    "allowedNode": "worker-1",
+    "blockedNode": "worker-1",
+    "serverRuntimeClass": "kata",
+    "allowedRuntimeClass": "kata",
+    "blockedRuntimeClass": "kata"
+  }
+}

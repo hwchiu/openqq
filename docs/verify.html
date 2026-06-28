@@ -59,7 +59,10 @@ PATH="$HOME/.local/bin:$PATH" \
 scripts/install-istio-stack.sh k3s-kata-134 generated/stacks/k3s-kata-134/kubeconfig
 
 KEEP_NAMESPACE=true \
-scripts/tests/istio-kata-sidecar.sh generated/stacks/k3s-kata-134/kubeconfig k3s-kata-134</code></pre>
+scripts/tests/istio-kata-sidecar.sh generated/stacks/k3s-kata-134/kubeconfig k3s-kata-134
+
+KEEP_NAMESPACE=true \
+scripts/tests/networkpolicy-kata-ingress.sh generated/stacks/k3s-kata-134/kubeconfig k3s-kata-134</code></pre>
         </section>
 
         <section class="page-section">
@@ -221,6 +224,58 @@ scripts/tests/istio-kata-sidecar.sh generated/stacks/k3s-kata-134/kubeconfig k3s
         <section class="page-section">
           <div class="section-header">
             <div>
+              <div class="section-label">NetworkPolicy</div>
+              <h2>標準 Kubernetes 網路政策有沒有真的擋到 Kata pod</h2>
+              <p>這一段是 2026-06-28 補跑的 ingress policy smoke，明確驗證 allowed 與 blocked 兩種行為。</p>
+            </div>
+          </div>
+          <div class="card-grid">
+            <article class="summary-card">
+              <div class="section-label">Baseline</div>
+              <div class="verdict">兩個 client 都可連線</div>
+              <p>在套 policy 前，兩個 Kata client 對 server service 的回應都為 <code>np-ok</code>。</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/networkpolicy-kata-ingress.json"
+                >查看 smoke 結果</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Ingress rule</div>
+              <div class="verdict">只允許標記 pod</div>
+              <p><code>allow-only-labeled</code> 只允許帶有 <code>access=allowed</code> label 的 pod 進入 server。</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/networkpolicy.yaml"
+                >查看 policy YAML</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Allowed path</div>
+              <div class="verdict">標記 client 仍可通</div>
+              <p>套用 policy 後，標記過的 Kata client 仍然拿到 <code>np-ok</code>。</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/allowed-pod.yaml"
+                >查看 allowed pod</a
+              >
+            </article>
+            <article class="summary-card">
+              <div class="section-label">Blocked path</div>
+              <div class="verdict">未標記 client 被擋下</div>
+              <p>未標記的 Kata client 收到 <code>curl: (7) Failed to connect</code>，代表 ingress 已被實際阻擋。</p>
+              <a
+                class="summary-link"
+                href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-networkpolicy/networkpolicy-describe.txt"
+                >查看 policy describe</a
+              >
+            </article>
+          </div>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
               <div class="section-label">證據片段</div>
               <h2>幾個最關鍵的輸出片段</h2>
               <p>如果要快速人工判讀，下面這幾段是最有辨識力的訊號。</p>
@@ -247,14 +302,20 @@ kata-probe-ok</code></pre>
 "response": "kata-mesh-ok"
 "serverRuntimeClass": "kata"
 "clientRuntimeClass": "kata"</code></pre>
+          <pre><code>"summary": "Kata ingress NetworkPolicy allowed labeled traffic and blocked unlabeled traffic"
+"baselineAllowed": "np-ok"
+"baselineBlocked": "np-ok"
+"allowedAfterPolicy": "np-ok"
+"blockedExitCode": 7</code></pre>
         </section>
 
         <section class="page-section">
           <div class="callout">
             目前這份驗證已能證明 Kata runtime path、node-side proof chain，以及至少一條
-            Istio sidecar workload 也能維持 Kata sandbox；但這仍不代表完整 workload matrix
-            都已經跑過。如果你需要 filesystem、network、privilege 或 agentic AI 的 coverage，
-            還需要另外執行並記錄那些 scenario。
+            Istio sidecar workload 也能維持 Kata sandbox，並且至少一條標準 Kubernetes
+            NetworkPolicy ingress 規則在 Kata pod 上有真實的 allow / block 效果；但這仍不代表完整
+            workload matrix 都已經跑過。如果你需要 filesystem、更多 network、privilege 或
+            agentic AI 的 coverage，還需要另外執行並記錄那些 scenario。
           </div>
         </section>
       </main>
