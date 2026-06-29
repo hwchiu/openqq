@@ -1,0 +1,39 @@
+{
+  "status": "pass",
+  "summary": "Azure Files SMB dynamic StorageClass provisioned successfully and mounted into Kata pods across two worker nodes",
+  "details": {
+    "stack": "k3s-kata-134",
+    "resourceGroup": "rg-k3s-kata-134",
+    "location": "eastus",
+    "driverVersion": "1.35.4",
+    "artifactDir": "/home/ubuntu/openqq/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb",
+    "storageType": "Azure Files SMB via file.csi.azure.com",
+    "storageAccount": "stkatasmb004258",
+    "storageSku": "Standard_LRS",
+    "storageKind": "StorageV2",
+    "dynamic": {
+      "namespace": "kata-fs-smb-1782693778",
+      "storageClass": "azurefile-csi-smb-1782693778",
+      "pvc": "pvc-kata-smb-1782693778",
+      "pv": "pvc-b1e0419e-f035-4909-9cfb-487e0746a745",
+      "pvcStatus": "Bound",
+      "pvcEvents": "Normal  ProvisioningSucceeded  7s               file.csi.azure.com_cp-0_1a1e097f-186d-44fd-8425-62bc8f3baba4  Successfully provisioned volume pvc-b1e0419e-f035-4909-9cfb-487e0746a745",
+      "pvcWaitRc": 0,
+      "podsWaitRc": 0,
+      "pvcWaitError": "",
+      "podsWaitError": ""
+    },
+    "kata": {
+      "writerNode": "worker-1",
+      "readerNode": "worker-2",
+      "writerHost": "172.178.65.172",
+      "readerHost": "20.127.20.0",
+      "writerRuntimeHandler": "kata",
+      "readerRuntimeHandler": "kata",
+      "guestMount": "none on /mnt/azurefile type virtiofs (rw,relatime)",
+      "hostMount": "//stkatasmb004258.file.core.windows.net/pvc-b1e0419e-f035-4909-9cfb-487e0746a745 on /var/lib/kubelet/plugins/kubernetes.io/csi/file.csi.azure.com/5adbd05968103882497d05d60b13ec5f4c25b81328650144f1859a4611703191/globalmount type cifs (rw,relatime,vers=3.1.1,cache=strict,upcall_target=app,username=stkatasmb004258,uid=0,forceuid,gid=0,forcegid,addr=20.209.226.38,file_mode=0777,dir_mode=0777,soft,persistenthandles,nounix,serverino,mapposix,nobrl,mfsymlinks,rsize=1048576,wsize=1048576,bsize=1048576,echo_interval=60,nosharesock,actimeo=30,closetimeo=1)",
+      "crossNodeSettleSeconds": 35,
+      "finalContentAfterDelay": "from-writer 2026-06-29T00:44:07+00:00 from-reader 2026-06-29T00:44:08+00:00"
+    }
+  }
+}

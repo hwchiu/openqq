@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Azure 上 K3s 1.34、CRI-O 1.34 與 Kata Containers 的安裝、驗證、Azure Files NFS CSI 測試與已執行項目。"
+      content="Azure 上 K3s 1.34、CRI-O 1.34 與 Kata Containers 的安裝、驗證、Azure Files SMB dynamic StorageClass 驗證與已執行項目。"
     />
     <title>OpenQQ Kata on Azure | 總覽</title>
     <link rel="stylesheet" href="assets/site.css" />
@@ -34,7 +34,7 @@
             <h1>Azure 上的 K3s 1.34 + CRI-O 1.34 + Kata Containers</h1>
             <p class="lede">
               這份文件只描述已在 Azure 上完成安裝、runtime 驗證、Istio 疊加 smoke、
-              NetworkPolicy allow / block smoke，以及 Azure Files NFS CSI filesystem mount 驗證的
+              NetworkPolicy allow / block smoke，以及 Azure Files SMB dynamic StorageClass 驗證的
               Kata Containers 環境。
             </p>
             <p>
@@ -49,7 +49,7 @@
             </div>
             <div class="meta-card">
               <span class="meta-label">補強檢查</span>
-              <span class="meta-value">2026-06-28</span>
+              <span class="meta-value">2026-06-29</span>
             </div>
             <div class="meta-card">
               <span class="meta-label">雲端平台</span>
@@ -57,7 +57,7 @@
             </div>
             <div class="meta-card">
               <span class="meta-label">Runtime 結果</span>
-              <span class="meta-value">Kata runtime、Istio、NetworkPolicy、NFS static CSI 已驗證</span>
+              <span class="meta-value">Kata runtime、Istio、NetworkPolicy、SMB dynamic CSI 已驗證</span>
             </div>
             <div class="meta-card">
               <span class="meta-label">節點狀態</span>
@@ -132,7 +132,7 @@
                 <li>Probe 結果：<code>kata-probe-ok</code></li>
                 <li>Mesh smoke：<code>istiod-1.30.2</code> + <code>kata-mesh-ok</code></li>
                 <li>NetworkPolicy：標記 client 可通，未標記 client 被阻擋</li>
-                <li>Filesystem / CSI：Azure Files NFS static 掛載通過，dynamic provisioning 失敗</li>
+                <li>Filesystem / CSI：Azure Files SMB dynamic StorageClass 通過；NFS static 通過、NFS dynamic 失敗</li>
               </ul>
             </article>
           </div>
@@ -141,11 +141,11 @@
         <section class="page-section">
           <div class="callout">
             目前保存的證據已能證明這條 Azure 平台配對上的 Kata runtime path 可用。2026-06-25
-            保存的是初次 runtime verify，2026-06-28 除了 node-side live inspect，也另外保存了
-            Kata-backed Istio sidecar smoke、Kata-backed NetworkPolicy smoke，以及一條
-            Azure Files NFS static CSI 成功路徑與一條 dynamic provisioning 失敗路徑，用來證明
-            Kata workload 可以透過 CSI 使用 NFS 類型 storage，但目前這個 K3s/CRI-O/Kata Azure
-            lab 內的 dynamic Azure File provisioning 仍不是穩定路徑。這份網站目前仍不表示
+            保存的是初次 runtime verify，2026-06-28 另外保存了 node-side live inspect、
+            Kata-backed Istio sidecar smoke 與 Kata-backed NetworkPolicy smoke；2026-06-29
+            再補上一條官方可重跑的 Azure Files SMB dynamic StorageClass 路徑，用來證明 Kata
+            workload 可以透過 CSI 正常取得可共享的 storage。同時也保留 2026-06-28 的
+            Azure Files NFS 補充實驗，其中 static 成功、dynamic provisioning 失敗。這份網站目前仍不表示
             filesystem guardrails、privilege scenarios 或 agentic AI scenarios 已經執行過。
           </div>
         </section>
@@ -153,7 +153,7 @@
       <footer class="site-footer">
         <div class="site-footer-inner">
           <div>OpenQQ 目前只發佈 Kata 專用的閱讀路徑。</div>
-          <div>更新時間 2026-06-28</div>
+          <div>更新時間 2026-06-29</div>
         </div>
       </footer>
     </div>

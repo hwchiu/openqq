@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"annotations":{},"name":"pvc-kata-smb-1782693778","namespace":"kata-fs-smb-1782693778"},"spec":{"accessModes":["ReadWriteMany"],"resources":{"requests":{"storage":"5Gi"}},"storageClassName":"azurefile-csi-smb-1782693778"}}
+    pv.kubernetes.io/bind-completed: "yes"
+    pv.kubernetes.io/bound-by-controller: "yes"
+    volume.beta.kubernetes.io/storage-provisioner: file.csi.azure.com
+    volume.kubernetes.io/storage-provisioner: file.csi.azure.com
+  creationTimestamp: "2026-06-29T00:43:44Z"
+  finalizers:
+  - kubernetes.io/pvc-protection
+  name: pvc-kata-smb-1782693778
+  namespace: kata-fs-smb-1782693778
+  resourceVersion: "244084"
+  uid: b1e0419e-f035-4909-9cfb-487e0746a745
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: azurefile-csi-smb-1782693778
+  volumeMode: Filesystem
+  volumeName: pvc-b1e0419e-f035-4909-9cfb-487e0746a745
+status:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 5Gi
+  phase: Bound

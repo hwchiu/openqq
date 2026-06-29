@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    pv.kubernetes.io/provisioned-by: file.csi.azure.com
+    volume.kubernetes.io/provisioner-deletion-secret-name: azure-secret
+    volume.kubernetes.io/provisioner-deletion-secret-namespace: kata-fs-smb-1782693778
+  creationTimestamp: "2026-06-29T00:43:44Z"
+  finalizers:
+  - external-provisioner.volume.kubernetes.io/finalizer
+  - kubernetes.io/pv-protection
+  name: pvc-b1e0419e-f035-4909-9cfb-487e0746a745
+  resourceVersion: "244082"
+  uid: 034c4712-27ed-4c74-b520-8c93975578ca
+spec:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 5Gi
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: pvc-kata-smb-1782693778
+    namespace: kata-fs-smb-1782693778
+    resourceVersion: "244076"
+    uid: b1e0419e-f035-4909-9cfb-487e0746a745
+  csi:
+    controllerExpandSecretRef:
+      name: azure-secret
+      namespace: kata-fs-smb-1782693778
+    driver: file.csi.azure.com
+    nodeStageSecretRef:
+      name: azure-secret
+      namespace: kata-fs-smb-1782693778
+    volumeAttributes:
+      csi.storage.k8s.io/pv/name: pvc-b1e0419e-f035-4909-9cfb-487e0746a745
+      csi.storage.k8s.io/pvc/name: pvc-kata-smb-1782693778
+      csi.storage.k8s.io/pvc/namespace: kata-fs-smb-1782693778
+      secretnamespace: kata-fs-smb-1782693778
+      storage.kubernetes.io/csiProvisionerIdentity: 1782666492728-9543-file.csi.azure.com
+    volumeHandle: '##pvc-b1e0419e-f035-4909-9cfb-487e0746a745###kata-fs-smb-1782693778'
+  mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=0
+  - gid=0
+  - mfsymlinks
+  - cache=strict
+  - nosharesock
+  - actimeo=30
+  - nobrl
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: azurefile-csi-smb-1782693778
+  volumeMode: Filesystem
+status:
+  lastPhaseTransitionTime: "2026-06-29T00:43:44Z"
+  phase: Bound

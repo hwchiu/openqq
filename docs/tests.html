@@ -227,7 +227,34 @@
                   <td><span class="status status-pass">已通過</span></td>
                   <td><code>Azure File CSI driver 1.35.4</code> 的 controller 與 node plugin 都在這個 K3s + CRI-O + Kata 叢集上成功 Ready。</td>
                   <td>
-                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/csi-driver-pods-final.txt">csi-driver-pods-final.txt</a>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/csi-driver-pods-final.txt">csi-driver-pods-final.txt</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Azure Files SMB dynamic StorageClass</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>dynamic <code>StorageClass -&gt; PVC -&gt; 兩個 Kata pod</code> 成功完成 provisioning、綁定與掛載。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/kata-azurefile-csi-smb.json">kata-azurefile-csi-smb.json</a>,
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/pods-wide.txt">pods-wide.txt</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Kata guest / host mount view 差異（SMB）</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>Kata guest 內看到的是 <code>virtiofs</code>，同一個 worker host 端看到的底層 volume 則是 <code>cifs</code>，可直接證明 CSI volume 是經由 Kata shared-fs 進 VM。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/writer-exec.txt">writer-exec.txt</a>,
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/worker-1-cifs-mounts.txt">worker-1-cifs-mounts.txt</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Azure Files SMB 跨節點共享檔案</strong></td>
+                  <td><span class="status status-pass">已通過</span></td>
+                  <td>reader pod 可以讀到 writer 寫入的檔案並 append 第二行；在這次 <code>actimeo=30</code> 的 mount option 下，writer 約 35 秒後可重新看到第二行。</td>
+                  <td>
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/reader-exec.txt">reader-exec.txt</a>,
+                    <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/final-proof-after-35s.txt">final-proof-after-35s.txt</a>
                   </td>
                 </tr>
                 <tr>
@@ -337,7 +364,7 @@
       <footer class="site-footer">
         <div class="site-footer-inner">
           <div>這份測試清單只反映實際已執行的工作。</div>
-          <div>更新時間 2026-06-28</div>
+          <div>更新時間 2026-06-29</div>
         </div>
       </footer>
     </div>

@@ -1,0 +1,4 @@
+storageclass.storage.k8s.io "azurefile-csi-smb-1782693778" deleted
+persistentvolumeclaim "pvc-kata-smb-1782693778" deleted from kata-fs-smb-1782693778 namespace
+pod "writer" deleted from kata-fs-smb-1782693778 namespace
+pod "reader" deleted from kata-fs-smb-1782693778 namespace

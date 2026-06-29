@@ -1,0 +1,146 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"name":"reader","namespace":"kata-fs-smb-1782693778"},"spec":{"containers":[{"command":["/bin/sh","-lc","sleep 365d"],"image":"alpine:3.22","name":"shell","volumeMounts":[{"mountPath":"/mnt/azurefile","name":"shared"}]}],"nodeName":"worker-2","restartPolicy":"Never","runtimeClassName":"kata","volumes":[{"name":"shared","persistentVolumeClaim":{"claimName":"pvc-kata-smb-1782693778"}}]}}
+  creationTimestamp: "2026-06-29T00:43:45Z"
+  generation: 1
+  name: reader
+  namespace: kata-fs-smb-1782693778
+  resourceVersion: "244105"
+  uid: 11af693f-fecf-42ae-b3c0-2c4fa5389e05
+spec:
+  containers:
+  - command:
+    - /bin/sh
+    - -lc
+    - sleep 365d
+    image: alpine:3.22
+    imagePullPolicy: IfNotPresent
+    name: shell
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /mnt/azurefile
+      name: shared
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-k2gcv
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: worker-2
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Never
+  runtimeClassName: kata
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: shared
+    persistentVolumeClaim:
+      claimName: pvc-kata-smb-1782693778
+  - name: kube-api-access-k2gcv
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-29T00:43:49Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-29T00:43:45Z"
+    observedGeneration: 1
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-29T00:43:49Z"
+    observedGeneration: 1
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-29T00:43:49Z"
+    observedGeneration: 1
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2026-06-29T00:43:45Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: cri-o://98b9354db34106cf5ddc09f3930bd8bf45c7cf921d203b09f9fbea9812050960
+    image: docker.io/library/alpine:3.22
+    imageID: docker.io/library/alpine@sha256:14358309a308569c32bdc37e2e0e9694be33a9d99e68afb0f5ff33cc1f695dce
+    lastState: {}
+    name: shell
+    ready: true
+    resources: {}
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2026-06-29T00:43:48Z"
+    user:
+      linux:
+        gid: 0
+        supplementalGroups:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 6
+        - 10
+        - 11
+        - 20
+        - 26
+        - 27
+        uid: 0
+    volumeMounts:
+    - mountPath: /mnt/azurefile
+      name: shared
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-k2gcv
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 10.180.0.4
+  hostIPs:
+  - ip: 10.180.0.4
+  observedGeneration: 1
+  phase: Running
+  podIP: 10.80.1.12
+  podIPs:
+  - ip: 10.80.1.12
+  qosClass: BestEffort
+  startTime: "2026-06-29T00:43:45Z"

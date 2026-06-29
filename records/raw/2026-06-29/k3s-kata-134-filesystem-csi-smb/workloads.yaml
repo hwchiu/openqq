@@ -1,0 +1,80 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: azurefile-csi-smb-1782693778
+provisioner: file.csi.azure.com
+allowVolumeExpansion: true
+parameters:
+  csi.storage.k8s.io/provisioner-secret-name: azure-secret
+  csi.storage.k8s.io/provisioner-secret-namespace: kata-fs-smb-1782693778
+  csi.storage.k8s.io/node-stage-secret-name: azure-secret
+  csi.storage.k8s.io/node-stage-secret-namespace: kata-fs-smb-1782693778
+  csi.storage.k8s.io/controller-expand-secret-name: azure-secret
+  csi.storage.k8s.io/controller-expand-secret-namespace: kata-fs-smb-1782693778
+mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=0
+  - gid=0
+  - mfsymlinks
+  - cache=strict
+  - nosharesock
+  - actimeo=30
+  - nobrl
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-kata-smb-1782693778
+  namespace: kata-fs-smb-1782693778
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: azurefile-csi-smb-1782693778
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: writer
+  namespace: kata-fs-smb-1782693778
+spec:
+  runtimeClassName: kata
+  nodeName: worker-1
+  restartPolicy: Never
+  containers:
+    - name: shell
+      image: alpine:3.22
+      command: ["/bin/sh", "-lc", "sleep 365d"]
+      volumeMounts:
+        - name: shared
+          mountPath: /mnt/azurefile
+  volumes:
+    - name: shared
+      persistentVolumeClaim:
+        claimName: pvc-kata-smb-1782693778
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: reader
+  namespace: kata-fs-smb-1782693778
+spec:
+  runtimeClassName: kata
+  nodeName: worker-2
+  restartPolicy: Never
+  containers:
+    - name: shell
+      image: alpine:3.22
+      command: ["/bin/sh", "-lc", "sleep 365d"]
+      volumeMounts:
+        - name: shared
+          mountPath: /mnt/azurefile
+  volumes:
+    - name: shared
+      persistentVolumeClaim:
+        claimName: pvc-kata-smb-1782693778

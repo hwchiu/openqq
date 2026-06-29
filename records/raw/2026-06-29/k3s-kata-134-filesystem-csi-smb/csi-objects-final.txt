@@ -1,0 +1,7 @@
+NAME                                          ATTACHREQUIRED   PODINFOONMOUNT   STORAGECAPACITY   TOKENREQUESTS                REQUIRESREPUBLISH   MODES                  AGE
+csidriver.storage.k8s.io/file.csi.azure.com   false            true             false             api://AzureADTokenExchange   true                Persistent,Ephemeral   8h
+
+NAME                              DRIVERS   AGE
+csinode.storage.k8s.io/cp-0       1         3d18h
+csinode.storage.k8s.io/worker-1   1         3d18h
+csinode.storage.k8s.io/worker-2   1         3d18h

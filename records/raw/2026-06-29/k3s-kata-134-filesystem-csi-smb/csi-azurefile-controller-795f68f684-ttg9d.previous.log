@@ -1,0 +1,134 @@
+I0628 17:08:13.627420       1 main.go:95] set up prometheus server on [::]:29614
+I0628 17:08:13.627511       1 main.go:70] Sys info: NumCPU: 4 MAXPROC: 2
+I0628 17:08:13.627732       1 azurefile.go:434]
+DRIVER INFORMATION:
+-------------------
+Build Date: "2026-06-26T14:17:12Z"
+Compiler: gc
+Driver Name: file.csi.azure.com
+Driver Version: v1.35.4
+Git Commit: ""
+Go Version: go1.26.4
+Platform: linux/amd64
+
+Streaming logs below:
+W0628 17:08:13.627741       1 azurefile.go:438] nodeid is empty
+I0628 17:08:13.627748       1 azurefile.go:442] driver userAgent: file.csi.azure.com/v1.35.4 OSS-helm
+I0628 17:08:13.628151       1 azure.go:87] set QPS(25.000000) and QPS Burst(50) for driver kubeClient
+I0628 17:08:13.628564       1 azure.go:103] reading cloud config from secret kube-system/azure-cloud-provider
+I0628 17:08:13.668400       1 azure.go:113] InitializeCloudFromSecret: failed to get cloud config from secret kube-system/azure-cloud-provider: secrets "azure-cloud-provider" not found
+I0628 17:08:13.668435       1 azure.go:124] could not read cloud config from secret kube-system/azure-cloud-provider
+I0628 17:08:13.668447       1 azure.go:135] use default AZURE_CREDENTIAL_FILE env var: /etc/kubernetes/azure.json
+I0628 17:08:13.668482       1 azure.go:141] InitializeCloudFromSecret: failed to get cloud config from file /etc/kubernetes/azure.json: open /etc/kubernetes/azure.json: no such file or directory
+I0628 17:08:13.668503       1 azure.go:147] no cloud config provided, error: open /etc/kubernetes/azure.json: no such file or directory, driver will run without cloud config
+I0628 17:08:13.668516       1 azurefile.go:450] cloud: , location: , rg: , VnetName: , VnetResourceGroup: , SubnetName:
+I0628 17:08:13.674748       1 mount_linux.go:327] 'umount /tmp/kubelet-detect-safe-umount3442391092' failed with: exit status 32, output: umount: /tmp/kubelet-detect-safe-umount3442391092: must be superuser to unmount.
+I0628 17:08:13.674779       1 mount_linux.go:329] Detected umount with unsafe 'not mounted' behavior
+I0628 17:08:13.675195       1 driver.go:93] Enabling controller service capability: CREATE_DELETE_VOLUME
+I0628 17:08:13.675213       1 driver.go:93] Enabling controller service capability: CREATE_DELETE_SNAPSHOT
+I0628 17:08:13.675219       1 driver.go:93] Enabling controller service capability: EXPAND_VOLUME
+I0628 17:08:13.675224       1 driver.go:93] Enabling controller service capability: SINGLE_NODE_MULTI_WRITER
+I0628 17:08:13.675229       1 driver.go:93] Enabling controller service capability: CLONE_VOLUME
+I0628 17:08:13.675234       1 driver.go:93] Enabling controller service capability: MODIFY_VOLUME
+I0628 17:08:13.675244       1 driver.go:112] Enabling volume access mode: SINGLE_NODE_WRITER
+I0628 17:08:13.675250       1 driver.go:112] Enabling volume access mode: SINGLE_NODE_READER_ONLY
+I0628 17:08:13.675255       1 driver.go:112] Enabling volume access mode: SINGLE_NODE_SINGLE_WRITER
+I0628 17:08:13.675260       1 driver.go:112] Enabling volume access mode: SINGLE_NODE_MULTI_WRITER
+I0628 17:08:13.675264       1 driver.go:112] Enabling volume access mode: MULTI_NODE_READER_ONLY
+I0628 17:08:13.675269       1 driver.go:112] Enabling volume access mode: MULTI_NODE_SINGLE_WRITER
+I0628 17:08:13.675273       1 driver.go:112] Enabling volume access mode: MULTI_NODE_MULTI_WRITER
+I0628 17:08:13.675282       1 driver.go:103] Enabling node service capability: STAGE_UNSTAGE_VOLUME
+I0628 17:08:13.675289       1 driver.go:103] Enabling node service capability: SINGLE_NODE_MULTI_WRITER
+I0628 17:08:13.675293       1 driver.go:103] Enabling node service capability: VOLUME_MOUNT_GROUP
+I0628 17:08:13.675299       1 driver.go:103] Enabling node service capability: GET_VOLUME_STATS
+I0628 17:08:14.274012       1 utils.go:105] GRPC call: /csi.v1.Identity/GetPluginInfo
+I0628 17:08:14.274042       1 utils.go:106] GRPC request: {}
+I0628 17:08:14.276258       1 utils.go:112] GRPC response: {"name":"file.csi.azure.com","vendor_version":"v1.35.4"}
+I0628 17:08:14.279382       1 utils.go:105] GRPC call: /csi.v1.Identity/GetPluginCapabilities
+I0628 17:08:14.279472       1 utils.go:106] GRPC request: {}
+I0628 17:08:14.279568       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Service":{"type":1}}}]}
+I0628 17:08:14.280438       1 utils.go:105] GRPC call: /csi.v1.Controller/ControllerGetCapabilities
+I0628 17:08:14.280459       1 utils.go:106] GRPC request: {}
+I0628 17:08:14.280573       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":5}}},{"Type":{"Rpc":{"type":9}}},{"Type":{"Rpc":{"type":13}}},{"Type":{"Rpc":{"type":7}}},{"Type":{"Rpc":{"type":14}}}]}
+I0628 17:08:14.383749       1 utils.go:105] GRPC call: /csi.v1.Identity/GetPluginInfo
+I0628 17:08:14.383802       1 utils.go:106] GRPC request: {}
+I0628 17:08:14.383855       1 utils.go:112] GRPC response: {"name":"file.csi.azure.com","vendor_version":"v1.35.4"}
+I0628 17:08:14.386085       1 utils.go:105] GRPC call: /csi.v1.Controller/ControllerGetCapabilities
+I0628 17:08:14.386123       1 utils.go:106] GRPC request: {}
+I0628 17:08:14.386171       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":5}}},{"Type":{"Rpc":{"type":9}}},{"Type":{"Rpc":{"type":13}}},{"Type":{"Rpc":{"type":7}}},{"Type":{"Rpc":{"type":14}}}]}
+I0628 17:08:14.465055       1 utils.go:105] GRPC call: /csi.v1.Identity/GetPluginInfo
+I0628 17:08:14.465079       1 utils.go:106] GRPC request: {}
+I0628 17:08:14.465119       1 utils.go:112] GRPC response: {"name":"file.csi.azure.com","vendor_version":"v1.35.4"}
+I0628 17:08:14.467448       1 utils.go:105] GRPC call: /csi.v1.Identity/GetPluginCapabilities
+I0628 17:08:14.467469       1 utils.go:106] GRPC request: {}
+I0628 17:08:14.467501       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Service":{"type":1}}}]}
+I0628 17:08:14.468149       1 utils.go:105] GRPC call: /csi.v1.Controller/ControllerGetCapabilities
+I0628 17:08:14.468168       1 utils.go:106] GRPC request: {}
+I0628 17:08:14.468196       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":5}}},{"Type":{"Rpc":{"type":9}}},{"Type":{"Rpc":{"type":13}}},{"Type":{"Rpc":{"type":7}}},{"Type":{"Rpc":{"type":14}}}]}
+I0628 17:08:14.468820       1 utils.go:105] GRPC call: /csi.v1.Controller/ControllerGetCapabilities
+I0628 17:08:14.468841       1 utils.go:106] GRPC request: {}
+I0628 17:08:14.468865       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":5}}},{"Type":{"Rpc":{"type":9}}},{"Type":{"Rpc":{"type":13}}},{"Type":{"Rpc":{"type":7}}},{"Type":{"Rpc":{"type":14}}}]}
+I0628 17:08:14.469310       1 utils.go:105] GRPC call: /csi.v1.Controller/ControllerGetCapabilities
+I0628 17:08:14.469328       1 utils.go:106] GRPC request: {}
+I0628 17:08:14.469354       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":5}}},{"Type":{"Rpc":{"type":9}}},{"Type":{"Rpc":{"type":13}}},{"Type":{"Rpc":{"type":7}}},{"Type":{"Rpc":{"type":14}}}]}
+I0628 17:08:14.513174       1 utils.go:105] GRPC call: /csi.v1.Identity/GetPluginInfo
+I0628 17:08:14.513205       1 utils.go:106] GRPC request: {}
+I0628 17:08:14.513244       1 utils.go:112] GRPC response: {"name":"file.csi.azure.com","vendor_version":"v1.35.4"}
+I0629 00:23:03.993872       1 utils.go:105] GRPC call: /csi.v1.Controller/CreateVolume
+I0629 00:23:03.993903       1 utils.go:106] GRPC request: {"capacity_range":{"required_bytes":5368709120},"name":"pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4","parameters":{"csi.storage.k8s.io/pv/name":"pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4","csi.storage.k8s.io/pvc/name":"pvc-smb-1782692557","csi.storage.k8s.io/pvc/namespace":"kata-fs-smb-1782692557"},"secrets":"***stripped***","volume_capabilities":[{"AccessType":{"Mount":{"mount_flags":["dir_mode=0777","file_mode=0777","uid=0","gid=0","mfsymlinks","cache=strict","nosharesock","actimeo=30","nobrl"]}},"access_mode":{"mode":5}}]}
+I0629 00:23:03.994311       1 azurefile.go:732] got storage account(stkatasmb002237) from secret
+I0629 00:23:04.057485       1 controllerserver.go:721] begin to create file share(pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4) on account() type() subID() rg() location() size(5) protocol(SMB)
+I0629 00:23:04.057521       1 azurefile.go:732] got storage account(stkatasmb002237) from secret
+I0629 00:23:04.082658       1 controllerserver.go:768] create file share pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4 on storage account  successfully
+I0629 00:23:04.082781       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.088387979 request="azurefile_csi_driver_controller_create_volume" success="true" source="file.csi.azure.com" volumeid="##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"
+I0629 00:23:04.082849       1 utils.go:112] GRPC response: {"volume":{"capacity_bytes":5368709120,"volume_context":{"csi.storage.k8s.io/pv/name":"pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4","csi.storage.k8s.io/pvc/name":"pvc-smb-1782692557","csi.storage.k8s.io/pvc/namespace":"kata-fs-smb-1782692557","secretnamespace":"kata-fs-smb-1782692557"},"volume_id":"##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"}}
+I0629 00:30:18.239176       1 utils.go:105] GRPC call: /csi.v1.Controller/CreateVolume
+I0629 00:30:18.239207       1 utils.go:106] GRPC request: {"capacity_range":{"required_bytes":5368709120},"name":"pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92","parameters":{"csi.storage.k8s.io/pv/name":"pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92","csi.storage.k8s.io/pvc/name":"pvc-kata-smb-1782692972","csi.storage.k8s.io/pvc/namespace":"kata-fs-smb-1782692972"},"secrets":"***stripped***","volume_capabilities":[{"AccessType":{"Mount":{"mount_flags":["dir_mode=0777","file_mode=0777","uid=0","gid=0","mfsymlinks","cache=strict","nosharesock","actimeo=30","nobrl"]}},"access_mode":{"mode":5}}]}
+I0629 00:30:18.239480       1 azurefile.go:732] got storage account(stkatasmb002932) from secret
+I0629 00:30:18.290858       1 controllerserver.go:721] begin to create file share(pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92) on account() type() subID() rg() location() size(5) protocol(SMB)
+I0629 00:30:18.290887       1 azurefile.go:732] got storage account(stkatasmb002932) from secret
+I0629 00:30:18.317589       1 controllerserver.go:768] create file share pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92 on storage account  successfully
+I0629 00:30:18.317649       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.078140532 request="azurefile_csi_driver_controller_create_volume" success="true" source="file.csi.azure.com" volumeid="##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"
+I0629 00:30:18.317673       1 utils.go:112] GRPC response: {"volume":{"capacity_bytes":5368709120,"volume_context":{"csi.storage.k8s.io/pv/name":"pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92","csi.storage.k8s.io/pvc/name":"pvc-kata-smb-1782692972","csi.storage.k8s.io/pvc/namespace":"kata-fs-smb-1782692972","secretnamespace":"kata-fs-smb-1782692972"},"volume_id":"##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"}}
+I0629 00:31:52.311308       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:31:52.311424       1 utils.go:106] GRPC request: {"secrets":"***stripped***","volume_id":"##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"}
+I0629 00:31:52.311673       1 azurefile.go:732] got storage account(stkatasmb002932) from secret
+I0629 00:31:52.348894       1 controllerserver.go:907] azure file(pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92) under subsID() rg() account() volume(##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972) is deleted successfully
+I0629 00:31:52.348929       1 azurefile.go:1350] remove tag(skip-matching) on account() subsID(), resourceGroup()
+I0629 00:31:52.349068       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.037358692 request="azurefile_csi_driver_controller_delete_volume" success="true" source="file.csi.azure.com" volumeid="##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"
+panic: runtime error: invalid memory address or nil pointer dereference
+[signal SIGSEGV: segmentation violation code=0x1 addr=0x0 pc=0x1e7670d]
+
+goroutine 4541 [running]:
+internal/sync.(*Mutex).Lock(...)
+	/usr/lib/golang/src/internal/sync/mutex.go:63
+sync.(*Mutex).Lock(...)
+	/usr/lib/golang/src/sync/mutex.go:46
+sigs.k8s.io/cloud-provider-azure/pkg/util/lockmap.(*LockMap).LockEntry(0x0, {0x2a344ae3af01, 0x0})
+	/build/top/BUILD/azurefile-csi-driver/vendor/sigs.k8s.io/cloud-provider-azure/pkg/util/lockmap/lockmap.go:36 +0x2d
+sigs.k8s.io/cloud-provider-azure/pkg/provider/storage.(*AccountRepo).RemoveStorageAccountTag(0x2a344ac7b208, {0x2c6f730, 0x2a344ac49b60}, {0x0, 0x0}, {0x0, 0x0}, {0x2a344ae3af01, 0x0}, {0x2adcfb0, ...})
+	/build/top/BUILD/azurefile-csi-driver/vendor/sigs.k8s.io/cloud-provider-azure/pkg/provider/storage/azure_storageaccount.go:908 +0x111
+sigs.k8s.io/azurefile-csi-driver/pkg/azurefile.(*Driver).RemoveStorageAccountTag(0x2a344add6608, {0x2c6f730, 0x2a344ac49b60}, {0x0, 0x0}, {0x0, 0x0}, {0x2a344ae3af01, 0x0}, {0x2adcfb0, ...})
+	/build/top/BUILD/azurefile-csi-driver/pkg/azurefile/azurefile.go:1352 +0x50d
+sigs.k8s.io/azurefile-csi-driver/pkg/azurefile.(*Driver).DeleteVolume(0x2a344add6608, {0x2c6f730, 0x2a344ac49b60}, 0x2a344add3140)
+	/build/top/BUILD/azurefile-csi-driver/pkg/azurefile/controllerserver.go:908 +0xce6
+github.com/container-storage-interface/spec/lib/go/csi._Controller_DeleteVolume_Handler.func1({0x2c6f730?, 0x2a344ac49b60?}, {0x2803560?, 0x2a344add3140?})
+	/build/top/BUILD/azurefile-csi-driver/vendor/github.com/container-storage-interface/spec/lib/go/csi/csi_grpc.pb.go:469 +0xcb
+sigs.k8s.io/azurefile-csi-driver/pkg/csi-common.LogGRPC({0x2c6f730, 0x2a344ac49b60}, {0x2803560, 0x2a344add3140}, 0x2a344b154e20, 0x2a344b15aa38)
+	/build/top/BUILD/azurefile-csi-driver/pkg/csi-common/utils.go:108 +0x3f2
+google.golang.org/grpc.getChainUnaryHandler.func1({0x2c6f730?, 0x2a344ac49b60?}, {0x2803560?, 0x2a344add3140?})
+	/build/top/BUILD/azurefile-csi-driver/vendor/google.golang.org/grpc/server.go:1242 +0x153
+sigs.k8s.io/azurefile-csi-driver/pkg/azurefile.(*Driver).Run.(*ServerMetrics).UnaryServerInterceptor.UnaryServerInterceptor.func3({0x2c6f730, 0x2a344ac49b60}, {0x2803560, 0x2a344add3140}, 0x2a344b154e20?, 0x2a344add3180)
+	/build/top/BUILD/azurefile-csi-driver/vendor/github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/server.go:22 +0x283
+google.golang.org/grpc.NewServer.chainUnaryServerInterceptors.chainUnaryInterceptors.func1({0x2c6f730, 0x2a344ac49b60}, {0x2803560, 0x2a344add3140}, 0x2a344b154e20, 0x78?)
+	/build/top/BUILD/azurefile-csi-driver/vendor/google.golang.org/grpc/server.go:1233 +0x7c
+github.com/container-storage-interface/spec/lib/go/csi._Controller_DeleteVolume_Handler({0x2aaeb00, 0x2a344add6608}, {0x2c6f730, 0x2a344ac49b60}, 0x2a344adf6e80, 0x2a344ab3d040)
+	/build/top/BUILD/azurefile-csi-driver/vendor/github.com/container-storage-interface/spec/lib/go/csi/csi_grpc.pb.go:471 +0x143
+google.golang.org/grpc.(*Server).processUnaryRPC(0x2a344ad7d8c8, {0x2c6f730, 0x2a344ac499b0}, 0x2a344ac93520, 0x2a344abaeae0, 0x4662d98, 0x0)
+	/build/top/BUILD/azurefile-csi-driver/vendor/google.golang.org/grpc/server.go:1429 +0x11dc
+google.golang.org/grpc.(*Server).handleStream(0x2a344ad7d8c8, {0x2c70858, 0x2a344ae5f380}, 0x2a344ac93520)
+	/build/top/BUILD/azurefile-csi-driver/vendor/google.golang.org/grpc/server.go:1855 +0xbc6
+google.golang.org/grpc.(*Server).serveStreams.func2.1()
+	/build/top/BUILD/azurefile-csi-driver/vendor/google.golang.org/grpc/server.go:1064 +0x7f
+created by google.golang.org/grpc.(*Server).serveStreams.func2 in goroutine 48
+	/build/top/BUILD/azurefile-csi-driver/vendor/google.golang.org/grpc/server.go:1075 +0x11d

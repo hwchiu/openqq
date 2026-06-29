@@ -1,0 +1,22 @@
+Name:          pvc-kata-smb-1782693778
+Namespace:     kata-fs-smb-1782693778
+StorageClass:  azurefile-csi-smb-1782693778
+Status:        Bound
+Volume:        pvc-b1e0419e-f035-4909-9cfb-487e0746a745
+Labels:        <none>
+Annotations:   pv.kubernetes.io/bind-completed: yes
+               pv.kubernetes.io/bound-by-controller: yes
+               volume.beta.kubernetes.io/storage-provisioner: file.csi.azure.com
+               volume.kubernetes.io/storage-provisioner: file.csi.azure.com
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      5Gi
+Access Modes:  RWX
+VolumeMode:    Filesystem
+Used By:       reader
+               writer
+Events:
+  Type    Reason                 Age              From                                                          Message
+  ----    ------                 ----             ----                                                          -------
+  Normal  ExternalProvisioning   7s (x2 over 7s)  persistentvolume-controller                                   Waiting for a volume to be created either by the external provisioner 'file.csi.azure.com' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.
+  Normal  Provisioning           7s               file.csi.azure.com_cp-0_1a1e097f-186d-44fd-8425-62bc8f3baba4  External provisioner is provisioning volume for claim "kata-fs-smb-1782693778/pvc-kata-smb-1782693778"
+  Normal  ProvisioningSucceeded  7s               file.csi.azure.com_cp-0_1a1e097f-186d-44fd-8425-62bc8f3baba4  Successfully provisioned volume pvc-b1e0419e-f035-4909-9cfb-487e0746a745

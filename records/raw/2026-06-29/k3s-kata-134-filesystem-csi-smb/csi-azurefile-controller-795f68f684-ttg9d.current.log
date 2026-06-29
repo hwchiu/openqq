@@ -1,0 +1,52 @@
+I0629 00:31:53.395435       1 main.go:95] set up prometheus server on [::]:29614
+I0629 00:31:53.395619       1 main.go:70] Sys info: NumCPU: 4 MAXPROC: 2
+I0629 00:31:53.395895       1 azurefile.go:434]
+DRIVER INFORMATION:
+-------------------
+Build Date: "2026-06-26T14:17:12Z"
+Compiler: gc
+Driver Name: file.csi.azure.com
+Driver Version: v1.35.4
+Git Commit: ""
+Go Version: go1.26.4
+Platform: linux/amd64
+
+Streaming logs below:
+W0629 00:31:53.395911       1 azurefile.go:438] nodeid is empty
+I0629 00:31:53.395924       1 azurefile.go:442] driver userAgent: file.csi.azure.com/v1.35.4 OSS-helm
+I0629 00:31:53.396642       1 azure.go:87] set QPS(25.000000) and QPS Burst(50) for driver kubeClient
+I0629 00:31:53.397972       1 azure.go:103] reading cloud config from secret kube-system/azure-cloud-provider
+I0629 00:31:53.437776       1 azure.go:113] InitializeCloudFromSecret: failed to get cloud config from secret kube-system/azure-cloud-provider: secrets "azure-cloud-provider" not found
+I0629 00:31:53.437806       1 azure.go:124] could not read cloud config from secret kube-system/azure-cloud-provider
+I0629 00:31:53.437817       1 azure.go:135] use default AZURE_CREDENTIAL_FILE env var: /etc/kubernetes/azure.json
+I0629 00:31:53.437848       1 azure.go:141] InitializeCloudFromSecret: failed to get cloud config from file /etc/kubernetes/azure.json: open /etc/kubernetes/azure.json: no such file or directory
+I0629 00:31:53.437863       1 azure.go:147] no cloud config provided, error: open /etc/kubernetes/azure.json: no such file or directory, driver will run without cloud config
+I0629 00:31:53.437872       1 azurefile.go:450] cloud: , location: , rg: , VnetName: , VnetResourceGroup: , SubnetName:
+I0629 00:31:53.444017       1 mount_linux.go:327] 'umount /tmp/kubelet-detect-safe-umount1018769366' failed with: exit status 32, output: umount: /tmp/kubelet-detect-safe-umount1018769366: must be superuser to unmount.
+I0629 00:31:53.444042       1 mount_linux.go:329] Detected umount with unsafe 'not mounted' behavior
+I0629 00:31:53.444450       1 driver.go:93] Enabling controller service capability: CREATE_DELETE_VOLUME
+I0629 00:31:53.444463       1 driver.go:93] Enabling controller service capability: CREATE_DELETE_SNAPSHOT
+I0629 00:31:53.444467       1 driver.go:93] Enabling controller service capability: EXPAND_VOLUME
+I0629 00:31:53.444470       1 driver.go:93] Enabling controller service capability: SINGLE_NODE_MULTI_WRITER
+I0629 00:31:53.444473       1 driver.go:93] Enabling controller service capability: CLONE_VOLUME
+I0629 00:31:53.444477       1 driver.go:93] Enabling controller service capability: MODIFY_VOLUME
+I0629 00:31:53.444484       1 driver.go:112] Enabling volume access mode: SINGLE_NODE_WRITER
+I0629 00:31:53.444488       1 driver.go:112] Enabling volume access mode: SINGLE_NODE_READER_ONLY
+I0629 00:31:53.444492       1 driver.go:112] Enabling volume access mode: SINGLE_NODE_SINGLE_WRITER
+I0629 00:31:53.444495       1 driver.go:112] Enabling volume access mode: SINGLE_NODE_MULTI_WRITER
+I0629 00:31:53.444497       1 driver.go:112] Enabling volume access mode: MULTI_NODE_READER_ONLY
+I0629 00:31:53.444500       1 driver.go:112] Enabling volume access mode: MULTI_NODE_SINGLE_WRITER
+I0629 00:31:53.444503       1 driver.go:112] Enabling volume access mode: MULTI_NODE_MULTI_WRITER
+I0629 00:31:53.444508       1 driver.go:103] Enabling node service capability: STAGE_UNSTAGE_VOLUME
+I0629 00:31:53.444516       1 driver.go:103] Enabling node service capability: SINGLE_NODE_MULTI_WRITER
+I0629 00:31:53.444520       1 driver.go:103] Enabling node service capability: VOLUME_MOUNT_GROUP
+I0629 00:31:53.444524       1 driver.go:103] Enabling node service capability: GET_VOLUME_STATS
+I0629 00:31:54.412793       1 utils.go:105] GRPC call: /csi.v1.Identity/GetPluginInfo
+I0629 00:31:54.412819       1 utils.go:106] GRPC request: {}
+I0629 00:31:54.414203       1 utils.go:112] GRPC response: {"name":"file.csi.azure.com","vendor_version":"v1.35.4"}
+I0629 00:31:54.416166       1 utils.go:105] GRPC call: /csi.v1.Identity/GetPluginCapabilities
+I0629 00:31:54.416186       1 utils.go:106] GRPC request: {}
+I0629 00:31:54.416254       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Service":{"type":1}}}]}
+I0629 00:31:54.416949       1 utils.go:105] GRPC call: /csi.v1.Controller/ControllerGetCapabilities
+I0629 00:31:54.416970       1 utils.go:106] GRPC request: {}
+I0629 00:31:54.417063       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":5}}},{"Type":{"Rpc":{"type":9}}},{"Type":{"Rpc":{"type":13}}},{"Type":{"Rpc":{"type":7}}},{"Type":{"Rpc":{"type":14}}}]}

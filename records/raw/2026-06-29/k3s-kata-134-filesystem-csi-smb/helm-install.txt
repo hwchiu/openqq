@@ -1,0 +1,14 @@
+Release "azurefile-csi-driver" has been upgraded. Happy Helming!
+NAME: azurefile-csi-driver
+LAST DEPLOYED: Mon Jun 29 00:43:03 2026
+NAMESPACE: kube-system
+STATUS: deployed
+REVISION: 4
+DESCRIPTION: Upgrade complete
+TEST SUITE: None
+NOTES:
+The Azure File CSI Driver is getting deployed to your cluster.
+
+To check Azure File CSI Driver pods status, please run:
+
+  kubectl --namespace=kube-system get pods --selector="app.kubernetes.io/instance=azurefile-csi-driver" --watch

@@ -1,0 +1,14 @@
+Linux reader 6.18.28 #1 SMP Mon May 18 17:38:40 UTC 2026 x86_64 Linux
+Linux version 6.18.28 (@9c2c3bbf4d6b) (gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0, GNU ld (GNU Binutils for Ubuntu) 2.38) #1 SMP Mon May 18 17:38:40 UTC 2026
+--- mount
+none on /mnt/azurefile type virtiofs (rw,relatime)
+--- proc-mounts
+none /mnt/azurefile virtiofs rw,relatime 0 0
+--- df
+Filesystem                Size      Used Available Use% Mounted on
+none                      5.0G     64.0K      5.0G   0% /mnt/azurefile
+--- content-before
+from-writer 2026-06-29T00:44:07+00:00
+--- content-after
+from-writer 2026-06-29T00:44:07+00:00
+from-reader 2026-06-29T00:44:08+00:00

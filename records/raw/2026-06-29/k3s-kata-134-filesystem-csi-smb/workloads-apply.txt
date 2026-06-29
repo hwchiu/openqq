@@ -1,0 +1,4 @@
+storageclass.storage.k8s.io/azurefile-csi-smb-1782693778 created
+persistentvolumeclaim/pvc-kata-smb-1782693778 created
+pod/writer created
+pod/reader created

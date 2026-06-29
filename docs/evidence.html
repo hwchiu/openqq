@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Azure 上 K3s 1.34、CRI-O 1.34 與 Kata Containers 驗證，以及 Azure Files NFS CSI 測試的 raw evidence 連結。"
+      content="Azure 上 K3s 1.34、CRI-O 1.34 與 Kata Containers 驗證，以及 Azure Files CSI 測試的 raw evidence 連結。"
     />
     <title>OpenQQ Kata on Azure | 證據</title>
     <link rel="stylesheet" href="assets/site.css" />
@@ -32,10 +32,11 @@
           <div class="eyebrow">原始證據</div>
           <h1>這次 Kata 驗證保存了哪些 artifacts</h1>
           <p>
-            目前的 raw evidence 分成四批：`2026-06-25` 保存初次 runtime verify，`2026-06-28`
-            保存 node-side live inspect，另外同一天也保存了一次 `Istio + Kata` smoke 與一次
-            `NetworkPolicy + Kata` smoke。這次又新增第五批 `Filesystem + Kata` 證據，用來保存
-            Azure Files NFS CSI 的 static 成功路徑與 dynamic 失敗路徑。由於 GitHub Pages
+            目前的 raw evidence 分成六批：`2026-06-25` 保存初次 runtime verify，`2026-06-28`
+            保存 node-side live inspect，另外同一天也保存了一次 `Istio + Kata` smoke、一次
+            `NetworkPolicy + Kata` smoke，以及一批 Azure Files NFS 補充實驗。`2026-06-29`
+            再新增一批官方可重跑的 `Filesystem + Kata` 證據，用來保存 Azure Files SMB dynamic
+            StorageClass 成功路徑。由於 GitHub Pages
             不會直接提供 `records/raw` 路徑，所以以下連結會直接打到 GitHub blob。
           </p>
         </section>
@@ -275,9 +276,89 @@
         <section class="page-section">
           <div class="section-header">
             <div>
+              <div class="section-label">2026-06-29 Filesystem + Kata</div>
+              <h2>Azure Files SMB dynamic StorageClass 的 Kata filesystem 證據</h2>
+              <p>這一批證據是目前官方可重跑的 StorageClass 成功路徑，完整保存 driver、dynamic provisioning、guest / host mount 與 cross-node RWX 結果。</p>
+            </div>
+          </div>
+          <ul class="evidence-list">
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/kata-azurefile-csi-smb.json">kata-azurefile-csi-smb.json</a>
+              這次 filesystem / CSI 測試的摘要，標記整條 dynamic StorageClass 路徑為 <code>pass</code>。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/storageclass.yaml">storageclass.yaml</a>
+              這次實際套用的 SMB dynamic <code>StorageClass</code> 定義。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/pvc.yaml">pvc.yaml</a>
+              dynamic PVC 定義與最終綁定結果。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/pv.yaml">pv.yaml</a>
+              CSI controller 自動建立的 PV 內容。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/pvc.describe.txt">pvc.describe.txt</a>
+              包含 <code>ProvisioningSucceeded</code> 與 <code>Bound</code> 的事件證據。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/pods-wide.txt">pods-wide.txt</a>
+              writer / reader 兩個 Kata pod 的 placement 與狀態。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/writer-exec.txt">writer-exec.txt</a>
+              writer pod 內的 <code>mount</code>、<code>/proc/mounts</code>、<code>df</code> 與第一次寫檔結果。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/reader-exec.txt">reader-exec.txt</a>
+              reader pod 內讀到 writer 檔案、append 第二行與再次讀取的結果。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/final-proof-after-35s.txt">final-proof-after-35s.txt</a>
+              writer 端在約 35 秒後重新看到 reader append 第二行的證據。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/writer-crictl-inspectp.json">writer-crictl-inspectp.json</a>
+              writer sandbox 的 CRI-O inspect，內含 <code>RuntimeHandler = "kata"</code>。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/reader-crictl-inspectp.json">reader-crictl-inspectp.json</a>
+              reader sandbox 的 CRI-O inspect，內含 <code>RuntimeHandler = "kata"</code>。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/writer-kata-processes.txt">writer-kata-processes.txt</a>
+              writer 所在 worker 上的 <code>containerd-shim-kata-v2</code>、<code>qemu-system-x86_64</code> 與 <code>virtiofsd</code> process chain。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/reader-kata-processes.txt">reader-kata-processes.txt</a>
+              reader 所在 worker 上的 Kata VM process chain。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/worker-1-cifs-mounts.txt">worker-1-cifs-mounts.txt</a>
+              worker-1 host 端實際的 <code>cifs</code> mount。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/worker-2-cifs-mounts.txt">worker-2-cifs-mounts.txt</a>
+              worker-2 host 端實際的 <code>cifs</code> mount。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/storage-shares.json">storage-shares.json</a>
+              這次暫時建立的 Azure Files storage account 內實際存在的 share 清單。
+            </li>
+            <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/secret-redacted.json">secret-redacted.json</a>
+              已遮罩金鑰的 secret metadata，證明這條路徑使用 secret-backed provisioning。
+            </li>
+          </ul>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
               <div class="section-label">2026-06-28 Filesystem + Kata</div>
-              <h2>Azure Files NFS CSI 的 Kata filesystem mount 證據</h2>
-              <p>這一批證據同時保存 static 成功路徑與 dynamic 失敗路徑，也額外補上 guest / host 雙邊的 mount 證據。</p>
+              <h2>Azure Files NFS 補充實驗的 Kata filesystem 證據</h2>
+              <p>這一批證據保存的是 NFS 類型 storage 的補充結果：static 成功，但 dynamic <code>StorageClass</code> 在這個 self-managed Azure lab 內失敗。</p>
             </div>
           </div>
           <ul class="evidence-list">
@@ -405,6 +486,9 @@
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/verify-azurefile-csi.sh">scripts/verify-azurefile-csi.sh</a>
             </li>
             <li>
+              <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/tests/kata-azurefile-csi-smb.sh">scripts/tests/kata-azurefile-csi-smb.sh</a>
+            </li>
+            <li>
               <a class="inline-link" href="https://github.com/hwchiu/openqq/blob/main/scripts/tests/kata-azurefile-csi-nfs.sh">scripts/tests/kata-azurefile-csi-nfs.sh</a>
             </li>
           </ul>
@@ -413,7 +497,7 @@
       <footer class="site-footer">
         <div class="site-footer-inner">
           <div>所有證據連結都對應到 GitHub 上已保存的 raw artifacts。</div>
-          <div>更新時間 2026-06-28</div>
+          <div>更新時間 2026-06-29</div>
         </div>
       </footer>
     </div>

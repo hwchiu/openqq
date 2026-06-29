@@ -1,0 +1,31 @@
+allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"allowVolumeExpansion":true,"apiVersion":"storage.k8s.io/v1","kind":"StorageClass","metadata":{"annotations":{},"name":"azurefile-csi-smb-1782693778"},"mountOptions":["dir_mode=0777","file_mode=0777","uid=0","gid=0","mfsymlinks","cache=strict","nosharesock","actimeo=30","nobrl"],"parameters":{"csi.storage.k8s.io/controller-expand-secret-name":"azure-secret","csi.storage.k8s.io/controller-expand-secret-namespace":"kata-fs-smb-1782693778","csi.storage.k8s.io/node-stage-secret-name":"azure-secret","csi.storage.k8s.io/node-stage-secret-namespace":"kata-fs-smb-1782693778","csi.storage.k8s.io/provisioner-secret-name":"azure-secret","csi.storage.k8s.io/provisioner-secret-namespace":"kata-fs-smb-1782693778"},"provisioner":"file.csi.azure.com","reclaimPolicy":"Delete","volumeBindingMode":"Immediate"}
+  creationTimestamp: "2026-06-29T00:43:44Z"
+  name: azurefile-csi-smb-1782693778
+  resourceVersion: "244074"
+  uid: 24bd6199-e546-4752-aafe-99a3371cd669
+mountOptions:
+- dir_mode=0777
+- file_mode=0777
+- uid=0
+- gid=0
+- mfsymlinks
+- cache=strict
+- nosharesock
+- actimeo=30
+- nobrl
+parameters:
+  csi.storage.k8s.io/controller-expand-secret-name: azure-secret
+  csi.storage.k8s.io/controller-expand-secret-namespace: kata-fs-smb-1782693778
+  csi.storage.k8s.io/node-stage-secret-name: azure-secret
+  csi.storage.k8s.io/node-stage-secret-namespace: kata-fs-smb-1782693778
+  csi.storage.k8s.io/provisioner-secret-name: azure-secret
+  csi.storage.k8s.io/provisioner-secret-namespace: kata-fs-smb-1782693778
+provisioner: file.csi.azure.com
+reclaimPolicy: Delete
+volumeBindingMode: Immediate

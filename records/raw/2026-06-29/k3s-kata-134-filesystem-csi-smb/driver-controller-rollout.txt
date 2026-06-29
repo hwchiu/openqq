@@ -1,0 +1,1 @@
+deployment "csi-azurefile-controller" successfully rolled out

@@ -1,0 +1,164 @@
+I0628 17:08:12.066743       1 main.go:95] set up prometheus server on [::]:29614
+I0628 17:08:12.066873       1 main.go:70] Sys info: NumCPU: 4 MAXPROC: 2
+I0628 17:08:12.067130       1 azurefile.go:434]
+DRIVER INFORMATION:
+-------------------
+Build Date: "2026-06-26T14:17:12Z"
+Compiler: gc
+Driver Name: file.csi.azure.com
+Driver Version: v1.35.4
+Git Commit: ""
+Go Version: go1.26.4
+Platform: linux/amd64
+
+Streaming logs below:
+W0628 17:08:12.067150       1 azurefile.go:438] nodeid is empty
+I0628 17:08:12.067161       1 azurefile.go:442] driver userAgent: file.csi.azure.com/v1.35.4 OSS-helm
+I0628 17:08:12.067649       1 azure.go:87] set QPS(25.000000) and QPS Burst(50) for driver kubeClient
+I0628 17:08:12.068056       1 azure.go:103] reading cloud config from secret kube-system/azure-cloud-provider
+I0628 17:08:12.105847       1 azure.go:113] InitializeCloudFromSecret: failed to get cloud config from secret kube-system/azure-cloud-provider: secrets "azure-cloud-provider" not found
+I0628 17:08:12.105935       1 azure.go:124] could not read cloud config from secret kube-system/azure-cloud-provider
+I0628 17:08:12.105948       1 azure.go:135] use default AZURE_CREDENTIAL_FILE env var: /etc/kubernetes/azure.json
+I0628 17:08:12.105978       1 azure.go:141] InitializeCloudFromSecret: failed to get cloud config from file /etc/kubernetes/azure.json: open /etc/kubernetes/azure.json: no such file or directory
+I0628 17:08:12.106002       1 azure.go:147] no cloud config provided, error: open /etc/kubernetes/azure.json: no such file or directory, driver will run without cloud config
+I0628 17:08:12.106015       1 azurefile.go:450] cloud: , location: , rg: , VnetName: , VnetResourceGroup: , SubnetName:
+I0628 17:08:12.112214       1 mount_linux.go:327] 'umount /tmp/kubelet-detect-safe-umount114453843' failed with: exit status 32, output: umount: /tmp/kubelet-detect-safe-umount114453843: must be superuser to unmount.
+I0628 17:08:12.112238       1 mount_linux.go:329] Detected umount with unsafe 'not mounted' behavior
+I0628 17:08:12.112630       1 driver.go:93] Enabling controller service capability: CREATE_DELETE_VOLUME
+I0628 17:08:12.112646       1 driver.go:93] Enabling controller service capability: CREATE_DELETE_SNAPSHOT
+I0628 17:08:12.112650       1 driver.go:93] Enabling controller service capability: EXPAND_VOLUME
+I0628 17:08:12.112653       1 driver.go:93] Enabling controller service capability: SINGLE_NODE_MULTI_WRITER
+I0628 17:08:12.112656       1 driver.go:93] Enabling controller service capability: CLONE_VOLUME
+I0628 17:08:12.112660       1 driver.go:93] Enabling controller service capability: MODIFY_VOLUME
+I0628 17:08:12.112667       1 driver.go:112] Enabling volume access mode: SINGLE_NODE_WRITER
+I0628 17:08:12.112671       1 driver.go:112] Enabling volume access mode: SINGLE_NODE_READER_ONLY
+I0628 17:08:12.112674       1 driver.go:112] Enabling volume access mode: SINGLE_NODE_SINGLE_WRITER
+I0628 17:08:12.112677       1 driver.go:112] Enabling volume access mode: SINGLE_NODE_MULTI_WRITER
+I0628 17:08:12.112680       1 driver.go:112] Enabling volume access mode: MULTI_NODE_READER_ONLY
+I0628 17:08:12.112682       1 driver.go:112] Enabling volume access mode: MULTI_NODE_SINGLE_WRITER
+I0628 17:08:12.112685       1 driver.go:112] Enabling volume access mode: MULTI_NODE_MULTI_WRITER
+I0628 17:08:12.112692       1 driver.go:103] Enabling node service capability: STAGE_UNSTAGE_VOLUME
+I0628 17:08:12.112696       1 driver.go:103] Enabling node service capability: SINGLE_NODE_MULTI_WRITER
+I0628 17:08:12.112699       1 driver.go:103] Enabling node service capability: VOLUME_MOUNT_GROUP
+I0628 17:08:12.112702       1 driver.go:103] Enabling node service capability: GET_VOLUME_STATS
+I0628 17:08:12.721700       1 utils.go:105] GRPC call: /csi.v1.Identity/GetPluginInfo
+I0628 17:08:12.721727       1 utils.go:106] GRPC request: {}
+I0628 17:08:12.723330       1 utils.go:112] GRPC response: {"name":"file.csi.azure.com","vendor_version":"v1.35.4"}
+I0628 17:08:12.726173       1 utils.go:105] GRPC call: /csi.v1.Identity/GetPluginCapabilities
+I0628 17:08:12.726204       1 utils.go:106] GRPC request: {}
+I0628 17:08:12.726357       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Service":{"type":1}}}]}
+I0628 17:08:12.727640       1 utils.go:105] GRPC call: /csi.v1.Controller/ControllerGetCapabilities
+I0628 17:08:12.727662       1 utils.go:106] GRPC request: {}
+I0628 17:08:12.727761       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":5}}},{"Type":{"Rpc":{"type":9}}},{"Type":{"Rpc":{"type":13}}},{"Type":{"Rpc":{"type":7}}},{"Type":{"Rpc":{"type":14}}}]}
+I0628 17:08:12.828795       1 utils.go:105] GRPC call: /csi.v1.Identity/GetPluginInfo
+I0628 17:08:12.828827       1 utils.go:106] GRPC request: {}
+I0628 17:08:12.828873       1 utils.go:112] GRPC response: {"name":"file.csi.azure.com","vendor_version":"v1.35.4"}
+I0628 17:08:12.830369       1 utils.go:105] GRPC call: /csi.v1.Controller/ControllerGetCapabilities
+I0628 17:08:12.830395       1 utils.go:106] GRPC request: {}
+I0628 17:08:12.830427       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":5}}},{"Type":{"Rpc":{"type":9}}},{"Type":{"Rpc":{"type":13}}},{"Type":{"Rpc":{"type":7}}},{"Type":{"Rpc":{"type":14}}}]}
+I0628 17:08:12.908351       1 utils.go:105] GRPC call: /csi.v1.Identity/GetPluginInfo
+I0628 17:08:12.908379       1 utils.go:106] GRPC request: {}
+I0628 17:08:12.908490       1 utils.go:112] GRPC response: {"name":"file.csi.azure.com","vendor_version":"v1.35.4"}
+I0628 17:08:12.911770       1 utils.go:105] GRPC call: /csi.v1.Identity/GetPluginCapabilities
+I0628 17:08:12.911874       1 utils.go:106] GRPC request: {}
+I0628 17:08:12.911914       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Service":{"type":1}}}]}
+I0628 17:08:12.912640       1 utils.go:105] GRPC call: /csi.v1.Controller/ControllerGetCapabilities
+I0628 17:08:12.912662       1 utils.go:106] GRPC request: {}
+I0628 17:08:12.912697       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":5}}},{"Type":{"Rpc":{"type":9}}},{"Type":{"Rpc":{"type":13}}},{"Type":{"Rpc":{"type":7}}},{"Type":{"Rpc":{"type":14}}}]}
+I0628 17:08:12.913466       1 utils.go:105] GRPC call: /csi.v1.Controller/ControllerGetCapabilities
+I0628 17:08:12.913491       1 utils.go:106] GRPC request: {}
+I0628 17:08:12.913521       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":5}}},{"Type":{"Rpc":{"type":9}}},{"Type":{"Rpc":{"type":13}}},{"Type":{"Rpc":{"type":7}}},{"Type":{"Rpc":{"type":14}}}]}
+I0628 17:08:12.914105       1 utils.go:105] GRPC call: /csi.v1.Controller/ControllerGetCapabilities
+I0628 17:08:12.914178       1 utils.go:106] GRPC request: {}
+I0628 17:08:12.914247       1 utils.go:112] GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":5}}},{"Type":{"Rpc":{"type":9}}},{"Type":{"Rpc":{"type":13}}},{"Type":{"Rpc":{"type":7}}},{"Type":{"Rpc":{"type":14}}}]}
+I0628 17:08:12.958716       1 utils.go:105] GRPC call: /csi.v1.Identity/GetPluginInfo
+I0628 17:08:12.958743       1 utils.go:106] GRPC request: {}
+I0628 17:08:12.958784       1 utils.go:112] GRPC response: {"name":"file.csi.azure.com","vendor_version":"v1.35.4"}
+I0629 00:32:07.299766       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:32:07.299801       1 utils.go:106] GRPC request: {"volume_id":"##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"}
+I0629 00:32:07.300092       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000118 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"
+E0629 00:32:07.300135       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:32:08.306120       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:32:08.306149       1 utils.go:106] GRPC request: {"volume_id":"##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"}
+I0629 00:32:08.306291       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000076 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"
+E0629 00:32:08.306311       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:32:10.312274       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:32:10.312309       1 utils.go:106] GRPC request: {"volume_id":"##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"}
+I0629 00:32:10.312489       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000111 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"
+E0629 00:32:10.312509       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:32:14.318615       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:32:14.318655       1 utils.go:106] GRPC request: {"volume_id":"##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"}
+I0629 00:32:14.318819       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.000008301 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"
+E0629 00:32:14.318844       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:32:19.770136       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:32:19.770162       1 utils.go:106] GRPC request: {"volume_id":"##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"}
+I0629 00:32:19.770303       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000105 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"
+E0629 00:32:19.770324       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:32:20.774095       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:32:20.774121       1 utils.go:106] GRPC request: {"volume_id":"##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"}
+I0629 00:32:20.774270       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000144 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"
+E0629 00:32:20.774294       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:32:22.324212       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:32:22.324244       1 utils.go:106] GRPC request: {"volume_id":"##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"}
+I0629 00:32:22.324436       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000083 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"
+E0629 00:32:22.324464       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:32:22.779673       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:32:22.779702       1 utils.go:106] GRPC request: {"volume_id":"##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"}
+I0629 00:32:22.779837       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000075 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"
+E0629 00:32:22.779848       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:32:26.784118       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:32:26.784149       1 utils.go:106] GRPC request: {"volume_id":"##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"}
+I0629 00:32:26.784307       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.000010501 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"
+E0629 00:32:26.784333       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:32:34.788362       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:32:34.788390       1 utils.go:106] GRPC request: {"volume_id":"##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"}
+I0629 00:32:34.788545       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.000008 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"
+E0629 00:32:34.788568       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:32:38.328350       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:32:38.328379       1 utils.go:106] GRPC request: {"volume_id":"##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"}
+I0629 00:32:38.328523       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.000011101 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"
+E0629 00:32:38.328540       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:32:50.793948       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:32:50.793989       1 utils.go:106] GRPC request: {"volume_id":"##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"}
+I0629 00:32:50.794351       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000088 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"
+E0629 00:32:50.794376       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:33:10.334073       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:33:10.334101       1 utils.go:106] GRPC request: {"volume_id":"##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"}
+I0629 00:33:10.334250       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000096 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"
+E0629 00:33:10.334274       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:33:22.798313       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:33:22.798342       1 utils.go:106] GRPC request: {"volume_id":"##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"}
+I0629 00:33:22.798484       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000067 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"
+E0629 00:33:22.798502       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:34:14.339269       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:34:14.339363       1 utils.go:106] GRPC request: {"volume_id":"##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"}
+I0629 00:34:14.339530       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000075 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"
+E0629 00:34:14.339546       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:34:26.803379       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:34:26.803404       1 utils.go:106] GRPC request: {"volume_id":"##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"}
+I0629 00:34:26.803551       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000089 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"
+E0629 00:34:26.803567       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:36:22.344342       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:36:22.344382       1 utils.go:106] GRPC request: {"volume_id":"##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"}
+I0629 00:36:22.344598       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.000023101 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"
+E0629 00:36:22.344621       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:36:34.809551       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:36:34.809595       1 utils.go:106] GRPC request: {"volume_id":"##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"}
+I0629 00:36:34.809784       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000106 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"
+E0629 00:36:34.809806       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:40:38.349875       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:40:38.349925       1 utils.go:106] GRPC request: {"volume_id":"##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"}
+I0629 00:40:38.350120       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000095 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92###kata-fs-smb-1782692972"
+E0629 00:40:38.350140       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:40:50.814620       1 utils.go:105] GRPC call: /csi.v1.Controller/DeleteVolume
+I0629 00:40:50.814654       1 utils.go:106] GRPC request: {"volume_id":"##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"}
+I0629 00:40:50.814853       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.0000105 request="azurefile_csi_driver_controller_delete_volume" success="false" source="file.csi.azure.com" volumeid="##pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4###kata-fs-smb-1782692557"
+E0629 00:40:50.814875       1 utils.go:110] GRPC error: rpc error: code = Internal desc = DeleteFileShare pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4 under account() rg() failed with error: cloud or ComputeClientFactory is nil
+I0629 00:43:44.570403       1 utils.go:105] GRPC call: /csi.v1.Controller/CreateVolume
+I0629 00:43:44.570445       1 utils.go:106] GRPC request: {"capacity_range":{"required_bytes":5368709120},"name":"pvc-b1e0419e-f035-4909-9cfb-487e0746a745","parameters":{"csi.storage.k8s.io/pv/name":"pvc-b1e0419e-f035-4909-9cfb-487e0746a745","csi.storage.k8s.io/pvc/name":"pvc-kata-smb-1782693778","csi.storage.k8s.io/pvc/namespace":"kata-fs-smb-1782693778"},"secrets":"***stripped***","volume_capabilities":[{"AccessType":{"Mount":{"mount_flags":["dir_mode=0777","file_mode=0777","uid=0","gid=0","mfsymlinks","cache=strict","nosharesock","actimeo=30","nobrl"]}},"access_mode":{"mode":5}}]}
+I0629 00:43:44.571055       1 azurefile.go:732] got storage account(stkatasmb004258) from secret
+I0629 00:43:44.656575       1 controllerserver.go:721] begin to create file share(pvc-b1e0419e-f035-4909-9cfb-487e0746a745) on account() type() subID() rg() location() size(5) protocol(SMB)
+I0629 00:43:44.656704       1 azurefile.go:732] got storage account(stkatasmb004258) from secret
+I0629 00:43:44.681249       1 controllerserver.go:768] create file share pvc-b1e0419e-f035-4909-9cfb-487e0746a745 on storage account  successfully
+I0629 00:43:44.681344       1 metrics.go:168] "Observed Request Latency" logger="logLatency" latency_seconds=0.110258195 request="azurefile_csi_driver_controller_create_volume" success="true" source="file.csi.azure.com" volumeid="##pvc-b1e0419e-f035-4909-9cfb-487e0746a745###kata-fs-smb-1782693778"
+I0629 00:43:44.681368       1 utils.go:112] GRPC response: {"volume":{"capacity_bytes":5368709120,"volume_context":{"csi.storage.k8s.io/pv/name":"pvc-b1e0419e-f035-4909-9cfb-487e0746a745","csi.storage.k8s.io/pvc/name":"pvc-kata-smb-1782693778","csi.storage.k8s.io/pvc/namespace":"kata-fs-smb-1782693778","secretnamespace":"kata-fs-smb-1782693778"},"volume_id":"##pvc-b1e0419e-f035-4909-9cfb-487e0746a745###kata-fs-smb-1782693778"}}

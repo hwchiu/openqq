@@ -1,0 +1,1 @@
+daemon set "csi-azurefile-node" successfully rolled out

@@ -24,6 +24,7 @@
 - Kata + NetworkPolicy smoke：`2026-06-28`
 - Kata + Azure Files NFS CSI static mount：`2026-06-28`
 - Kata + Azure Files NFS CSI dynamic provisioning：`2026-06-28 (執行失敗)`
+- Kata + Azure Files SMB CSI dynamic StorageClass：`2026-06-29`
 - 雲端平台：Azure
 - Resource group：`rg-k3s-kata-134`
 - Cluster 名稱：`k3s-kata-134`
@@ -36,7 +37,7 @@
 - Kata 驗證結果：`RuntimeClass kata` 建立成功，probe pod 輸出 `kata-probe-ok`
 - Service mesh 驗證結果：`Istio control plane ready (istiod-1.30.2)`，Kata-backed echo / curl pod 回應 `kata-mesh-ok`
 - NetworkPolicy 驗證結果：baseline 時兩個 Kata client 都可連線，套用 ingress policy 後只有標記過的 client 可連，未標記 client 會被阻擋
-- Filesystem / CSI 驗證結果：`Azure Files NFS` 靜態 CSI 掛載可在兩個 Kata pod 上成功掛載與跨節點讀寫；dynamic `StorageClass -> PVC -> pod` 路徑會讓 `csi-azurefile-controller` 在 `CreateVolume` 時 panic，PVC 會卡在 `Pending`
+- Filesystem / CSI 驗證結果：官方可重跑路徑改為 `Azure Files SMB dynamic StorageClass`，`StorageClass -> PVC -> 兩個 Kata pod` 可成功 provision、掛載與跨節點讀寫；另外保留 `Azure Files NFS` 的補充結果，其中 static CSI 掛載可通，但 dynamic provisioning 仍會失敗
 
 ## 安裝方式
 
@@ -87,7 +88,12 @@ bash scripts/verify-kata-runtime.sh
 
 KUBECONFIG_PATH=generated/stacks/k3s-kata-134/kubeconfig \
 TF_DIR=terraform/stacks/k3s-kata-134 \
-bash scripts/tests/kata-azurefile-csi-nfs.sh
+bash scripts/verify-azurefile-csi.sh
+
+KUBECONFIG_PATH=generated/stacks/k3s-kata-134/kubeconfig \
+TF_DIR=terraform/stacks/k3s-kata-134 \
+AZUREFILE_CSI_PROFILE=nfs \
+bash scripts/verify-azurefile-csi.sh
 ```
 
 預期結果：
@@ -97,7 +103,8 @@ bash scripts/tests/kata-azurefile-csi-nfs.sh
 - `kubectl get runtimeclass kata` 成功
 - verify pod 進入 `Succeeded`
 - pod logs 內含 guest kernel 資訊與 `kata-probe-ok`
-- 如果重跑 CSI 腳本，static 路徑會輸出 `status=pass`，dynamic 路徑則會在 JSON 內標記 `status=fail`
+- 如果重跑預設 CSI 腳本，JSON 會輸出 `status=pass`，且 `dynamic.pvcStatus=Bound`
+- 如果改跑 `AZUREFILE_CSI_PROFILE=nfs`，則會看到 static 路徑成功、dynamic 路徑失敗
 
 ## 更強的 Kata 證明鏈
 
@@ -125,7 +132,16 @@ bash scripts/tests/kata-azurefile-csi-nfs.sh
 - server / allowed / blocked 三個 pod 的 spec 都保留 `runtimeClassName: kata`
 - server / allowed / blocked 三個 sandbox 的 `crictl inspectp` 都記錄 `io.kubernetes.cri-o.RuntimeHandler = "kata"`
 
-同一天也另外保存了 `Kata + Azure Files NFS CSI` 的 live 證據，用來回答「Kata pod 能不能透過 CSI 吃到 NFS 類型 storage」這個問題：
+同一天也另外保存了 `Kata + Azure Files SMB CSI` 的 live 證據，作為目前官方可重跑的 `StorageClass -> PVC -> pod` 驗證路徑：
+
+- `Azure File CSI driver 1.35.4` 的 controller / node plugin 都成功 Ready
+- 動態 `StorageClass` 會在既有 Azure storage account 內自動 provision share，PVC 會進入 `Bound`
+- 兩個 `runtimeClassName: kata` pod 分別落在 `worker-1` 與 `worker-2`，都成功掛上同一個 dynamic volume
+- Kata guest 內看到的掛載型別是 `virtiofs`，代表 host 端掛好的 volume 是再透過 Kata shared-fs 暴露進 VM
+- worker node host 端看到的同一個 volume 則是 `//st...file.core.windows.net/... type cifs`，可直接證明底層後端真的是 Azure Files SMB
+- writer / reader 兩個 Kata pod 可以跨節點共享檔案；在這次 `actimeo=30` 的 mount option 下，writer 端約 35 秒後可重新看到 reader append 的第二行
+
+另外也保存了 `Kata + Azure Files NFS CSI` 的補充證據，用來回答「Kata pod 能不能透過 CSI 吃到 NFS 類型 storage」這個問題：
 
 - `Azure File CSI driver 1.35.4` 的 controller / node plugin 都成功 Ready
 - 兩個 `runtimeClassName: kata` pod 分別落在 `worker-1` 與 `worker-2`，都成功掛上同一個 Azure Files NFS share
@@ -158,7 +174,10 @@ bash scripts/tests/kata-azurefile-csi-nfs.sh
 | Kata + NetworkPolicy rule 定義 | 通過 | [networkpolicy.yaml](records/raw/2026-06-28/k3s-kata-134-networkpolicy/networkpolicy.yaml) |
 | Kata + NetworkPolicy server / client pod 保留 `runtimeClassName: kata` | 通過 | [server-pod.yaml](records/raw/2026-06-28/k3s-kata-134-networkpolicy/server-pod.yaml), [allowed-pod.yaml](records/raw/2026-06-28/k3s-kata-134-networkpolicy/allowed-pod.yaml), [blocked-pod.yaml](records/raw/2026-06-28/k3s-kata-134-networkpolicy/blocked-pod.yaml) |
 | Kata + NetworkPolicy server / client sandbox 顯示 `RuntimeHandler=kata` | 通過 | [server-crictl-inspectp.json](records/raw/2026-06-28/k3s-kata-134-networkpolicy/server-crictl-inspectp.json), [allowed-crictl-inspectp.json](records/raw/2026-06-28/k3s-kata-134-networkpolicy/allowed-crictl-inspectp.json), [blocked-crictl-inspectp.json](records/raw/2026-06-28/k3s-kata-134-networkpolicy/blocked-crictl-inspectp.json) |
-| Azure File CSI driver controller / node plugin Ready | 通過 | [csi-driver-pods-final.txt](records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/csi-driver-pods-final.txt) |
+| Azure File CSI driver controller / node plugin Ready | 通過 | [csi-driver-pods-final.txt](records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/csi-driver-pods-final.txt) |
+| Azure Files SMB dynamic StorageClass 掛載到兩個 Kata pod | 通過 | [kata-azurefile-csi-smb.json](records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/kata-azurefile-csi-smb.json), [pods-wide.txt](records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/pods-wide.txt) |
+| Kata guest 看到 `virtiofs`，worker host 看到底層 `cifs` | 通過 | [writer-exec.txt](records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/writer-exec.txt), [worker-1-cifs-mounts.txt](records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/worker-1-cifs-mounts.txt) |
+| Azure Files SMB 動態 volume 跨節點共享檔案 | 通過 | [reader-exec.txt](records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/reader-exec.txt), [final-proof-after-35s.txt](records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/final-proof-after-35s.txt) |
 | Azure Files NFS static CSI 掛載到兩個 Kata pod | 通過 | [kata-azurefile-csi-nfs.json](records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/kata-azurefile-csi-nfs.json), [pods-wide.txt](records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/pods-wide.txt) |
 | Kata guest 看到 `virtiofs`，worker host 看到底層 `nfs4` | 通過 | [writer-exec.txt](records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/writer-exec.txt), [worker-1-nfs-mounts.txt](records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/worker-1-nfs-mounts.txt) |
 | Azure Files NFS 跨節點共享檔案 | 通過 | [reader-exec.txt](records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/reader-exec.txt), [final-proof-after-35s.txt](records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/final-proof-after-35s.txt) |
@@ -175,6 +194,7 @@ bash scripts/tests/kata-azurefile-csi-nfs.sh
 - `records/raw/2026-06-28/kata-proof-3-live-inspect/`
 - `records/raw/2026-06-28/k3s-kata-134-istio-sidecar/`
 - `records/raw/2026-06-28/k3s-kata-134-networkpolicy/`
+- `records/raw/2026-06-29/k3s-kata-134-filesystem-csi-smb/`
 - `records/raw/2026-06-28/k3s-kata-134-filesystem-csi-nfs/`
 
 GitHub Pages 現在只聚焦在 Kata 的安裝、驗證與已執行測試，不再包含跨 solution 的比較頁面。

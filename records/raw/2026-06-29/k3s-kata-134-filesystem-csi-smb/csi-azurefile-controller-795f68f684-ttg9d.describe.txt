@@ -1,0 +1,233 @@
+Name:                 csi-azurefile-controller-795f68f684-ttg9d
+Namespace:            kube-system
+Priority:             2000000000
+Priority Class Name:  system-cluster-critical
+Service Account:      csi-azurefile-controller-sa
+Node:                 worker-2/10.180.0.4
+Start Time:           Sun, 28 Jun 2026 17:08:12 +0000
+Labels:               app=csi-azurefile-controller
+                      app.kubernetes.io/component=csi-driver
+                      app.kubernetes.io/instance=azurefile-csi-driver
+                      app.kubernetes.io/managed-by=Helm
+                      app.kubernetes.io/name=azurefile-csi-driver
+                      app.kubernetes.io/part-of=azurefile-csi-driver
+                      app.kubernetes.io/version=1.35.4
+                      helm.sh/chart=azurefile-csi-driver-1.35.4
+                      pod-template-hash=795f68f684
+Annotations:          kubectl.kubernetes.io/restartedAt: 2026-06-28T17:08:11Z
+Status:               Running
+SeccompProfile:       RuntimeDefault
+IP:                   10.180.0.4
+IPs:
+  IP:           10.180.0.4
+Controlled By:  ReplicaSet/csi-azurefile-controller-795f68f684
+Containers:
+  csi-provisioner:
+    Container ID:  cri-o://417e24f1a44ef41bd717e79c54efd9473ecbff283442e1c1dd45cb5a59087eec
+    Image:         mcr.microsoft.com/oss/v2/kubernetes-csi/csi-provisioner:v6.1.1
+    Image ID:      mcr.microsoft.com/oss/v2/kubernetes-csi/csi-provisioner@sha256:0379eb6f5d18551b427869b8596cb889fb09c428c922b7a9dd9f4cfd385dea7a
+    Port:          <none>
+    Host Port:     <none>
+    Args:
+      -v=2
+      --csi-address=$(ADDRESS)
+      --leader-election
+      --leader-election-namespace=kube-system
+      --timeout=1200s
+      --extra-create-metadata=true
+      --kube-api-qps=50
+      --kube-api-burst=100
+      --feature-gates=HonorPVReclaimPolicy=true
+      --retry-interval-max=30m
+      --feature-gates=VolumeAttributesClass=true
+    State:          Running
+      Started:      Mon, 29 Jun 2026 00:31:54 +0000
+    Last State:     Terminated
+      Reason:       Error
+      Message:      Lost connection to CSI driver, exiting
+      Exit Code:    1
+      Started:      Sun, 28 Jun 2026 17:08:13 +0000
+      Finished:     Mon, 29 Jun 2026 00:31:53 +0000
+    Ready:          True
+    Restart Count:  1
+    Limits:
+      cpu:     1
+      memory:  500Mi
+    Requests:
+      cpu:     10m
+      memory:  20Mi
+    Environment:
+      ADDRESS:  /csi/csi.sock
+    Mounts:
+      /csi from socket-dir (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-vsmzz (ro)
+  csi-snapshotter:
+    Container ID:  cri-o://fc780bb7647cd073b3a1454b90cb36e65a0afe0af8dacd37a967c126a51f2844
+    Image:         mcr.microsoft.com/oss/v2/kubernetes-csi/csi-snapshotter:v8.5.0
+    Image ID:      mcr.microsoft.com/oss/v2/kubernetes-csi/csi-snapshotter@sha256:0733dff655648e6624d40f706d2d9ff69e33bb5c1d5052bdfa7a0fc69316929f
+    Port:          <none>
+    Host Port:     <none>
+    Args:
+      -csi-address=$(ADDRESS)
+      -leader-election
+      --leader-election-namespace=kube-system
+      -v=2
+      --retry-interval-max=30m
+    State:          Running
+      Started:      Sun, 28 Jun 2026 17:08:13 +0000
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     1
+      memory:  400Mi
+    Requests:
+      cpu:     10m
+      memory:  20Mi
+    Environment:
+      ADDRESS:  /csi/csi.sock
+    Mounts:
+      /csi from socket-dir (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-vsmzz (ro)
+  csi-resizer:
+    Container ID:  cri-o://24ae5b4147f275bd5946257180fc85b12eccbc11696b3d95f57fd8071477d9a5
+    Image:         mcr.microsoft.com/oss/v2/kubernetes-csi/csi-resizer:v2.1.0
+    Image ID:      mcr.microsoft.com/oss/v2/kubernetes-csi/csi-resizer@sha256:3a06d9418a92242463343ee7040ad06c2cb26ee48814bfe0fe7ac18a35722223
+    Port:          <none>
+    Host Port:     <none>
+    Args:
+      -csi-address=$(ADDRESS)
+      -v=2
+      -leader-election
+      --leader-election-namespace=kube-system
+      -handle-volume-inuse-error=false
+      -timeout=120s
+      -feature-gates=RecoverVolumeExpansionFailure=true,VolumeAttributesClass=true
+      --retry-interval-max=30m
+    State:          Running
+      Started:      Sun, 28 Jun 2026 17:08:13 +0000
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     1
+      memory:  500Mi
+    Requests:
+      cpu:     10m
+      memory:  20Mi
+    Environment:
+      ADDRESS:  /csi/csi.sock
+    Mounts:
+      /csi from socket-dir (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-vsmzz (ro)
+  liveness-probe:
+    Container ID:  cri-o://c457712a09a4a28a18363de62210c0dabef5c18b4c078baef7c45d60d109a070
+    Image:         mcr.microsoft.com/oss/v2/kubernetes-csi/livenessprobe:v2.18.0
+    Image ID:      mcr.microsoft.com/oss/v2/kubernetes-csi/livenessprobe@sha256:bcab4686c4f56c8272f6a3eee0fabb7b24b0b335b6b88c088268898e5f948aac
+    Port:          <none>
+    Host Port:     <none>
+    Args:
+      --csi-address=/csi/csi.sock
+      --probe-timeout=3s
+      --http-endpoint=localhost:29612
+      --v=2
+    State:          Running
+      Started:      Sun, 28 Jun 2026 17:08:13 +0000
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     1
+      memory:  100Mi
+    Requests:
+      cpu:        10m
+      memory:     20Mi
+    Environment:  <none>
+    Mounts:
+      /csi from socket-dir (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-vsmzz (ro)
+  azurefile:
+    Container ID:  cri-o://85eda1ad2b0c69456c0b330d18dc8484dc77283c63cecd2504c9070138f8978e
+    Image:         mcr.microsoft.com/oss/v2/kubernetes-csi/azurefile-csi:v1.35.4
+    Image ID:      mcr.microsoft.com/oss/v2/kubernetes-csi/azurefile-csi@sha256:9611450f939c0db725fde4a7c7a6d98ab5b8fd8a97a08532587d6d46810d410a
+    Port:          29614/TCP (metrics)
+    Host Port:     29614/TCP (metrics)
+    Args:
+      --v=5
+      --endpoint=$(CSI_ENDPOINT)
+      --metrics-address=0.0.0.0:29614
+      --kubeconfig=
+      --drivername=file.csi.azure.com
+      --cloud-config-secret-name=azure-cloud-provider
+      --cloud-config-secret-namespace=kube-system
+      --custom-user-agent=
+      --user-agent-suffix=OSS-helm
+      --allow-empty-cloud-config=true
+    State:          Running
+      Started:      Mon, 29 Jun 2026 00:31:53 +0000
+    Last State:     Terminated
+      Reason:       Error
+      Exit Code:    2
+      Started:      Sun, 28 Jun 2026 17:08:13 +0000
+      Finished:     Mon, 29 Jun 2026 00:31:52 +0000
+    Ready:          True
+    Restart Count:  1
+    Limits:
+      cpu:     2
+      memory:  800Mi
+    Requests:
+      cpu:     10m
+      memory:  20Mi
+    Liveness:  http-get http://localhost:29612/healthz delay=30s timeout=10s period=30s #success=1 #failure=5
+    Environment:
+      AZURE_CREDENTIAL_FILE:     <set to the key 'path' of config map 'azure-cred-file'>  Optional: true
+      CSI_ENDPOINT:              unix:///csi/csi.sock
+      AZURE_GO_SDK_LOG_LEVEL:
+      AZCOPY_CONCURRENCY_VALUE:  10
+      AZCOPY_CONCURRENT_FILES:   20
+      AZCOPY_BUFFER_GB:          1
+    Mounts:
+      /csi from socket-dir (rw)
+      /etc/kubernetes/ from azure-cred (rw)
+      /root/.azcopy from azcopy-dir (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-vsmzz (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True
+  Initialized                 True
+  Ready                       True
+  ContainersReady             True
+  PodScheduled                True
+Volumes:
+  socket-dir:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:
+    SizeLimit:  <unset>
+  azcopy-dir:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:
+    SizeLimit:  <unset>
+  azure-cred:
+    Type:          HostPath (bare host directory volume)
+    Path:          /etc/kubernetes/
+    HostPathType:  DirectoryOrCreate
+  kube-api-access-vsmzz:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              kubernetes.io/os=linux
+Tolerations:                 CriticalAddonsOnly:NoSchedule op=Exists
+                             node-role.kubernetes.io/control-plane:NoSchedule op=Exists
+                             node-role.kubernetes.io/controlplane:NoSchedule op=Exists
+                             node-role.kubernetes.io/master:NoSchedule op=Exists
+                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason   Age                  From     Message
+  ----    ------   ----                 ----     -------
+  Normal  Pulled   12m (x2 over 7h35m)  kubelet  Container image "mcr.microsoft.com/oss/v2/kubernetes-csi/azurefile-csi:v1.35.4" already present on machine
+  Normal  Created  12m (x2 over 7h35m)  kubelet  Created container: azurefile
+  Normal  Started  12m (x2 over 7h35m)  kubelet  Started container azurefile
+  Normal  Pulled   12m (x2 over 7h35m)  kubelet  Container image "mcr.microsoft.com/oss/v2/kubernetes-csi/csi-provisioner:v6.1.1" already present on machine
+  Normal  Created  12m (x2 over 7h35m)  kubelet  Created container: csi-provisioner
+  Normal  Started  12m (x2 over 7h35m)  kubelet  Started container csi-provisioner

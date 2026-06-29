@@ -1,0 +1,11 @@
+NAME                                                       PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+storageclass.storage.k8s.io/azurefile-csi-smb-1782693778   file.csi.azure.com      Delete          Immediate              true                   12s
+storageclass.storage.k8s.io/local-path (default)           rancher.io/local-path   Delete          WaitForFirstConsumer   false                  3d18h
+
+NAME                                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                            STORAGECLASS                   VOLUMEATTRIBUTESCLASS   REASON   AGE
+persistentvolume/pvc-b1e0419e-f035-4909-9cfb-487e0746a745   5Gi        RWX            Delete           Bound      kata-fs-smb-1782693778/pvc-kata-smb-1782693778   azurefile-csi-smb-1782693778   <unset>                          12s
+persistentvolume/pvc-efc3195c-2775-4c7d-821b-fdc0bcac7d92   5Gi        RWX            Delete           Released   kata-fs-smb-1782692972/pvc-kata-smb-1782692972   azurefile-csi-smb-1782692972   <unset>                          13m
+persistentvolume/pvc-f55a0a98-7e5d-4b23-9b90-8cc44d895cc4   5Gi        RWX            Delete           Released   kata-fs-smb-1782692557/pvc-smb-1782692557        azurefile-csi-smb-1782692557   <unset>                          20m
+
+NAMESPACE                NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS                   VOLUMEATTRIBUTESCLASS   AGE
+kata-fs-smb-1782693778   persistentvolumeclaim/pvc-kata-smb-1782693778   Bound    pvc-b1e0419e-f035-4909-9cfb-487e0746a745   5Gi        RWX            azurefile-csi-smb-1782693778   <unset>                 13s

@@ -1,0 +1,10 @@
+LAST SEEN   TYPE     REASON                  OBJECT                                          MESSAGE
+11s         Normal   ExternalProvisioning    persistentvolumeclaim/pvc-kata-smb-1782693778   Waiting for a volume to be created either by the external provisioner 'file.csi.azure.com' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.
+11s         Normal   Provisioning            persistentvolumeclaim/pvc-kata-smb-1782693778   External provisioner is provisioning volume for claim "kata-fs-smb-1782693778/pvc-kata-smb-1782693778"
+11s         Normal   ProvisioningSucceeded   persistentvolumeclaim/pvc-kata-smb-1782693778   Successfully provisioned volume pvc-b1e0419e-f035-4909-9cfb-487e0746a745
+8s          Normal   Pulled                  pod/writer                                      Container image "alpine:3.22" already present on machine
+8s          Normal   Created                 pod/writer                                      Created container: shell
+8s          Normal   Started                 pod/writer                                      Started container shell
+7s          Normal   Pulled                  pod/reader                                      Container image "alpine:3.22" already present on machine
+7s          Normal   Created                 pod/reader                                      Created container: shell
+7s          Normal   Started                 pod/reader                                      Started container shell

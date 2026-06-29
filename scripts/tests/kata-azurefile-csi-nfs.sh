@@ -291,8 +291,10 @@ kubectl_k exec -n "$STATIC_NS" writer -- /bin/sh -lc 'cat /mnt/azurefile/proof.t
 sleep "$CROSS_NODE_SETTLE_SECONDS"
 kubectl_k exec -n "$STATIC_NS" writer -- /bin/sh -lc 'echo "--- writer-after-delay"; cat /mnt/azurefile/proof.txt' >"$ARTIFACT_DIR/final-proof-after-35s.txt"
 
-WRITER_SID="$(ssh_safe "${SSH_USER}@${WRITER_HOST}" "sudo crictl pods -q --name writer | head -n1")"
-READER_SID="$(ssh_safe "${SSH_USER}@${READER_HOST}" "sudo crictl pods -q --name reader | head -n1")"
+WRITER_UID="$(kubectl_k -n "$STATIC_NS" get pod writer -o jsonpath='{.metadata.uid}')"
+READER_UID="$(kubectl_k -n "$STATIC_NS" get pod reader -o jsonpath='{.metadata.uid}')"
+WRITER_SID="$(ssh_safe "${SSH_USER}@${WRITER_HOST}" "sudo crictl pods -q --label io.kubernetes.pod.uid=${WRITER_UID} | head -n1")"
+READER_SID="$(ssh_safe "${SSH_USER}@${READER_HOST}" "sudo crictl pods -q --label io.kubernetes.pod.uid=${READER_UID} | head -n1")"
 printf '%s\n' "$WRITER_SID" >"$ARTIFACT_DIR/writer-sandbox-id.txt"
 printf '%s\n' "$READER_SID" >"$ARTIFACT_DIR/reader-sandbox-id.txt"
 ssh_safe "${SSH_USER}@${WRITER_HOST}" "sudo crictl inspectp ${WRITER_SID}" >"$ARTIFACT_DIR/writer-crictl-inspectp.json"
