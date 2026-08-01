@@ -1,9 +1,0 @@
-{
-  "status": "fail",
-  "summary": "KubeArmor did not block /usr/bin/sleep execution",
-  "details": {
-    "stdout": "",
-    "stderr": "",
-    "exitCode": 0
-  }
-}
