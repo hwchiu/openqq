@@ -1,0 +1,350 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: opensandbox
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: opensandbox-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: opensandbox-server
+  namespace: opensandbox-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: opensandbox-server
+  namespace: opensandbox
+rules:
+- apiGroups: ["sandbox.opensandbox.io"]
+  resources: ["batchsandboxes", "batchsandboxes/status", "pools"]
+  verbs: ["get", "list", "watch", "create", "patch", "update", "delete"]
+- apiGroups: [""]
+  resources: ["pods", "pods/log", "services"]
+  verbs: ["get", "list", "watch", "create", "patch", "update", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: opensandbox-server
+  namespace: opensandbox
+subjects:
+- kind: ServiceAccount
+  name: opensandbox-server
+  namespace: opensandbox-system
+roleRef:
+  kind: Role
+  name: opensandbox-server
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opensandbox-server-config
+  namespace: opensandbox-system
+data:
+  sandbox.toml: |
+    [server]
+    host = "0.0.0.0"
+    port = 8080
+    max_sandbox_timeout_seconds = 900
+    limit_concurrency = 128
+    thread_pool_size = 32
+
+    [log]
+    level = "INFO"
+
+    [runtime]
+    type = "kubernetes"
+    execd_image = "opensandbox/execd:v1.0.21"
+
+    [storage]
+    allowed_host_paths = []
+    volume_default_size = "1Gi"
+
+    [kubernetes]
+    namespace = "opensandbox"
+    workload_provider = "batchsandbox"
+    image_pull_policy = "IfNotPresent"
+    informer_enabled = true
+    batchsandbox_template_file = "/etc/opensandbox/example.batchsandbox-template.yaml"
+
+    [ingress]
+    mode = "direct"
+
+    [store]
+    type = "sqlite"
+    path = "/data/opensandbox.db"
+  example.batchsandbox-template.yaml: |
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: opensandbox
+    spec:
+      replicas: 1
+      template:
+        spec:
+          restartPolicy: Never
+          terminationGracePeriodSeconds: 1
+          tolerations:
+          - operator: Exists
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: opensandbox-server-data
+  namespace: opensandbox-system
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: azure-disk-premium
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opensandbox-server
+  namespace: opensandbox-system
+  labels:
+    app.kubernetes.io/name: opensandbox-server
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opensandbox-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: opensandbox-server
+    spec:
+      serviceAccountName: opensandbox-server
+      containers:
+      - name: server
+        image: opensandbox/server:v0.2.2
+        imagePullPolicy: IfNotPresent
+        command: ["opensandbox-server"]
+        args: ["--config", "/etc/opensandbox/sandbox.toml"]
+        env:
+        - name: OPENSANDBOX_INSECURE_SERVER
+          value: "YES"
+        ports:
+        - name: http
+          containerPort: 8080
+        volumeMounts:
+        - name: config
+          mountPath: /etc/opensandbox
+          readOnly: true
+        - name: data
+          mountPath: /data
+        readinessProbe:
+          httpGet: {path: /health, port: http}
+          initialDelaySeconds: 5
+        livenessProbe:
+          httpGet: {path: /health, port: http}
+          initialDelaySeconds: 15
+      volumes:
+      - name: config
+        configMap:
+          name: opensandbox-server-config
+      - name: data
+        persistentVolumeClaim:
+          claimName: opensandbox-server-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: opensandbox-server
+  namespace: opensandbox-system
+spec:
+  selector:
+    app.kubernetes.io/name: opensandbox-server
+  ports:
+  - name: http
+    port: 8080
+    targetPort: http
+---
+apiVersion: sandbox.opensandbox.io/v1alpha1
+kind: Pool
+metadata:
+  name: python-warm-pool
+  namespace: opensandbox
+  labels:
+    app.kubernetes.io/part-of: opensandbox
+    app.kubernetes.io/managed-by: opensandbox-demo
+spec:
+  capacitySpec:
+    bufferMin: 0
+    bufferMax: 0
+    poolMin: 10
+    poolMax: 30
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: opensandbox
+        purpose: opensandbox-warm-pool
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      terminationGracePeriodSeconds: 1
+      tolerations:
+      - operator: Exists
+      containers:
+      - name: sandbox
+        image: python:3.12-slim
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-c"]
+        args: ["mkdir -p /workspace && exec /opt/opensandbox/bootstrap.sh tail -f /dev/null"]
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: EXECD
+          value: /opt/opensandbox/execd
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        volumeMounts:
+        - name: opensandbox-bin
+          mountPath: /opt/opensandbox
+      - name: egress
+        image: opensandbox/egress:v1.1.5
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          capabilities:
+            add: ["NET_ADMIN"]
+        env:
+        - name: OPENSANDBOX_EGRESS_MODE
+          value: dns+nft
+        - name: OPENSANDBOX_EGRESS_HTTP_ADDR
+          value: ":18080"
+        - name: OPENSANDBOX_EGRESS_RULES
+          value: '{"defaultAction":"deny","egress":[{"action":"allow","target":"opensandbox-server.opensandbox-system.svc.cluster.local"}]}'
+        - name: OPENSANDBOX_EGRESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: opensandbox-egress-secret
+              key: token
+        ports:
+        - name: egress-api
+          containerPort: 18080
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      initContainers:
+      - name: execd-installer
+        image: opensandbox/execd:v1.0.21
+        command: ["/bin/sh", "-c"]
+        args:
+        - >-
+          cp ./execd /opt/opensandbox/execd &&
+          cp ./bootstrap.sh /opt/opensandbox/bootstrap.sh &&
+          chmod +x /opt/opensandbox/execd /opt/opensandbox/bootstrap.sh &&
+          (cp /usr/local/bin/bwrap /opt/opensandbox/bwrap && chmod +x /opt/opensandbox/bwrap || true)
+        volumeMounts:
+        - name: opensandbox-bin
+          mountPath: /opt/opensandbox
+      volumes:
+      - name: opensandbox-bin
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: opensandbox-demo
+  namespace: opensandbox-system
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: opensandbox-demo
+  ports:
+  - name: http
+    port: 8080
+    targetPort: http
+    nodePort: 30080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opensandbox-demo
+  namespace: opensandbox-system
+  labels:
+    app.kubernetes.io/name: opensandbox-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opensandbox-demo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: opensandbox-demo
+    spec:
+      containers:
+      - name: app
+        image: python:3.12-slim
+        imagePullPolicy: IfNotPresent
+        workingDir: /app
+        command: ["/bin/sh", "-c"]
+        args: ["pip install --no-cache-dir -r /app/requirements.txt >/tmp/pip.log 2>&1 && exec uvicorn app:app --host 0.0.0.0 --port 8080"]
+        env:
+        - name: OPENSANDBOX_SERVER_URL
+          value: http://opensandbox-server.opensandbox-system.svc.cluster.local:8080
+        - name: OPENSANDBOX_EXEC_BASE_URL_TEMPLATE
+          value: http://opensandbox-server.opensandbox-system.svc.cluster.local:8080/v1/sandboxes/{sandbox_id}/proxy/44772
+        - name: OPENSANDBOX_IMAGE
+          value: python:3.12-slim
+        - name: OPENSANDBOX_POOL_REF
+          value: python-warm-pool
+        - name: RUN_TTL_SECONDS
+          value: "180"
+        - name: OPENSANDBOX_EGRESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: opensandbox-egress-secret
+              key: token
+        - name: OPENSANDBOX_EGRESS_ALLOWED_FQDNS
+          value: pypi.org,files.pythonhosted.org,github.com,api.github.com,example.com,google.com,www.google.com
+        - name: FRONTEND_INDEX
+          value: /app/frontend/index.html
+        - name: DEMO_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: opensandbox-demo-secret
+              key: token
+        ports:
+        - name: http
+          containerPort: 8080
+        volumeMounts:
+        - {name: backend, mountPath: /app/app.py, subPath: app.py, readOnly: true}
+        - {name: requirements, mountPath: /app/requirements.txt, subPath: requirements.txt, readOnly: true}
+        - {name: frontend, mountPath: /app/frontend, readOnly: true}
+        readinessProbe:
+          httpGet: {path: /health, port: http}
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          failureThreshold: 12
+        livenessProbe:
+          httpGet: {path: /health, port: http}
+          initialDelaySeconds: 120
+          periodSeconds: 10
+          failureThreshold: 6
+      volumes:
+      - name: backend
+        configMap: {name: opensandbox-demo-backend}
+      - name: requirements
+        configMap: {name: opensandbox-demo-backend}
+      - name: frontend
+        configMap: {name: opensandbox-demo-frontend}
