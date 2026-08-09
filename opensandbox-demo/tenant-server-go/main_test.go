@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -95,6 +96,29 @@ func TestVerifyWithKFA(t *testing.T) {
 	}
 	if identity != (Identity{ClusterName: "local-cluster", Namespace: "kfa-test", ServiceAccount: "kfa-test-client", PrincipalUID: "serviceaccount-uid-1"}) {
 		t.Fatalf("identity = %+v", identity)
+	}
+}
+
+func TestVerifyWithKFATimeout(t *testing.T) {
+	tokenFile, err := os.CreateTemp(t.TempDir(), "sa-token")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tokenFile.WriteString("tenant-server-sa-token"); err != nil {
+		t.Fatal(err)
+	}
+	_ = tokenFile.Close()
+	kfa := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(100 * time.Millisecond)
+	}))
+	defer kfa.Close()
+	s := testServer("http://unused", 1024)
+	s.cfg.KFAURL = kfa.URL
+	s.cfg.KFATokenPath = tokenFile.Name()
+	s.cfg.KFATimeout = 10 * time.Millisecond
+	_, err = s.verifyWithKFA(context.Background(), "client-token")
+	if err == nil || !strings.Contains(err.Error(), "context deadline exceeded") {
+		t.Fatalf("verifyWithKFA error = %v, want timeout", err)
 	}
 }
 
