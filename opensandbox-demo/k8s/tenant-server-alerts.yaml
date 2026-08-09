@@ -1,0 +1,56 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: opensandbox-tenant-server
+  namespace: opensandbox-tenant-server
+  labels:
+    release: monitoring
+spec:
+  groups:
+  - name: opensandbox-tenant-server
+    rules:
+    - alert: TenantServerReplicaUnavailable
+      expr: kube_deployment_status_replicas_available{namespace="opensandbox-tenant-server",deployment="opensandbox-tenant-server"} < 3
+      for: 5m
+      labels:
+        severity: warning
+        service: tenant-server
+      annotations:
+        summary: Tenant Server has fewer than three available replicas
+        description: Tenant Server availability is {{ $value }} replicas for more than five minutes.
+    - alert: TenantServerTargetDown
+      expr: sum(up{job="opensandbox-tenant-server"}) < 3
+      for: 5m
+      labels:
+        severity: warning
+        service: tenant-server
+      annotations:
+        summary: Prometheus cannot scrape all Tenant Server replicas
+        description: Only {{ $value }} Tenant Server metrics targets are healthy.
+    - alert: TenantServerAuthenticationFailures
+      expr: sum(rate(opensandbox_tenant_server_requests_total{status=~"401|403"}[5m])) > 1
+      for: 10m
+      labels:
+        severity: warning
+        service: tenant-server
+      annotations:
+        summary: Tenant Server authentication failures are elevated
+        description: Authentication or authorization failures are {{ $value }} requests per second.
+    - alert: TenantServerQuotaRejections
+      expr: sum(rate(opensandbox_tenant_server_quota_rejections_total[5m])) > 0
+      for: 10m
+      labels:
+        severity: warning
+        service: tenant-server
+      annotations:
+        summary: Tenant Server is rejecting sandbox requests by quota
+        description: At least one tenant has continuous quota rejections.
+    - alert: TenantServerUpstreamErrors
+      expr: sum(rate(opensandbox_tenant_server_requests_total{status=~"5.."}[5m])) > 0
+      for: 5m
+      labels:
+        severity: critical
+        service: tenant-server
+      annotations:
+        summary: Tenant Server upstream or internal errors are elevated
+        description: Tenant Server is returning 5xx responses at {{ $value }} requests per second.

@@ -147,6 +147,13 @@ The server ConfigMap also sets `max_sandbox_timeout_seconds=900`,
 `workload_provider=batchsandbox`, `image_pull_policy=IfNotPresent`, informer
 support, direct ingress mode, and SQLite storage at `/data/opensandbox.db`.
 
+Tenant Server is deployed separately by `k8s/tenant-server.yaml` with three
+replicas, a rolling update (`maxUnavailable=0`), topology spread, and a
+PodDisruptionBudget requiring two available replicas. Apply
+`k8s/tenant-server-alerts.yaml` as well to install Prometheus alerts for
+replica loss, scrape loss, authentication failures, quota rejection, and
+upstream 5xx responses.
+
 ## Warm pool configuration
 
 The current pool is `opensandbox/python-warm-pool`:
@@ -205,6 +212,8 @@ kubectl -n opensandbox-system create secret generic opensandbox-demo-secret \
   --dry-run=client -o yaml | kubectl apply -f -
 
 kubectl apply --validate=false -f k8s/platform.yaml
+kubectl apply --validate=false -f k8s/tenant-server.yaml
+kubectl apply --validate=false -f k8s/tenant-server-alerts.yaml
 ```
 
 Create one random token and store it in both namespaces. The value must be the
