@@ -33,6 +33,7 @@ type Config struct {
 	EgressToken                                             string
 	EgressAllowedFQDNs                                      map[string]struct{}
 	EgressBaseline                                          []egressRule
+	UpstreamCreateTimeout                                   time.Duration
 	AdminIdentities                                         []string
 	MaxBody                                                 int64
 }
@@ -463,7 +464,13 @@ func (s *Server) create(w http.ResponseWriter, r *http.Request) {
 		jsonWrite(w, 413, map[string]string{"detail": "request body exceeds tenant server limit"})
 		return
 	}
-	req, _ := http.NewRequestWithContext(r.Context(), "POST", s.cfg.Upstream+"/v1/sandboxes", strings.NewReader(string(body)))
+	upstreamCtx := r.Context()
+	if s.cfg.UpstreamCreateTimeout > 0 {
+		var cancel context.CancelFunc
+		upstreamCtx, cancel = context.WithTimeout(upstreamCtx, s.cfg.UpstreamCreateTimeout)
+		defer cancel()
+	}
+	req, _ := http.NewRequestWithContext(upstreamCtx, "POST", s.cfg.Upstream+"/v1/sandboxes", strings.NewReader(string(body)))
 	req.Header.Set("Content-Type", r.Header.Get("Content-Type"))
 	req.Header.Set("OPEN-SANDBOX-API-KEY", s.cfg.UpstreamKey)
 	resp, e := s.http.Do(req)
@@ -883,9 +890,13 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	ctx := context.Background()
 	kfaTimeout, _ := time.ParseDuration(env("KFA_TIMEOUT", "10s"))
+	upstreamCreateTimeout, _ := time.ParseDuration(env("UPSTREAM_CREATE_TIMEOUT", "180s"))
+	if upstreamCreateTimeout <= 0 {
+		upstreamCreateTimeout = 180 * time.Second
+	}
 	egressPort, _ := strconv.Atoi(env("OPENSANDBOX_EGRESS_PORT", "18080"))
 	baselineTarget := env("OPENSANDBOX_EGRESS_BASELINE_FQDN", "opensandbox-server.opensandbox-system.svc.cluster.local")
-	cfg := Config{Upstream: strings.TrimRight(env("OPENSANDBOX_SERVER_URL", "http://opensandbox-server.opensandbox-system:8080"), "/"), UpstreamKey: os.Getenv("OPENSANDBOX_API_KEY"), DatabaseURL: os.Getenv("TENANT_SERVER_DATABASE_URL"), EgressResetTemplate: os.Getenv("EGRESS_RESET_URL_TEMPLATE"), KFAURL: strings.TrimRight(env("KFA_URL", "http://kube-federated-auth.kube-federated-auth.svc.cluster.local:8080"), "/"), KFATokenPath: env("KFA_TOKEN_PATH", "/var/run/secrets/kubernetes.io/serviceaccount/token"), KFATimeout: kfaTimeout, EgressPort: egressPort, EgressToken: os.Getenv("OPENSANDBOX_EGRESS_TOKEN"), EgressAllowedFQDNs: csvSet(os.Getenv("OPENSANDBOX_EGRESS_ALLOWED_FQDNS")), EgressBaseline: []egressRule{{Action: "allow", Target: baselineTarget}}, AdminIdentities: strings.Split(env("TENANT_SERVER_ADMIN_IDENTITIES", "local-cluster/opensandbox-tenant-server/opensandbox-tenant-server"), ","), MaxBody: 50 * 1024 * 1024}
+	cfg := Config{Upstream: strings.TrimRight(env("OPENSANDBOX_SERVER_URL", "http://opensandbox-server.opensandbox-system:8080"), "/"), UpstreamKey: os.Getenv("OPENSANDBOX_API_KEY"), DatabaseURL: os.Getenv("TENANT_SERVER_DATABASE_URL"), EgressResetTemplate: os.Getenv("EGRESS_RESET_URL_TEMPLATE"), KFAURL: strings.TrimRight(env("KFA_URL", "http://kube-federated-auth.kube-federated-auth.svc.cluster.local:8080"), "/"), KFATokenPath: env("KFA_TOKEN_PATH", "/var/run/secrets/kubernetes.io/serviceaccount/token"), KFATimeout: kfaTimeout, EgressPort: egressPort, EgressToken: os.Getenv("OPENSANDBOX_EGRESS_TOKEN"), EgressAllowedFQDNs: csvSet(os.Getenv("OPENSANDBOX_EGRESS_ALLOWED_FQDNS")), EgressBaseline: []egressRule{{Action: "allow", Target: baselineTarget}}, UpstreamCreateTimeout: upstreamCreateTimeout, AdminIdentities: strings.Split(env("TENANT_SERVER_ADMIN_IDENTITIES", "local-cluster/opensandbox-tenant-server/opensandbox-tenant-server"), ","), MaxBody: 50 * 1024 * 1024}
 	if v, err := strconv.ParseInt(env("MAX_BODY_BYTES", strconv.FormatInt(cfg.MaxBody, 10)), 10, 64); err == nil {
 		cfg.MaxBody = v
 	}

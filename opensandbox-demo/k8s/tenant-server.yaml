@@ -79,6 +79,8 @@ spec:
           value: /var/run/secrets/kubernetes.io/serviceaccount/token
         - name: KFA_TIMEOUT
           value: 10s
+        - name: UPSTREAM_CREATE_TIMEOUT
+          value: 180s
         - name: OPENSANDBOX_EGRESS_PORT
           value: "18080"
         - name: OPENSANDBOX_EGRESS_TOKEN

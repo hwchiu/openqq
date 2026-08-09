@@ -494,6 +494,10 @@ opensandbox_tenant_server_quota_rejections_total{tenant}
 opensandbox_tenant_server_egress_operations_total{tenant,method,result}
 ```
 
+`UPSTREAM_CREATE_TIMEOUT` defaults to 180 seconds and applies only to sandbox
+creation. Long-running command streams and downloads remain governed by the
+client connection rather than this create deadline.
+
 For Vault mode, the tenant server authenticates with the Kubernetes auth method and
 uses a KV v2 tenant index plus one record per tenant. The cache is deliberately
 short so enable/disable/key rotation takes effect without a Deployment
