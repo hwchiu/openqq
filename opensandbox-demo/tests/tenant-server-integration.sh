@@ -18,6 +18,7 @@ POOL_REF="${OPENSANDBOX_POOL_REF:-python-warm-pool}"
 EXEC_PORT="${OPENSANDBOX_EXEC_PORT:-44772}"
 CHECK_EGRESS="${CHECK_EGRESS:-0}"
 CHECK_K8S="${CHECK_K8S:-1}"
+SANDBOX_CREATE_TIMEOUT="${SANDBOX_CREATE_TIMEOUT:-180}"
 STAMP="$(date +%s)-$$"
 TENANT_ID="integration-${STAMP}"
 SANDBOX_ID=""
@@ -27,6 +28,7 @@ TMP_DIR="$(mktemp -d)"
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 json() { curl -fsS --retry 3 --retry-delay 1 --retry-connrefused --max-time 30 "$@"; }
+json_long() { curl -fsS --retry 3 --retry-delay 1 --retry-connrefused --max-time "$SANDBOX_CREATE_TIMEOUT" "$@"; }
 cleanup() {
   if [[ -n "$SANDBOX_ID" && -n "$CLIENT_TOKEN" ]]; then
     curl -sS -X DELETE --max-time 30 -H "Authorization: Bearer $CLIENT_TOKEN" \
@@ -64,7 +66,7 @@ created="$(json -X POST "$BASE_URL/admin/tenants" \
 [[ "$(jq -r .tenant_id <<<"$created")" == "$TENANT_ID" ]] || fail "tenant creation: $created"
 TENANT_CREATED=1
 
-request="$(json -X POST "$BASE_URL/v1/sandboxes" \
+request="$(json_long -X POST "$BASE_URL/v1/sandboxes" \
   -H "Authorization: Bearer $CLIENT_TOKEN" -H 'Content-Type: application/json' \
   -d "$(jq -nc --arg pool "$POOL_REF" '{timeout:120,extensions:{poolRef:$pool},metadata:{source:"tenant-server-integration"}}')")" \
   || fail "sandbox create failed"

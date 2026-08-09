@@ -67,7 +67,10 @@ That sandbox-level suite is now available as
 `tenant-server-integration.sh`. Unlike the deployment smoke test, it creates
 one disposable pooled sandbox and verifies command execution, upload,
 download, and cleanup. Set `CHECK_EGRESS=1` to also exercise the Tenant Server
-egress boundary. Its exit trap deletes the sandbox and temporary tenant.
+egress boundary. Its create wait defaults to 180 seconds because a pool claim
+may wait for the OpenSandbox server to report a ready sandbox; override
+`SANDBOX_CREATE_TIMEOUT` when the target runtime has a different SLA. Its exit
+trap deletes the sandbox and temporary tenant.
 
 The Go unit tests run without Kubernetes, PostgreSQL, or OpenSandbox:
 
