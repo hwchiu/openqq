@@ -70,7 +70,10 @@ download, and cleanup. Set `CHECK_EGRESS=1` to also exercise the Tenant Server
 egress boundary. Its create wait defaults to 180 seconds because a pool claim
 may wait for the OpenSandbox server to report a ready sandbox; override
 `SANDBOX_CREATE_TIMEOUT` when the target runtime has a different SLA. Its exit
-trap deletes the sandbox and temporary tenant.
+trap deletes the sandbox and temporary tenant. The request always includes an
+explicit `image` together with `extensions.poolRef`; this is required by the
+currently deployed OpenSandbox v0.2.2 behavior even though newer schemas mark
+the image optional for pooled requests.
 
 The Go unit tests run without Kubernetes, PostgreSQL, or OpenSandbox:
 

@@ -476,6 +476,7 @@ func (s *Server) create(w http.ResponseWriter, r *http.Request) {
 	req.Header.Set("OPEN-SANDBOX-API-KEY", s.cfg.UpstreamKey)
 	resp, e := s.http.Do(req)
 	if e != nil {
+		log.Printf("sandbox create upstream request failed request=%s upstream=%s: %v", requestID(r), s.cfg.Upstream, e)
 		jsonWrite(w, 502, map[string]string{"detail": "upstream unavailable"})
 		return
 	}
@@ -496,6 +497,7 @@ func (s *Server) create(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if resp.StatusCode >= 300 {
+		log.Printf("sandbox create upstream response failed request=%s upstream=%s status=%d", requestID(r), s.cfg.Upstream, resp.StatusCode)
 		s.audit(r.Context(), requestID(r), t.ID, t.PrincipalUID, "sandbox.create", "", "failed", fmt.Sprintf("upstream status %d", resp.StatusCode))
 	}
 	w.Header().Set("Content-Type", "application/json")

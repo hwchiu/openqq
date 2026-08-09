@@ -15,6 +15,7 @@ CLIENT_TOKEN="${TENANT_SERVICEACCOUNT_TOKEN:-}"
 CLIENT_NAMESPACE="${TENANT_NAMESPACE:-kfa-test}"
 CLIENT_SERVICE_ACCOUNT="${TENANT_SERVICE_ACCOUNT:-kfa-test-client}"
 POOL_REF="${OPENSANDBOX_POOL_REF:-python-warm-pool}"
+SANDBOX_IMAGE="${OPENSANDBOX_IMAGE:-python:3.12-slim}"
 EXEC_PORT="${OPENSANDBOX_EXEC_PORT:-44772}"
 CHECK_EGRESS="${CHECK_EGRESS:-0}"
 CHECK_K8S="${CHECK_K8S:-1}"
@@ -27,8 +28,8 @@ TENANT_CREATED=0
 TMP_DIR="$(mktemp -d)"
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
-json() { curl -fsS --retry 3 --retry-delay 1 --retry-connrefused --max-time 30 "$@"; }
-json_long() { curl -fsS --retry 3 --retry-delay 1 --retry-connrefused --max-time "$SANDBOX_CREATE_TIMEOUT" "$@"; }
+json() { curl --fail-with-body -sS --retry 3 --retry-delay 1 --retry-connrefused --max-time 30 "$@"; }
+json_long() { curl --fail-with-body -sS --retry 3 --retry-delay 1 --retry-connrefused --max-time "$SANDBOX_CREATE_TIMEOUT" "$@"; }
 cleanup() {
   if [[ -n "$SANDBOX_ID" && -n "$CLIENT_TOKEN" ]]; then
     curl -sS -X DELETE --max-time 30 -H "Authorization: Bearer $CLIENT_TOKEN" \
@@ -68,7 +69,7 @@ TENANT_CREATED=1
 
 request="$(json_long -X POST "$BASE_URL/v1/sandboxes" \
   -H "Authorization: Bearer $CLIENT_TOKEN" -H 'Content-Type: application/json' \
-  -d "$(jq -nc --arg pool "$POOL_REF" '{timeout:120,extensions:{poolRef:$pool},metadata:{source:"tenant-server-integration"}}')")" \
+  -d "$(jq -nc --arg pool "$POOL_REF" --arg image "$SANDBOX_IMAGE" '{image:{uri:$image},timeout:120,extensions:{poolRef:$pool},metadata:{source:"tenant-server-integration"}}')")" \
   || fail "sandbox create failed"
 SANDBOX_ID="$(jq -r .id <<<"$request")"
 [[ -n "$SANDBOX_ID" && "$SANDBOX_ID" != null ]] || fail "sandbox ID missing: $request"
