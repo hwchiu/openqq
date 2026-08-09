@@ -69,3 +69,16 @@ The Go unit tests run without Kubernetes, PostgreSQL, or OpenSandbox:
 cd ../tenant-server-go
 go test -race -count=1 ./...
 ```
+
+The PostgreSQL integration test is skipped unless `TEST_DATABASE_URL` is set.
+It verifies KFA UID principal binding and concurrent quota reservations:
+
+```bash
+TEST_DATABASE_URL=postgres://postgres:password@127.0.0.1:5432/tenant_test \
+go test -race -count=1 -run TestPostgresPrincipalAndQuotaIntegration ./...
+```
+
+The reservation transaction locks the tenant row, counts allocated ownership
+plus active reservations, and removes reservations older than ten minutes.
+OpenSandbox create is called only after a reservation is committed; success
+commits ownership and all other paths release the reservation.

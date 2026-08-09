@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -74,6 +76,7 @@ func (w *statusWriter) Write(p []byte) (int, error) {
 
 var (
 	registry = prometheus.NewRegistry()
+	errQuota = errors.New("tenant sandbox quota exceeded")
 )
 
 type tenantContextKey struct{}
@@ -107,14 +110,14 @@ func jsonWrite(w http.ResponseWriter, code int, v any) {
 }
 func (s *Server) tenant(ctx context.Context, identity Identity) (*Tenant, error) {
 	var t Tenant
-	err := s.db.QueryRow(ctx, `SELECT tenant_id,cluster_name,namespace,service_account,principal_uid,scopes,max_concurrent,enabled FROM tenants WHERE cluster_name=$1 AND namespace=$2 AND service_account=$3 AND (principal_uid=$4 OR principal_uid='') AND enabled`, identity.ClusterName, identity.Namespace, identity.ServiceAccount, identity.PrincipalUID).Scan(&t.ID, &t.ClusterName, &t.Namespace, &t.ServiceAccount, &t.PrincipalUID, &t.Scopes, &t.MaxConcurrent, &t.Enabled)
+	err := s.db.QueryRow(ctx, `SELECT tenant_id,cluster_name,namespace,service_account,principal_uid,scopes,max_concurrent,enabled FROM tenants WHERE enabled AND (tenant_id IN (SELECT tenant_id FROM tenant_principals WHERE cluster_name=$1 AND principal_uid=$4 AND enabled) OR (cluster_name=$1 AND namespace=$2 AND service_account=$3 AND (principal_uid=$4 OR principal_uid='')))`, identity.ClusterName, identity.Namespace, identity.ServiceAccount, identity.PrincipalUID).Scan(&t.ID, &t.ClusterName, &t.Namespace, &t.ServiceAccount, &t.PrincipalUID, &t.Scopes, &t.MaxConcurrent, &t.Enabled)
 	if err != nil {
 		return nil, err
 	}
 	// Existing username-only mappings are upgraded on first successful KFA
 	// authentication. New mappings should provide principal_uid explicitly.
 	if identity.PrincipalUID != "" && t.PrincipalUID == "" {
-		if _, err := s.db.Exec(ctx, `UPDATE tenants SET principal_uid=$1,updated_at=CURRENT_TIMESTAMP WHERE tenant_id=$2 AND principal_uid=''`, identity.PrincipalUID, t.ID); err != nil {
+		if err := s.bindPrincipal(ctx, t.ID, identity); err != nil {
 			return nil, err
 		}
 		t.PrincipalUID = identity.PrincipalUID
@@ -242,7 +245,89 @@ func (s *Server) admin(w http.ResponseWriter, r *http.Request) bool {
 
 func (s *Server) initDB(ctx context.Context) error {
 	_, e := s.db.Exec(ctx, `CREATE TABLE IF NOT EXISTS tenants(tenant_id TEXT PRIMARY KEY,cluster_name TEXT NOT NULL DEFAULT '',namespace TEXT NOT NULL DEFAULT '',service_account TEXT NOT NULL DEFAULT '',principal_uid TEXT NOT NULL DEFAULT '',scopes TEXT NOT NULL,max_concurrent INTEGER NOT NULL,enabled BOOLEAN NOT NULL DEFAULT TRUE,created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP); ALTER TABLE tenants ADD COLUMN IF NOT EXISTS cluster_name TEXT NOT NULL DEFAULT ''; ALTER TABLE tenants ADD COLUMN IF NOT EXISTS namespace TEXT NOT NULL DEFAULT ''; ALTER TABLE tenants ADD COLUMN IF NOT EXISTS service_account TEXT NOT NULL DEFAULT ''; ALTER TABLE tenants ADD COLUMN IF NOT EXISTS principal_uid TEXT NOT NULL DEFAULT ''; ALTER TABLE tenants DROP COLUMN IF EXISTS key_hash; CREATE UNIQUE INDEX IF NOT EXISTS tenants_identity_idx ON tenants(cluster_name,namespace,service_account) WHERE cluster_name <> '' AND namespace <> '' AND service_account <> ''; CREATE UNIQUE INDEX IF NOT EXISTS tenants_principal_uid_idx ON tenants(cluster_name,principal_uid) WHERE cluster_name <> '' AND principal_uid <> ''; CREATE TABLE IF NOT EXISTS sandbox_owners(sandbox_id TEXT PRIMARY KEY,tenant_id TEXT NOT NULL,allocation_state TEXT NOT NULL DEFAULT 'allocated',created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,last_activity_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP); CREATE INDEX IF NOT EXISTS sandbox_owners_tenant_idx ON sandbox_owners(tenant_id,allocation_state);`)
+	if e != nil {
+		return e
+	}
+	_, e = s.db.Exec(ctx, `CREATE TABLE IF NOT EXISTS tenant_principals(principal_id BIGSERIAL PRIMARY KEY,tenant_id TEXT NOT NULL REFERENCES tenants(tenant_id) ON DELETE CASCADE,cluster_name TEXT NOT NULL,principal_uid TEXT NOT NULL,namespace TEXT NOT NULL,service_account TEXT NOT NULL,enabled BOOLEAN NOT NULL DEFAULT TRUE,created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP); CREATE UNIQUE INDEX IF NOT EXISTS tenant_principal_uid_idx ON tenant_principals(cluster_name,principal_uid); CREATE UNIQUE INDEX IF NOT EXISTS tenant_principal_name_idx ON tenant_principals(cluster_name,namespace,service_account); INSERT INTO tenant_principals(tenant_id,cluster_name,principal_uid,namespace,service_account) SELECT tenant_id,cluster_name,principal_uid,namespace,service_account FROM tenants WHERE principal_uid <> '' ON CONFLICT (cluster_name,principal_uid) DO NOTHING; CREATE TABLE IF NOT EXISTS quota_reservations(reservation_id TEXT PRIMARY KEY,tenant_id TEXT NOT NULL REFERENCES tenants(tenant_id) ON DELETE CASCADE,created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP); CREATE INDEX IF NOT EXISTS quota_reservations_tenant_idx ON quota_reservations(tenant_id,created_at); CREATE TABLE IF NOT EXISTS audit_events(event_id BIGSERIAL PRIMARY KEY,request_id TEXT NOT NULL,tenant_id TEXT NOT NULL DEFAULT '',principal_uid TEXT NOT NULL DEFAULT '',action TEXT NOT NULL,resource_id TEXT NOT NULL DEFAULT '',result TEXT NOT NULL,reason TEXT NOT NULL DEFAULT '',created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP); CREATE INDEX IF NOT EXISTS audit_events_tenant_time_idx ON audit_events(tenant_id,created_at DESC);`)
 	return e
+}
+
+func requestID(r *http.Request) string {
+	if v := strings.TrimSpace(r.Header.Get("X-Request-ID")); v != "" && len(v) <= 128 && !strings.ContainsAny(v, "\r\n") {
+		return v
+	}
+	id, err := reservationID()
+	if err != nil {
+		return fmt.Sprintf("request-%d", time.Now().UnixNano())
+	}
+	return id
+}
+
+func (s *Server) audit(ctx context.Context, id, tenantID, principalUID, action, resourceID, result, reason string) {
+	if _, err := s.db.Exec(ctx, `INSERT INTO audit_events(request_id,tenant_id,principal_uid,action,resource_id,result,reason) VALUES($1,$2,$3,$4,$5,$6,$7)`, id, tenantID, principalUID, action, resourceID, result, reason); err != nil {
+		log.Printf("audit write failed request=%s action=%s: %v", id, action, err)
+	}
+}
+
+func reservationID() (string, error) {
+	b := make([]byte, 12)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return "reservation-" + hex.EncodeToString(b), nil
+}
+
+func (s *Server) reserveQuota(ctx context.Context, tenantID string) (string, error) {
+	id, err := reservationID()
+	if err != nil {
+		return "", err
+	}
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback(ctx)
+	_, err = tx.Exec(ctx, `DELETE FROM quota_reservations WHERE created_at < CURRENT_TIMESTAMP - INTERVAL '10 minutes'`)
+	if err != nil {
+		return "", err
+	}
+	var limit int
+	if err = tx.QueryRow(ctx, `SELECT max_concurrent FROM tenants WHERE tenant_id=$1 AND enabled FOR UPDATE`, tenantID).Scan(&limit); err != nil {
+		return "", err
+	}
+	var used int
+	if err = tx.QueryRow(ctx, `SELECT (SELECT count(*) FROM sandbox_owners WHERE tenant_id=$1 AND allocation_state='allocated') + (SELECT count(*) FROM quota_reservations WHERE tenant_id=$1)`, tenantID).Scan(&used); err != nil {
+		return "", err
+	}
+	if used >= limit {
+		return "", errQuota
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO quota_reservations(reservation_id,tenant_id) VALUES($1,$2)`, id, tenantID); err != nil {
+		return "", err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return "", err
+	}
+	return id, nil
+}
+
+func (s *Server) releaseQuota(ctx context.Context, id string) {
+	_, _ = s.db.Exec(ctx, `DELETE FROM quota_reservations WHERE reservation_id=$1`, id)
+}
+
+func (s *Server) bindPrincipal(ctx context.Context, tenantID string, identity Identity) error {
+	if identity.PrincipalUID == "" {
+		return errors.New("ServiceAccount UID is required")
+	}
+	result, err := s.db.Exec(ctx, `INSERT INTO tenant_principals(tenant_id,cluster_name,principal_uid,namespace,service_account) VALUES($1,$2,$3,$4,$5) ON CONFLICT (cluster_name,principal_uid) DO UPDATE SET enabled=tenant_principals.enabled WHERE tenant_principals.tenant_id=$1`, tenantID, identity.ClusterName, identity.PrincipalUID, identity.Namespace, identity.ServiceAccount)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return errors.New("ServiceAccount principal is already bound to another tenant")
+	}
+	_, err = s.db.Exec(ctx, `UPDATE tenants SET principal_uid=CASE WHEN principal_uid='' THEN $1 ELSE principal_uid END,updated_at=CURRENT_TIMESTAMP WHERE tenant_id=$2`, identity.PrincipalUID, tenantID)
+	return err
 }
 func (s *Server) recordOwner(ctx context.Context, id, tenant string) error {
 	_, e := s.db.Exec(ctx, `INSERT INTO sandbox_owners(sandbox_id,tenant_id) VALUES($1,$2) ON CONFLICT(sandbox_id) DO UPDATE SET tenant_id=EXCLUDED.tenant_id,allocation_state='allocated',last_activity_at=CURRENT_TIMESTAMP`, id, tenant)
@@ -318,11 +403,19 @@ func (s *Server) create(w http.ResponseWriter, r *http.Request) {
 	if t == nil || !t.scope(w, "sandbox:create") {
 		return
 	}
-	if s.activeCount(r.Context(), t.ID) >= t.MaxConcurrent {
+	reservation, err := s.reserveQuota(r.Context(), t.ID)
+	if errors.Is(err, errQuota) {
 		s.quota.WithLabelValues(t.ID).Inc()
+		s.audit(r.Context(), requestID(r), t.ID, t.PrincipalUID, "sandbox.create", "", "rejected", "quota exceeded")
 		jsonWrite(w, 429, map[string]string{"detail": "tenant sandbox quota exceeded"})
 		return
 	}
+	if err != nil {
+		s.audit(r.Context(), requestID(r), t.ID, t.PrincipalUID, "sandbox.create", "", "failed", "quota state unavailable")
+		jsonWrite(w, 503, map[string]string{"detail": "tenant quota state unavailable"})
+		return
+	}
+	defer s.releaseQuota(r.Context(), reservation)
 	body, e := io.ReadAll(io.LimitReader(r.Body, s.cfg.MaxBody+1))
 	if e != nil || int64(len(body)) > s.cfg.MaxBody {
 		jsonWrite(w, 413, map[string]string{"detail": "request body exceeds tenant server limit"})
@@ -349,7 +442,11 @@ func (s *Server) create(w http.ResponseWriter, r *http.Request) {
 			}
 			s.created.WithLabelValues(t.ID).Inc()
 			s.active.WithLabelValues(t.ID).Inc()
+			s.audit(r.Context(), requestID(r), t.ID, t.PrincipalUID, "sandbox.create", x.ID, "succeeded", "")
 		}
+	}
+	if resp.StatusCode >= 300 {
+		s.audit(r.Context(), requestID(r), t.ID, t.PrincipalUID, "sandbox.create", "", "failed", fmt.Sprintf("upstream status %d", resp.StatusCode))
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(resp.StatusCode)
@@ -402,6 +499,7 @@ func (s *Server) sandbox(w http.ResponseWriter, r *http.Request) {
 			s.forward(w, r, "/v1/sandboxes/"+id, t, "sandbox:delete")
 			s.removeOwner(r.Context(), id, t.ID)
 			s.deleted.WithLabelValues(t.ID).Inc()
+			s.audit(r.Context(), requestID(r), t.ID, t.PrincipalUID, "sandbox.delete", id, "requested", "")
 			return
 		}
 		s.forward(w, r, "/v1/sandboxes/"+id, t, "sandbox:read")
@@ -439,6 +537,14 @@ func (s *Server) adminTenants(w http.ResponseWriter, r *http.Request) {
 			jsonWrite(w, 409, map[string]string{"detail": "tenant already exists"})
 			return
 		}
+		if in.PrincipalUID != "" {
+			if e = s.bindPrincipal(r.Context(), in.TenantID, Identity{ClusterName: in.ClusterName, Namespace: in.Namespace, ServiceAccount: in.ServiceAccount, PrincipalUID: in.PrincipalUID}); e != nil {
+				_, _ = s.db.Exec(r.Context(), `DELETE FROM tenants WHERE tenant_id=$1`, in.TenantID)
+				jsonWrite(w, 409, map[string]string{"detail": "principal binding failed: " + e.Error()})
+				return
+			}
+		}
+		s.audit(r.Context(), requestID(r), in.TenantID, in.PrincipalUID, "tenant.create", in.TenantID, "succeeded", "")
 		jsonWrite(w, 200, map[string]any{"tenant_id": in.TenantID, "cluster_name": in.ClusterName, "namespace": in.Namespace, "service_account": in.ServiceAccount, "principal_uid": in.PrincipalUID, "scopes": in.Scopes, "max_concurrent_sandboxes": in.MaxConcurrent})
 		return
 	}
@@ -472,11 +578,38 @@ func (s *Server) disable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	jsonWrite(w, 200, map[string]any{"tenant_id": id, "enabled": false})
+	s.audit(r.Context(), requestID(r), id, "", "tenant.disable", id, "succeeded", "")
+}
+
+func (s *Server) adminPrincipal(w http.ResponseWriter, r *http.Request) {
+	if !s.admin(w, r) {
+		return
+	}
+	tenantID := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/admin/tenants/"), "/principals")
+	var in TenantInput
+	if json.NewDecoder(r.Body).Decode(&in) != nil || in.ClusterName == "" || in.Namespace == "" || in.ServiceAccount == "" || in.PrincipalUID == "" {
+		jsonWrite(w, 400, map[string]string{"detail": "cluster_name, namespace, service_account and principal_uid are required"})
+		return
+	}
+	var exists bool
+	if err := s.db.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM tenants WHERE tenant_id=$1)`, tenantID).Scan(&exists); err != nil || !exists {
+		jsonWrite(w, 404, map[string]string{"detail": "tenant not found"})
+		return
+	}
+	if err := s.bindPrincipal(r.Context(), tenantID, Identity{ClusterName: in.ClusterName, Namespace: in.Namespace, ServiceAccount: in.ServiceAccount, PrincipalUID: in.PrincipalUID}); err != nil {
+		jsonWrite(w, 409, map[string]string{"detail": "principal binding failed: " + err.Error()})
+		return
+	}
+	s.audit(r.Context(), requestID(r), tenantID, in.PrincipalUID, "principal.bind", in.PrincipalUID, "succeeded", "")
+	jsonWrite(w, 200, map[string]any{"tenant_id": tenantID, "cluster_name": in.ClusterName, "namespace": in.Namespace, "service_account": in.ServiceAccount, "principal_uid": in.PrincipalUID, "enabled": true})
 }
 
 func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	sw := &statusWriter{ResponseWriter: w}
 	w = sw
+	rid := requestID(r)
+	r.Header.Set("X-Request-ID", rid)
+	w.Header().Set("X-Request-ID", rid)
 	start := time.Now()
 	tenant := "unauthenticated"
 	route := r.URL.Path
@@ -502,12 +635,16 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 		promhttp.HandlerFor(registry, promhttp.HandlerOpts{}).ServeHTTP(w, r)
 		return
 	}
-	if strings.HasPrefix(r.URL.Path, "/admin/tenants") {
-		if r.Method == "DELETE" {
-			s.disable(w, r)
-		} else {
-			s.adminTenants(w, r)
-		}
+	if strings.HasSuffix(r.URL.Path, "/principals") && strings.HasPrefix(r.URL.Path, "/admin/tenants/") && r.Method == "POST" {
+		s.adminPrincipal(w, r)
+		return
+	}
+	if r.URL.Path == "/admin/tenants" && (r.Method == "GET" || r.Method == "POST") {
+		s.adminTenants(w, r)
+		return
+	}
+	if strings.HasPrefix(r.URL.Path, "/admin/tenants/") && r.Method == "DELETE" {
+		s.disable(w, r)
 		return
 	}
 	if r.URL.Path == "/v1/sandboxes" && r.Method == "POST" {

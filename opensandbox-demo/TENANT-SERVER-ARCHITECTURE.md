@@ -39,7 +39,14 @@ OpenSandbox Server 只負責 sandbox lifecycle 與 runtime 操作；tenant ident
 
 Tenant Server 不自行簽發、解析或保存 tenant JWT/API key。它把 client 的
 ServiceAccount token 交給 KFA 驗證，再用 KFA 回傳的
-`cluster/namespace/serviceaccount` identity 對應 PostgreSQL tenant record。
+`cluster/service-account-uid` principal 對應 PostgreSQL tenant record；
+namespace 與 ServiceAccount name 作為可讀 metadata 與相容查詢欄位。
+
+Quota admission is transactional. Before calling OpenSandbox, a replica locks
+the tenant row, counts allocated ownership plus active reservations, and writes
+a short-lived reservation. A successful upstream create converts that capacity
+into `sandbox_owners`; failure releases the reservation. Reservations older
+than ten minutes are cleaned on the next reservation attempt.
 
 ## 2. Tenant Server 必須提供的效果
 
@@ -99,7 +106,7 @@ request
   |
   +--> parse Bearer ServiceAccount token
   +--> Tenant Server SA calls KFA TokenReview
-  +--> load enabled tenant by cluster/namespace/serviceaccount
+  +--> load enabled tenant by cluster/service-account-uid
   +--> resolve route -> required scope
   +--> check request size / rate / tenant quota
   +--> for sandbox ID: verify sandbox_ownership(tenant_id, sandbox_id)
@@ -173,7 +180,7 @@ sequenceDiagram
         KFA->>KFA: verify signature, issuer, expiry and SA claims
         KFA-->>TS: authenticated identity + cluster extra claim
     end
-    TS->>DB: SELECT enabled tenant by cluster/namespace/serviceaccount
+    TS->>DB: SELECT enabled tenant by cluster/service-account-uid
     DB-->>TS: tenant_id, scopes, quota
     TS->>TS: route/scope/quota/ownership admission
     TS->>OS: forward allowlisted request with private server credential

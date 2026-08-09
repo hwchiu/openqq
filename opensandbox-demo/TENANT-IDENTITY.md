@@ -76,27 +76,15 @@ only the caller credential used when asking KFA to review the client token.
 
 ## PostgreSQL binding
 
-The current schema keeps the binding on the tenant record:
+The tenant record keeps logical policy, while principal bindings are stored
+separately so one tenant can have multiple ServiceAccounts:
 
 ```text
 tenants
   tenant_id
-  cluster_name
-  namespace
-  service_account
-  principal_uid
   scopes
   max_concurrent
   enabled
-```
-
-The authoritative lookup requires the KFA UID to match. A unique partial index
-prevents one ServiceAccount UID in a cluster from being bound to two tenants.
-The existing username identity index remains for compatibility and human
-operations.
-
-An eventual multi-principal schema can move the identity columns into a
-`tenant_principals` table:
 
 ```text
 tenant_principals
@@ -108,9 +96,10 @@ tenant_principals
   enabled
 ```
 
-That would allow several ServiceAccounts to represent one tenant without
-changing sandbox ownership or metrics. The current implementation supports
-the strong UID column and preserves the existing one-principal admin API.
+The authoritative lookup requires the KFA UID to match. Unique indexes prevent
+one ServiceAccount UID, or one readable cluster/namespace/name identity, from
+being bound to two tenants. Several ServiceAccounts can represent one tenant
+without changing sandbox ownership or metrics.
 
 ## ServiceAccount lifecycle and risks
 
@@ -165,7 +154,8 @@ observed `user.uid` is written to that row. Future requests require the UID.
 
 This gives an operational migration path:
 
-1. Deploy the new Tenant Server image.
+1. Deploy the new Tenant Server image; it creates `tenant_principals` and
+   backfills existing non-empty UID mappings.
 2. Existing mapped ServiceAccounts authenticate once.
 3. Tenant Server backfills their UID in PostgreSQL.
 4. Review `/admin/tenants` output for non-empty `principal_uid`.
@@ -232,4 +222,23 @@ When a ServiceAccount is intentionally recreated:
 
 The existing smoke tests remain valid because they use a temporary
 username-based mapping and the first authenticated request upgrades it with
-the KFA UID. The test cleanup removes the temporary tenant afterward.
+the KFA UID. Additional principals can be bound through:
+
+```http
+POST /admin/tenants/<tenant_id>/principals
+```
+
+with the cluster, namespace, ServiceAccount name, and `principal_uid` fields.
+The test cleanup removes the temporary tenant and its principals afterward.
+
+Tenant sandbox quota is reservation-based. Tenant Server locks the tenant row
+in PostgreSQL, counts allocated sandboxes plus active reservations, and creates
+a short-lived reservation before calling OpenSandbox. This prevents two
+replicas from both passing the same quota check. Reservations older than ten
+minutes are removed by the next reservation attempt.
+
+Tenant Server also writes `audit_events` for tenant creation, principal
+binding, tenant disable, sandbox create, sandbox delete, and quota rejection.
+Audit records contain request ID, tenant ID, principal UID, action, resource
+ID, result, and reason. They never contain bearer tokens, OpenSandbox keys,
+command content, or file content.
