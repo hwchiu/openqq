@@ -86,11 +86,30 @@ snapshot_status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 \
 # `/v1/snapshots` is rejected before authentication by design. Exercise an
 # authenticated allowlisted route separately; upstream availability is not
 # part of this smoke test, so 200/4xx/502 are all acceptable here.
-curl -sS -o /dev/null --max-time 15 \
-  -H "Authorization: Bearer $CLIENT_TOKEN" "$BASE_URL/v1/sandboxes" || true
-
-metrics_after="$(json "$BASE_URL/metrics")"
-grep -q "tenant=\"$TENANT_ID\"" <<<"$metrics_after" || fail "tenant label missing from metrics"
+#
+# Metrics are process-local. With three replicas behind a NodePort, the
+# authenticated request and the following /metrics request can land on
+# different Pods. In Kubernetes mode, send the request directly to every
+# host-networked replica and inspect that same node-local endpoint.
+if [[ "$CHECK_K8S" == 1 ]]; then
+  metric_found=0
+  while read -r ip; do
+    [[ -z "$ip" ]] && continue
+    curl -sS -o /dev/null --max-time 5 \
+      -H "Authorization: Bearer $CLIENT_TOKEN" "http://$ip:18080/v1/sandboxes" 2>/dev/null || true
+    node_metrics="$(curl -fsS --max-time 10 "http://$ip:18080/metrics")" || fail "cannot read metrics from node $ip"
+    if grep -q "tenant=\"$TENANT_ID\"" <<<"$node_metrics"; then
+      metric_found=1
+    fi
+  done < <(kubectl get nodes -o json | jq -r '.items[].status.addresses[] | select(.type == "InternalIP") | .address')
+else
+  curl -sS -o /dev/null --max-time 5 \
+    -H "Authorization: Bearer $CLIENT_TOKEN" "$BASE_URL/v1/sandboxes" 2>/dev/null || true
+  metrics_after="$(json "$BASE_URL/metrics")"
+  metric_found=0
+  grep -q "tenant=\"$TENANT_ID\"" <<<"$metrics_after" && metric_found=1
+fi
+[[ "$metric_found" == 1 ]] || fail "tenant label missing from metrics"
 
 disabled="$(json -X DELETE -H "Authorization: Bearer $ADMIN_TOKEN" \
   "$BASE_URL/admin/tenants/$TENANT_ID")"
