@@ -46,7 +46,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: opensandbox-demo
-          file: tenant-server-go/Dockerfile.registry
+          file: opensandbox-demo/tenant-server-go/Dockerfile.registry
           platforms: linux/amd64
           push: true
           tags: |
@@ -58,7 +58,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: opensandbox-demo
-          file: backend/Dockerfile
+          file: opensandbox-demo/backend/Dockerfile
           platforms: linux/amd64
           push: true
           tags: |
