@@ -1,0 +1,67 @@
+name: Publish mon images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "opensandbox-demo/backend/**"
+      - "opensandbox-demo/frontend/index.html"
+      - "opensandbox-demo/tenant-server-go/**"
+      - "opensandbox-demo/k8s/**"
+      - ".github/workflows/publish-mon-images.yml"
+  workflow_dispatch:
+
+env:
+  REGISTRY_REPOSITORY: hwchiu/mon
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_REPOSITORY }}
+          tags: |
+            type=raw,value=tenant-server-${{ github.sha }}
+            type=raw,value=demo-server-${{ github.sha }}
+            type=raw,value=tenant-server-latest
+            type=raw,value=demo-server-latest
+
+      - name: Build and push Tenant Server (x86_64)
+        uses: docker/build-push-action@v6
+        with:
+          context: opensandbox-demo
+          file: tenant-server-go/Dockerfile.registry
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.REGISTRY_REPOSITORY }}:tenant-server-${{ github.sha }}
+            ${{ env.REGISTRY_REPOSITORY }}:tenant-server-latest
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Build and push Demo Server (x86_64)
+        uses: docker/build-push-action@v6
+        with:
+          context: opensandbox-demo
+          file: backend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.REGISTRY_REPOSITORY }}:demo-server-${{ github.sha }}
+            ${{ env.REGISTRY_REPOSITORY }}:demo-server-latest
+          labels: ${{ steps.meta.outputs.labels }}

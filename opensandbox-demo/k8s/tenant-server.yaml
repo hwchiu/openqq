@@ -47,8 +47,8 @@ spec:
             app.kubernetes.io/name: opensandbox-tenant-server
       containers:
       - name: tenant-server
-        image: opensandbox-api-server:dev
-        imagePullPolicy: Never
+        image: hwchiu/mon:tenant-server-latest
+        imagePullPolicy: Always
         env:
         - name: OPENSANDBOX_SERVER_URL
           value: http://10.107.229.160:8080

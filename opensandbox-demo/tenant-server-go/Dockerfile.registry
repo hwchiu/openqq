@@ -1,0 +1,15 @@
+# Build the Go service for the requested target architecture inside Docker.
+# The registry workflow always sets --platform=linux/amd64.
+FROM --platform=$BUILDPLATFORM golang:1.23-alpine AS builder
+ARG TARGETOS
+ARG TARGETARCH
+WORKDIR /src
+COPY tenant-server-go/go.mod tenant-server-go/go.sum ./tenant-server-go/
+RUN cd tenant-server-go && go mod download
+COPY tenant-server-go ./tenant-server-go
+RUN cd tenant-server-go && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags='-s -w' -o /out/tenant-server .
+
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=builder /out/tenant-server /tenant-server
+USER nonroot:nonroot
+ENTRYPOINT ["/tenant-server"]

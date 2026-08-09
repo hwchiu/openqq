@@ -65,6 +65,30 @@ The validated deployment uses:
 
 Use an accessible registry mirror if another cluster cannot pull these images.
 
+## Docker Hub images and GitHub Actions
+
+The repository workflow `.github/workflows/publish-mon-images.yml` publishes
+both application images to `hwchiu/mon` for `linux/amd64` (x86_64):
+
+| Image | Immutable tag | Deployment tag |
+| --- | --- | --- |
+| Tenant Server | `hwchiu/mon:tenant-server-<git-sha>` | `hwchiu/mon:tenant-server-latest` |
+| Demo Server | `hwchiu/mon:demo-server-<git-sha>` | `hwchiu/mon:demo-server-latest` |
+
+The workflow requires the repository secrets `DOCKERHUB_USERNAME` and
+`DOCKERHUB_TOKEN`. The Tenant Server image cross-compiles the Go binary for
+amd64; the Demo Server image contains the FastAPI backend and its interactive
+runtime frontend. Kubernetes deployments use the `*-latest` tags for the
+test environment; production should pin the immutable SHA tags.
+
+The repository-root `index.html` is the canonical GitHub Pages product
+architecture document. It contains the complete Tenant Server, KFA,
+PostgreSQL, warm-pool, egress, TTL, workflow, API, and observability design.
+`opensandbox-demo/frontend/index.html` is the separately served interactive
+demo UI packaged into the Demo Server image; it is not a second source of
+truth for the product architecture. When the runtime UI changes, update its
+brief workflow section and keep the complete architecture in the root page.
+
 ## Prerequisites
 
 - Kubernetes cluster with a working CNI and enough capacity for the pool.

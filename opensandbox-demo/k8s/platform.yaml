@@ -296,11 +296,8 @@ spec:
     spec:
       containers:
       - name: app
-        image: python:3.12-slim
-        imagePullPolicy: IfNotPresent
-        workingDir: /app
-        command: ["/bin/sh", "-c"]
-        args: ["pip install --no-cache-dir -r /app/requirements.txt >/tmp/pip.log 2>&1 && exec uvicorn app:app --host 0.0.0.0 --port 8080"]
+        image: hwchiu/mon:demo-server-latest
+        imagePullPolicy: Always
         env:
         - name: OPENSANDBOX_SERVER_URL
           value: http://opensandbox-server.opensandbox-system.svc.cluster.local:8080
@@ -329,10 +326,6 @@ spec:
         ports:
         - name: http
           containerPort: 8080
-        volumeMounts:
-        - {name: backend, mountPath: /app/app.py, subPath: app.py, readOnly: true}
-        - {name: requirements, mountPath: /app/requirements.txt, subPath: requirements.txt, readOnly: true}
-        - {name: frontend, mountPath: /app/frontend, readOnly: true}
         readinessProbe:
           httpGet: {path: /health, port: http}
           initialDelaySeconds: 60
@@ -343,10 +336,3 @@ spec:
           initialDelaySeconds: 120
           periodSeconds: 10
           failureThreshold: 6
-      volumes:
-      - name: backend
-        configMap: {name: opensandbox-demo-backend}
-      - name: requirements
-        configMap: {name: opensandbox-demo-backend}
-      - name: frontend
-        configMap: {name: opensandbox-demo-frontend}
