@@ -1,0 +1,12 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: opensandbox-postgres-every-15m
+  namespace: opensandbox-tenant-server
+spec:
+  # CloudNativePG cron schedules include seconds.
+  schedule: "0 */15 * * * *"
+  backupOwnerReference: self
+  method: barmanObjectStore
+  cluster:
+    name: opensandbox-postgres-ha

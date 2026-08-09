@@ -107,6 +107,15 @@ It requires three replicas, a ClusterIP Service, normal Pod networking, and a
 PodDisruptionBudget, and rejects an accidental production NodePort or
 `hostNetwork` setting.
 
+The CloudNativePG backup overlay can be rendered without applying it:
+
+```bash
+./postgres-backup-render-smoke.sh
+```
+
+It intentionally contains bucket/endpoint placeholders and no credentials.
+Replace them and create the referenced Secret only inside the target cluster.
+
 The HTTPS entrypoint can also be validated without changing a cluster:
 
 ```bash

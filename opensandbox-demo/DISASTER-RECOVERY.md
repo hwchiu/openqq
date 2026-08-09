@@ -47,6 +47,22 @@ Do not treat a PostgreSQL PVC snapshot as the only backup. A PVC failure,
 operator mistake, or cluster-wide loss can remove both the primary and local
 replicas.
 
+The repository provides a template overlay at
+`k8s/overlays/postgres-backup/`. It adds a CloudNativePG `barmanObjectStore`
+configuration and a 15-minute `ScheduledBackup`, but deliberately leaves the
+bucket, endpoint, and Secret values as placeholders. Render and review it
+before use:
+
+```bash
+kubectl kustomize --load-restrictor=LoadRestrictionsNone \
+  k8s/overlays/postgres-backup
+```
+
+Create `opensandbox-postgres-backup` through an external secret manager or a
+sealed Secret; never commit access keys. The overlay is not considered
+production-ready until one completed backup and one restore exercise have
+been recorded.
+
 The operator should record evidence for every backup cycle:
 
 ```bash
