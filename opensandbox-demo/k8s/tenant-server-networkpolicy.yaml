@@ -72,7 +72,7 @@ spec:
           kubernetes.io/metadata.name: opensandbox-system
     ports:
     - protocol: TCP
-      port: 18080
+      port: 8080
   - to:
     - namespaceSelector:
         matchLabels:

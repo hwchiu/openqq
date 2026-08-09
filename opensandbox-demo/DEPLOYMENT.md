@@ -14,7 +14,7 @@ Browser
 opensandbox-demo (FastAPI + static frontend)
   |
   v
-opensandbox-server:18080 (ClusterIP, internal only)
+opensandbox-server:8080 (ClusterIP, internal only)
   |
   v
 BatchSandbox CRD + python-warm-pool
@@ -39,7 +39,7 @@ files, executes commands through Execd, and proxies downloads.
 | Demo namespace | `opensandbox-system` |
 | Sandbox namespace | `opensandbox` |
 | Demo Service | `opensandbox-demo`, `NodePort 30080` |
-| OpenSandbox API Service | `opensandbox-server`, internal `ClusterIP:18080` |
+| OpenSandbox API Service | `opensandbox-server`, internal `ClusterIP:8080` |
 | Server replicas | `1` |
 | Demo replicas | `1` |
 | Server state | SQLite on `opensandbox-server-data` |
@@ -270,8 +270,8 @@ kubectl -n opensandbox-system rollout status deployment/opensandbox-demo --timeo
 The demo deployment uses these important environment variables:
 
 ```text
-OPENSANDBOX_SERVER_URL=http://opensandbox-server.opensandbox-system.svc.cluster.local:18080
-OPENSANDBOX_EXEC_BASE_URL_TEMPLATE=http://opensandbox-server.opensandbox-system.svc.cluster.local:18080/v1/sandboxes/{sandbox_id}/proxy/44772
+OPENSANDBOX_SERVER_URL=http://opensandbox-server.opensandbox-system.svc.cluster.local:8080
+OPENSANDBOX_EXEC_BASE_URL_TEMPLATE=http://opensandbox-server.opensandbox-system.svc.cluster.local:8080/v1/sandboxes/{sandbox_id}/proxy/44772
 OPENSANDBOX_POOL_REF=python-warm-pool
 RUN_TTL_SECONDS=180
 OPENSANDBOX_EGRESS_ALLOWED_FQDNS=pypi.org,files.pythonhosted.org,github.com,api.github.com,example.com,google.com,www.google.com
@@ -348,7 +348,7 @@ From a pod inside the cluster, use the Service DNS name. From a control-plane
 host, use the Service ClusterIP or port-forward:
 
 ```bash
-kubectl -n opensandbox-system port-forward svc/opensandbox-server 18080:18080
+kubectl -n opensandbox-system port-forward svc/opensandbox-server 18080:8080
 curl http://127.0.0.1:18080/health
 curl 'http://127.0.0.1:18080/v1/sandboxes?page=1&pageSize=200' | jq
 ```

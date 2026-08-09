@@ -53,7 +53,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: OPENSANDBOX_SERVER_URL
-          value: http://opensandbox-server.opensandbox-system.svc.cluster.local:18080
+          value: http://opensandbox-server.opensandbox-system.svc.cluster.local:8080
         - name: OPENSANDBOX_API_KEY
           valueFrom:
             secretKeyRef:
