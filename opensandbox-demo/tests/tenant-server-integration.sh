@@ -74,12 +74,20 @@ request="$(json_long -X POST "$BASE_URL/v1/sandboxes" \
 SANDBOX_ID="$(jq -r .id <<<"$request")"
 [[ -n "$SANDBOX_ID" && "$SANDBOX_ID" != null ]] || fail "sandbox ID missing: $request"
 
-command_response="$(curl -fsS --retry 2 --retry-delay 2 --max-time 60 \
-  -X POST "$BASE_URL/v1/sandboxes/$SANDBOX_ID/proxy/$EXEC_PORT/command" \
-  -H "Authorization: Bearer $CLIENT_TOKEN" -H 'Content-Type: application/json' \
-  -d '{"command":"python -c \"print(\\\"tenant-integration-ok\\\")\"","cwd":"/workspace","background":false,"timeout":30000}' \
-  || true)"
-grep -q 'tenant-integration-ok' <<<"$command_response" || fail "command response did not contain expected output"
+command_response=""
+ready_deadline=$(( $(date +%s) + SANDBOX_CREATE_TIMEOUT ))
+while (( $(date +%s) < ready_deadline )); do
+  command_response="$(curl -sS --max-time 10 \
+    -X POST "$BASE_URL/v1/sandboxes/$SANDBOX_ID/proxy/$EXEC_PORT/command" \
+    -H "Authorization: Bearer $CLIENT_TOKEN" -H 'Content-Type: application/json' \
+    -d '{"command":"python -c \"print(\\\"tenant-integration-ok\\\")\"","cwd":"/workspace","background":false,"timeout":30000}' \
+    || true)"
+  if grep -q 'tenant-integration-ok' <<<"$command_response"; then
+    break
+  fi
+  sleep 2
+done
+grep -q 'tenant-integration-ok' <<<"$command_response" || fail "command response did not contain expected output: $command_response"
 
 printf 'tenant-server-upload-ok\n' >"$TMP_DIR/input.txt"
 curl -fsS --max-time 60 -X POST \

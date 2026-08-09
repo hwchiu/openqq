@@ -33,7 +33,7 @@ Tenant Server smoke test: PASS
 The smoke test creates a disposable tenant and ServiceAccount and removes both
 through an exit cleanup trap.
 
-## Failed gate and evidence
+## Sandbox integration diagnosis and current gate
 
 The disposable sandbox integration test did not pass:
 
@@ -55,12 +55,31 @@ rejection or KFA authentication failure. The temporary tenant and ServiceAccount
 were cleaned up.
 
 Do not mark sandbox lifecycle, command, file transfer, or egress live
-integration as accepted until the direct OpenSandbox create path is repaired
-and `tests/tenant-server-integration.sh` passes with `CHECK_EGRESS=1`.
+integration as accepted until `tests/tenant-server-integration.sh` passes with
+`CHECK_EGRESS=1`.
 The stale diagnostic record was cleared by a controlled OpenSandbox server
 restart after confirming that no BatchSandbox remained. No PVC or warm-pool
-resource was deleted. A subsequent integration retry still returned 502 before
-creating a BatchSandbox, so the lifecycle gate remains failed.
+resource was deleted.
+
+A subsequent direct request with an explicit image returned HTTP 202 and a
+`Running` sandbox. The original 502 was reproduced as a lab routing failure:
+the Tenant Server NodePort distributed requests across all three
+host-networked replicas, while only `10.10.0.154` could reach the
+OpenSandbox ClusterIP. As a lab-only diagnostic, OpenSandbox was temporarily
+exposed through private NodePort `30083` and Tenant Server was pointed at
+`http://10.10.0.154:30083`; all three nodes could then reach the OpenSandbox
+health endpoint and the create request passed.
+
+The next integration attempt reached sandbox creation and claimed a warm-pool
+pod, but command execution timed out. Direct testing from the OpenSandbox
+server Pod showed that `10.244.0.172` can reach same-node sandbox Pods but
+cannot reach sandbox Pods on `10.244.3.0/24` or `10.244.4.0/24`. Cilium's
+VXLAN packets leave `10.10.0.154` but are not received on the other nodes'
+private interfaces. The Kubernetes Node and CiliumNode addresses are now all
+private (`10.10.0.118`, `10.10.0.48`, `10.10.0.154`), so the remaining
+blocker is the external/private-network firewall path for Cilium VXLAN UDP
+8472. The complete command/file/egress integration gate remains unaccepted
+until that path is opened or the CNI is repaired.
 
 ## Lab networking limitation
 
@@ -77,7 +96,7 @@ default-deny NetworkPolicy and ClusterIP design are enforceable in a healthy
 CNI environment. The live lab currently uses static private endpoints:
 
 ```text
-OpenSandbox Server: 10.107.229.160:8080
+OpenSandbox Server: 10.10.0.154:30083 (lab-only NodePort workaround)
 KFA:                10.10.0.48:30082
 Tenant Server:      hostNetwork, NodePort 30081
 ```
@@ -89,10 +108,11 @@ and upstream traffic.
 
 ## Remaining live acceptance gates
 
-1. Repair Cilium/kube-proxy Service and CoreDNS routing, then rerun the normal
-   Pod-networking Tenant Server rollout.
-2. Repair the OpenSandbox create/controller path and rerun command,
-   upload/download, egress allow, egress reset, and cleanup integration.
+1. Allow Cilium VXLAN UDP/8472 between `10.10.0.0/24` nodes (or use a
+   verified CNI transport), then rerun the normal Pod-networking Tenant Server
+   rollout and Service/CoreDNS checks.
+2. Rerun command, upload/download, egress allow, egress reset, and cleanup
+   integration after cross-node sandbox Pod traffic is verified.
 3. Apply HTTPS Ingress only after a TLS Secret is provisioned and verify the
    public path with the ingress smoke test.
 4. Configure the PostgreSQL object-store destination and Secret, wait for a

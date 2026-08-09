@@ -73,7 +73,10 @@ may wait for the OpenSandbox server to report a ready sandbox; override
 trap deletes the sandbox and temporary tenant. The request always includes an
 explicit `image` together with `extensions.poolRef`; this is required by the
 currently deployed OpenSandbox v0.2.2 behavior even though newer schemas mark
-the image optional for pooled requests.
+the image optional for pooled requests. After the asynchronous create response,
+the test retries the first command until the sandbox endpoint is ready; a 404
+during that readiness window is expected and is not treated as a permanent
+failure.
 
 The Go unit tests run without Kubernetes, PostgreSQL, or OpenSandbox:
 
