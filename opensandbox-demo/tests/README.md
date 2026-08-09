@@ -113,6 +113,13 @@ The KFA production overlay can be validated without changing a cluster:
 ./kfa-overlay-render-smoke.sh
 ```
 
+PrometheusRule and Grafana dashboard structure can be checked without a live
+Prometheus Operator:
+
+```bash
+./tenant-server-alerts-render-smoke.sh
+```
+
 It requires three replicas, a ClusterIP Service, normal Pod networking, and a
 PodDisruptionBudget, and rejects an accidental production NodePort or
 `hostNetwork` setting.

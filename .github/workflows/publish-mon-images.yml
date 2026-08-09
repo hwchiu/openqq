@@ -45,6 +45,7 @@ jobs:
           opensandbox-demo/tests/kfa-overlay-render-smoke.sh
           opensandbox-demo/tests/tenant-server-ingress-render-smoke.sh
           opensandbox-demo/tests/postgres-backup-render-smoke.sh
+          opensandbox-demo/tests/tenant-server-alerts-render-smoke.sh
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
