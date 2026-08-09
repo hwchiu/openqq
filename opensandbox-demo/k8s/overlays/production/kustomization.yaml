@@ -1,0 +1,42 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# This overlay is for a private, routable production cluster. Validate API
+# server reachability and KFA's multi-replica behavior before applying it.
+# The source manifest is intentionally kept as the lab file; render with
+# --load-restrictor=LoadRestrictionsNone because it is one level above this
+# overlay and contains the shared RBAC/configuration resources.
+resources:
+- ../../kube-federated-auth.yaml
+- pdb.yaml
+
+patches:
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: kube-federated-auth
+    namespace: kube-federated-auth
+  patch: |-
+    - op: replace
+      path: /spec/replicas
+      value: 3
+    - op: remove
+      path: /spec/template/spec/hostNetwork
+    - op: remove
+      path: /spec/template/spec/dnsPolicy
+    - op: remove
+      path: /spec/template/spec/nodeSelector
+    - op: remove
+      path: /spec/template/spec/hostAliases
+- target:
+    version: v1
+    kind: Service
+    name: kube-federated-auth
+    namespace: kube-federated-auth
+  patch: |-
+    - op: replace
+      path: /spec/type
+      value: ClusterIP
+    - op: remove
+      path: /spec/ports/0/nodePort

@@ -54,3 +54,12 @@ spec:
       annotations:
         summary: Tenant Server upstream or internal errors are elevated
         description: Tenant Server is returning 5xx responses at {{ $value }} requests per second.
+    - alert: TenantServerEgressFailures
+      expr: sum(rate(opensandbox_tenant_server_egress_operations_total{result="failed"}[5m])) > 0
+      for: 5m
+      labels:
+        severity: critical
+        service: tenant-server
+      annotations:
+        summary: Tenant Server egress policy operations are failing
+        description: Egress grant, revoke, or reset operations are failing at {{ $value }} operations per second.

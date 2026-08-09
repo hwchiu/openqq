@@ -454,7 +454,7 @@ The Go OpenSandbox Tenant Server is the tenant-aware boundary in front of the
 single OpenSandbox Server API key. A tenant never submits or receives the
 OpenSandbox server key. The client sends a Kubernetes ServiceAccount token;
 Tenant Server sends it to KFA using its own ServiceAccount token, maps the
-verified `cluster/namespace/serviceaccount` identity to PostgreSQL, checks
+verified `(cluster, principal_uid)` identity to PostgreSQL, checks
 scopes and quota, and forwards only the allowed OpenSandbox API surface.
 
 Supported tenant stores:
@@ -482,6 +482,7 @@ opensandbox_tenant_server_commands_total{tenant}
 opensandbox_tenant_server_uploaded_bytes_total{tenant}
 opensandbox_tenant_server_downloaded_bytes_total{tenant}
 opensandbox_tenant_server_quota_rejections_total{tenant}
+opensandbox_tenant_server_egress_operations_total{tenant,method,result}
 ```
 
 For Vault mode, the tenant server authenticates with the Kubernetes auth method and
@@ -693,3 +694,26 @@ The complete developer workflow, including TokenReview payloads, cache-hit and
 cache-miss timing, token expiry, failure codes, multi-replica behavior and admin
 identity onboarding, is documented in
 [TENANT-SERVER-ARCHITECTURE.md](TENANT-SERVER-ARCHITECTURE.md#321-kfa-驗證的完整-request-workflow).
+
+### Grafana dashboard and KFA production overlay
+
+Import `k8s/tenant-server-dashboard.json` into Grafana after the Prometheus
+datasource is available. It covers request rate, quota rejection, active
+sandboxes, and egress operations/failures by tenant. The PrometheusRule in
+`k8s/tenant-server-alerts.yaml` raises an alert when egress operations continue
+to fail.
+
+`k8s/kube-federated-auth.yaml` remains a lab manifest: it uses one replica,
+host networking, and a NodePort because the original test cluster had
+intermittent Service routing. For a private production cluster with verified
+Pod-to-API-server routing, render the HA overlay first:
+
+```bash
+kubectl kustomize --load-restrictor=LoadRestrictionsNone k8s/overlays/production
+kubectl kustomize --load-restrictor=LoadRestrictionsNone k8s/overlays/production | kubectl apply -f -
+```
+
+The overlay changes KFA to three replicas, a ClusterIP Service, normal Pod DNS
+and a two-pod PodDisruptionBudget. Do not apply it until the KFA pods can reach
+the configured private API-server endpoint and the KFA smoke test passes; this
+is a validation gate, not a claim that the lab NodePort is HA.

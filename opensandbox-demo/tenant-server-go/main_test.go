@@ -16,17 +16,18 @@ import (
 
 func testServer(upstream string, maxBody int64) *Server {
 	return &Server{
-		cfg:        Config{Upstream: upstream, UpstreamKey: "upstream-secret", MaxBody: maxBody},
-		http:       &http.Client{},
-		active:     *prometheus.NewGaugeVec(prometheus.GaugeOpts{Name: "test_active"}, []string{"tenant"}),
-		requests:   prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_requests_total"}, []string{"tenant", "method", "route", "status"}),
-		latency:    prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "test_latency"}, []string{"tenant", "method", "route"}),
-		created:    prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_created_total"}, []string{"tenant"}),
-		deleted:    prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_deleted_total"}, []string{"tenant"}),
-		commands:   prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_commands_total"}, []string{"tenant"}),
-		uploaded:   prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_uploaded_total"}, []string{"tenant"}),
-		downloaded: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_downloaded_total"}, []string{"tenant"}),
-		quota:      prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_quota_total"}, []string{"tenant"}),
+		cfg:              Config{Upstream: upstream, UpstreamKey: "upstream-secret", MaxBody: maxBody},
+		http:             &http.Client{},
+		active:           *prometheus.NewGaugeVec(prometheus.GaugeOpts{Name: "test_active"}, []string{"tenant"}),
+		requests:         prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_requests_total"}, []string{"tenant", "method", "route", "status"}),
+		latency:          prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "test_latency"}, []string{"tenant", "method", "route"}),
+		created:          prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_created_total"}, []string{"tenant"}),
+		deleted:          prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_deleted_total"}, []string{"tenant"}),
+		commands:         prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_commands_total"}, []string{"tenant"}),
+		uploaded:         prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_uploaded_total"}, []string{"tenant"}),
+		downloaded:       prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_downloaded_total"}, []string{"tenant"}),
+		quota:            prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_quota_total"}, []string{"tenant"}),
+		egressOperations: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_egress_operations_total"}, []string{"tenant", "method", "result"}),
 	}
 }
 

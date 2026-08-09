@@ -69,6 +69,7 @@ type Server struct {
 	requests                                                *prometheus.CounterVec
 	latency                                                 *prometheus.HistogramVec
 	created, deleted, commands, uploaded, downloaded, quota *prometheus.CounterVec
+	egressOperations                                        *prometheus.CounterVec
 	metricsMu                                               sync.Mutex
 }
 
@@ -597,6 +598,12 @@ func (s *Server) egressPolicyRequest(ctx context.Context, endpoint egressEndpoin
 }
 
 func (s *Server) egress(w http.ResponseWriter, r *http.Request, sandboxID string, tenant *Tenant) {
+	result := "failed"
+	defer func() {
+		if s.egressOperations != nil {
+			s.egressOperations.WithLabelValues(tenant.ID, strings.ToLower(r.Method), result).Inc()
+		}
+	}()
 	if !tenant.scope(w, "sandbox:egress") {
 		return
 	}
@@ -667,6 +674,7 @@ func (s *Server) egress(w http.ResponseWriter, r *http.Request, sandboxID string
 		jsonWrite(w, 502, map[string]string{"detail": "egress policy operation failed"})
 		return
 	}
+	result = "succeeded"
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(data)
@@ -889,8 +897,8 @@ func main() {
 		log.Fatal(e)
 	}
 	defer pool.Close()
-	s := &Server{cfg: cfg, db: pool, http: &http.Client{Timeout: 0}, active: *prometheus.NewGaugeVec(prometheus.GaugeOpts{Name: "opensandbox_tenant_server_active_sandboxes", Help: "Active sandboxes owned by tenant"}, []string{"tenant"}), requests: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_requests_total", Help: "Tenant Server requests"}, []string{"tenant", "method", "route", "status"}), latency: prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "opensandbox_tenant_server_request_duration_seconds", Help: "Tenant Server request latency"}, []string{"tenant", "method", "route"}), created: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_sandboxes_created_total", Help: "Sandboxes created"}, []string{"tenant"}), deleted: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_sandboxes_deleted_total", Help: "Sandboxes deleted"}, []string{"tenant"}), commands: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_commands_total", Help: "Command requests"}, []string{"tenant"}), uploaded: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_uploaded_bytes_total", Help: "Uploaded bytes"}, []string{"tenant"}), downloaded: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_downloaded_bytes_total", Help: "Downloaded bytes"}, []string{"tenant"}), quota: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_quota_rejections_total", Help: "Quota rejections"}, []string{"tenant"})}
-	for _, c := range []prometheus.Collector{&s.active, s.requests, s.latency, s.created, s.deleted, s.commands, s.uploaded, s.downloaded, s.quota} {
+	s := &Server{cfg: cfg, db: pool, http: &http.Client{Timeout: 0}, active: *prometheus.NewGaugeVec(prometheus.GaugeOpts{Name: "opensandbox_tenant_server_active_sandboxes", Help: "Active sandboxes owned by tenant"}, []string{"tenant"}), requests: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_requests_total", Help: "Tenant Server requests"}, []string{"tenant", "method", "route", "status"}), latency: prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "opensandbox_tenant_server_request_duration_seconds", Help: "Tenant Server request latency"}, []string{"tenant", "method", "route"}), created: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_sandboxes_created_total", Help: "Sandboxes created"}, []string{"tenant"}), deleted: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_sandboxes_deleted_total", Help: "Sandboxes deleted"}, []string{"tenant"}), commands: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_commands_total", Help: "Command requests"}, []string{"tenant"}), uploaded: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_uploaded_bytes_total", Help: "Uploaded bytes"}, []string{"tenant"}), downloaded: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_downloaded_bytes_total", Help: "Downloaded bytes"}, []string{"tenant"}), quota: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_quota_rejections_total", Help: "Quota rejections"}, []string{"tenant"}), egressOperations: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "opensandbox_tenant_server_egress_operations_total", Help: "Egress policy operations"}, []string{"tenant", "method", "result"})}
+	for _, c := range []prometheus.Collector{&s.active, s.requests, s.latency, s.created, s.deleted, s.commands, s.uploaded, s.downloaded, s.quota, s.egressOperations} {
 		registry.MustRegister(c)
 	}
 	if e = s.initDB(ctx); e != nil {
