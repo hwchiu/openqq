@@ -102,6 +102,271 @@ request
   +--> stream response and update last_activity_at
 ```
 
+### 3.2.1 KFA 驗證的完整 request workflow
+
+本節是 Tenant Server authentication path 的實作契約。開發者不應將它理解成
+「Tenant Server 啟動時登入一次，之後永久信任 client」；目前的設計是：每一個
+需要身份的 API request 都由 Tenant Server 呼叫 KFA，但 KFA 內部使用短期 cache
+避免每次都重做完整的 JWT signature/OIDC key 驗證。
+
+#### 參與元件與 credential 邊界
+
+```text
+Client / Agent
+  - 持有自己的 Kubernetes ServiceAccount token
+  - 只把 token 放在對 Tenant Server 的 Authorization header
+
+Tenant Server Pod
+  - 使用自己的 projected ServiceAccount token 呼叫 KFA
+  - 不保存 client token
+  - 不保存 client JWT signing key
+  - 不直接呼叫 Kubernetes TokenReview API
+
+KFA
+  - 驗證 caller，也就是 Tenant Server ServiceAccount
+  - 驗證 TokenReview.spec.token，也就是 client token
+  - 對驗證結果做短期 cache
+  - 回傳 canonical Kubernetes identity
+
+PostgreSQL
+  - 將 KFA identity 對應到 tenant_id
+  - 保存 enabled、scope、quota 與 sandbox ownership
+  - 不保存 ServiceAccount token
+```
+
+其中有兩個不同的 token，不能混淆：
+
+| Token | 放在哪裡 | 用途 |
+|---|---|---|
+| client token | client request 的 `Authorization` | 識別真正提出 API request 的 ServiceAccount |
+| Tenant Server token | Tenant Server Pod 的 projected token | 讓 KFA 知道是哪個受信任服務在要求 TokenReview |
+
+KFA 的 `authorized_clients` 只控制「哪些服務可以呼叫 KFA」。它不代表該 caller
+自動取得某個 tenant 的權限；tenant 權限仍由 Tenant Server 查 PostgreSQL 的
+identity mapping 決定。
+
+#### 一次正常 API request 的時序
+
+```mermaid
+sequenceDiagram
+    participant C as Client / Agent
+    participant TS as Tenant Server replica
+    participant KFA as kube-federated-auth
+    participant OIDC as Kubernetes OIDC/JWKS
+    participant DB as PostgreSQL
+    participant OS as OpenSandbox Server
+
+    C->>TS: GET /v1/sandboxes<br/>Authorization: Bearer client-SA-token
+    TS->>TS: parse Bearer token; do not log token
+    TS->>KFA: POST TokenReview<br/>Authorization: Bearer tenant-server-SA-token<br/>spec.token = client-SA-token
+    KFA->>KFA: authenticate caller identity
+    alt KFA cache hit
+        KFA-->>TS: cached authenticated identity
+    else KFA cache miss
+        KFA->>OIDC: fetch/use issuer metadata and JWKS
+        KFA->>KFA: verify signature, issuer, expiry and SA claims
+        KFA-->>TS: authenticated identity + cluster extra claim
+    end
+    TS->>DB: SELECT enabled tenant by cluster/namespace/serviceaccount
+    DB-->>TS: tenant_id, scopes, quota
+    TS->>TS: route/scope/quota/ownership admission
+    TS->>OS: forward allowlisted request with private server credential
+    OS-->>TS: response/stream
+    TS-->>C: response/stream; never expose server credential
+```
+
+#### Tenant Server 每次 request 的實際處理順序
+
+以 `GET /v1/sandboxes` 為例，程式流程必須保持以下順序：
+
+1. 讀取 `Authorization` header。沒有 `Bearer` token 時直接回傳 HTTP `401`。
+2. 將 client token 放入 TokenReview 的 `spec.token`。client token 不寫入 log、metric、DB
+   或 response。
+3. 讀取 Tenant Server 自己的 projected token。這個 token 是呼叫 KFA 的 caller credential，
+   不是 client token。
+4. 呼叫 KFA：
+
+   ```http
+   POST /apis/authentication.k8s.io/v1/tokenreviews
+   Authorization: Bearer <tenant-server-serviceaccount-token>
+   Content-Type: application/json
+   ```
+
+   ```json
+   {
+     "apiVersion": "authentication.k8s.io/v1",
+     "kind": "TokenReview",
+     "spec": {
+       "token": "<client-serviceaccount-token>"
+     }
+   }
+   ```
+
+5. 驗證 KFA response：
+
+   - HTTP status 必須是 2xx。
+   - `status.authenticated` 必須是 `true`。
+   - `status.user.username` 必須符合：
+     `system:serviceaccount:<namespace>:<serviceaccount>`。
+   - `status.user.extra["authentication.kubernetes.io/cluster-name"]` 必須存在。
+   - 不接受缺少 cluster identity 的 response，避免跨叢集 identity 被錯誤合併。
+
+6. 以 `(cluster_name, namespace, service_account)` 查詢 PostgreSQL：
+
+   ```sql
+   SELECT tenant_id, scopes, max_concurrent, enabled
+   FROM tenants
+   WHERE cluster_name = $1
+     AND namespace = $2
+     AND service_account = $3
+     AND enabled = true;
+   ```
+
+7. tenant mapping 不存在或 `enabled=false` 時回傳 HTTP `403`。這和無效 token 的
+   HTTP `401` 必須區分：
+
+   - `401`：token 缺失、KFA 無法驗證、token expired、caller 未被 KFA 授權。
+   - `403`：token 身份有效，但沒有對應的 enabled tenant 或缺少 scope。
+
+8. 對 sandbox-specific API，再查 `sandbox_owners` 確認：
+
+   ```sql
+   sandbox_owners.sandbox_id = request.sandbox_id
+   AND sandbox_owners.tenant_id = authenticated_tenant_id
+   AND allocation_state = 'allocated'
+   ```
+
+9. 所有 admission check 通過後，才把 request 轉送給 OpenSandbox Server，並在 server-side
+   request 加入內部 `OPEN-SANDBOX-API-KEY`。client 的 `Authorization` header 不得轉送。
+
+10. response 回傳前記錄 status、latency、tenant label 與 bytes；不得記錄 token、檔案內容、
+    command secret 或完整 Authorization header。
+
+#### KFA cache 的命中與未命中
+
+目前 KFA 設定如下：
+
+```yaml
+cache:
+  ttl: 30          # authenticated result cache, seconds
+  negative_ttl: 10 # rejected/unauthenticated result cache, seconds
+  max_entries: 1000
+```
+
+因此「每次 request 都呼叫 KFA」與「每次 request 都重新做完整 cryptographic verification」
+是兩件不同的事：
+
+```text
+Request 1
+  Tenant Server -> KFA
+  KFA cache miss -> OIDC/JWKS verification -> cache result -> response
+
+Request 2..N within 30 seconds, same token
+  Tenant Server -> KFA
+  KFA cache hit -> response without repeating full verification
+
+After 30 seconds, or cache eviction
+  Tenant Server -> KFA
+  KFA cache miss -> re-verify token -> refresh cache
+```
+
+無效 token 也會短暫 cache：
+
+```text
+invalid token request
+  -> KFA verifies/rejects
+  -> negative result cached for 10 seconds
+  -> repeated same invalid token receives fast rejection
+```
+
+KFA cache 不會讓 PostgreSQL tenant authorization 被 cache。每個成功的 request 仍然會
+在 Tenant Server 查詢 enabled tenant、scope、quota 與 ownership；因此 operator 停用
+tenant 後，不需要等待 KFA cache expiry 才能阻止 tenant access。只有「該 ServiceAccount
+token 是否有效、它代表哪個 Kubernetes identity」由 KFA 短期 cache 控制。
+
+#### Token expiration 與撤銷行為
+
+ServiceAccount token 是有 expiration 的 credential。Token expiration 不是由 Tenant
+Server 自己延長，也不應把 token 存在 PostgreSQL 或 application memory 中。
+
+| 狀況 | 行為 |
+|---|---|
+| token 尚未 expired，KFA cache miss | KFA 驗證成功並建立短期 cache |
+| token 尚未 expired，KFA cache hit | KFA 回傳 cache identity |
+| token expired，KFA cache miss | KFA reject，Tenant Server 回 HTTP 401 |
+| ServiceAccount 被刪除或 token invalidated | cache 到期或 miss 後被拒絕 |
+| tenant `enabled=false` | token 可能仍是有效，但 Tenant Server 回 HTTP 403 |
+| scope 不包含 route 所需權限 | identity 有效，但 Tenant Server 回 HTTP 403 |
+
+因此 TTL 的安全取捨是：KFA `cache.ttl` 越短，ServiceAccount revoke 的反應越快，
+但 KFA 的驗證與 OIDC/JWKS 工作量越高。目前 30 秒是 lab 的短 cache 設定；production
+應依照 token TTL、撤銷需求與 KFA QPS capacity 重新壓測，不應任意改成數小時。
+
+#### KFA failure matrix
+
+| Failure point | Tenant Server response | 是否呼叫 OpenSandbox | 建議 metric/log |
+|---|---:|---:|---|
+| Authorization header missing | 401 | 否 | `auth_missing` |
+| KFA DNS/connection timeout | 401 或受控的 503 policy | 否 | `kfa_unavailable` |
+| KFA caller 不在 `authorized_clients` | 401/403 | 否 | `kfa_caller_denied` |
+| client token invalid/expired | 401 | 否 | `client_token_rejected` |
+| KFA response 缺 cluster identity | 401 | 否 | `kfa_identity_malformed` |
+| identity 沒有 tenant mapping | 403 | 否 | `tenant_mapping_missing` |
+| tenant disabled | 403 | 否 | `tenant_disabled` |
+| required scope missing | 403 | 否 | `scope_denied` |
+| ownership 不符合 | 404 | 否 | `ownership_denied` |
+| OpenSandbox upstream unavailable | 502 | 已通過 admission | `upstream_unavailable` |
+
+任何 KFA、tenant mapping、scope 或 ownership failure 都必須發生在 OpenSandbox side
+effect 之前。尤其是 create、command、upload 與 egress policy API，不能先建立資源
+再補做身份驗證。
+
+#### 多副本下的 request 行為
+
+每個 Tenant Server replica 都使用同一個 KFA endpoint 與 PostgreSQL Service：
+
+```text
+Request A -> Tenant Server replica 1 -> KFA -> PostgreSQL
+Request B -> Tenant Server replica 2 -> KFA -> PostgreSQL
+Request C -> Tenant Server replica 3 -> KFA -> PostgreSQL
+```
+
+Tenant Server 不假設 request 一定回到相同 replica，也不使用 local memory 來保存
+tenant mapping 或 ownership。KFA cache 位於 KFA instance；如果未來 KFA 擴成多副本，
+每個 KFA replica 可以有自己的短期 cache，正確性仍由每次 KFA 驗證與 PostgreSQL
+authorization 維持，不能依賴 cache 來保存長期狀態。
+
+#### Admin API workflow
+
+Admin API 也採用 KFA，但它不查一般 tenant mapping，而是額外比對
+`TENANT_SERVER_ADMIN_IDENTITIES`：
+
+```text
+Operator ServiceAccount token
+  -> Tenant Server
+  -> KFA TokenReview
+  -> identity == configured admin identity?
+       no  -> 403
+       yes -> allow POST/GET/DELETE /admin/tenants
+```
+
+建立 tenant 時，admin 必須明確提交要被信任的 ServiceAccount identity：
+
+```json
+{
+  "tenant_id": "team-a",
+  "cluster_name": "local-cluster",
+  "namespace": "team-a",
+  "service_account": "runner",
+  "scopes": ["sandbox:create", "sandbox:read", "sandbox:command", "sandbox:files"],
+  "max_concurrent_sandboxes": 3
+}
+```
+
+這個 API 不會回傳 tenant key，也不會要求 client 產生 JWT。新增 identity mapping
+後，所有 Tenant Server replicas 下一次查 PostgreSQL 時立即使用新設定，不需要 rollout
+restart。停用 mapping 也同理。
+
 ### 3.3 Warm-pool claim、reset 與交付
 
 warm pool 的重點不是單純預先建立 Pod，而是每次 claim 前都要消除前一個 tenant

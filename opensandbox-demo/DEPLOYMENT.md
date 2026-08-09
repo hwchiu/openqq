@@ -523,7 +523,8 @@ Resources:
 The KFA ServiceAccount has only the permissions needed to read its credential
 Secret and create `authentication.k8s.io/TokenReview` objects. The configured
 `authorized_clients` allowlist includes the Tenant Server ServiceAccount and a
-temporary `kfa-test-client`; other callers are denied. OIDC discovery/JWKS uses
+test-only wildcard for disposable ServiceAccounts in `kfa-test`; other callers
+are denied. OIDC discovery/JWKS uses
 the private API-server endpoint with the in-cluster CA and ServiceAccount token,
 while the token issuer remains the Kubernetes issuer URL.
 
@@ -546,3 +547,27 @@ ServiceAccount username, and the federated cluster extra claim
 `local-cluster`. A caller outside `authorized_clients` must receive HTTP 403.
 The NodePort is for private-cluster testing only and must not be opened on the
 public firewall.
+
+### KFA cache and Tenant Server request semantics
+
+Tenant Server calls KFA for every authenticated request. This is an intentional
+service boundary: Tenant Server does not keep a long-lived local identity cache.
+KFA applies the short-lived cache configured in `kube-federated-auth.yaml`:
+
+```yaml
+cache:
+  ttl: 30
+  negative_ttl: 10
+  max_entries: 1000
+```
+
+Repeated requests with the same token still reach the KFA HTTP endpoint, but a
+KFA cache hit avoids repeating the complete OIDC/JWKS verification. PostgreSQL
+authorization is not cached by this setting: Tenant Server still checks the
+enabled identity mapping, scope, quota and sandbox ownership for every request.
+Disabling a tenant therefore takes effect without waiting for KFA cache expiry.
+
+The complete developer workflow, including TokenReview payloads, cache-hit and
+cache-miss timing, token expiry, failure codes, multi-replica behavior and admin
+identity onboarding, is documented in
+[TENANT-SERVER-ARCHITECTURE.md](TENANT-SERVER-ARCHITECTURE.md#321-kfa-驗證的完整-request-workflow).
