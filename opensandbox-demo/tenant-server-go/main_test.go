@@ -54,6 +54,9 @@ func TestIdentityKey(t *testing.T) {
 	if got != "local-cluster/team-a/runner" {
 		t.Fatalf("identityKey() = %q", got)
 	}
+	if got := identityUIDKey(Identity{ClusterName: "local-cluster", PrincipalUID: "sa-uid"}); got != "local-cluster/sa-uid" {
+		t.Fatalf("identityUIDKey() = %q", got)
+	}
 }
 
 func TestVerifyWithKFA(t *testing.T) {
@@ -76,6 +79,7 @@ func TestVerifyWithKFA(t *testing.T) {
 			"authenticated": true,
 			"user": map[string]any{
 				"username": "system:serviceaccount:kfa-test:kfa-test-client",
+				"uid":      "serviceaccount-uid-1",
 				"extra":    map[string][]string{"authentication.kubernetes.io/cluster-name": {"local-cluster"}},
 			},
 		}})
@@ -89,7 +93,7 @@ func TestVerifyWithKFA(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if identity != (Identity{ClusterName: "local-cluster", Namespace: "kfa-test", ServiceAccount: "kfa-test-client"}) {
+	if identity != (Identity{ClusterName: "local-cluster", Namespace: "kfa-test", ServiceAccount: "kfa-test-client", PrincipalUID: "serviceaccount-uid-1"}) {
 		t.Fatalf("identity = %+v", identity)
 	}
 }

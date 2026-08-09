@@ -27,18 +27,19 @@ type Config struct {
 	MaxBody                                                 int64
 }
 type Tenant struct {
-	ID, ClusterName, Namespace, ServiceAccount, Scopes string
-	MaxConcurrent                                      int
-	Enabled                                            bool
+	ID, ClusterName, Namespace, ServiceAccount, PrincipalUID, Scopes string
+	MaxConcurrent                                                    int
+	Enabled                                                          bool
 }
 type Identity struct {
-	ClusterName, Namespace, ServiceAccount string
+	ClusterName, Namespace, ServiceAccount, PrincipalUID string
 }
 type TenantInput struct {
 	TenantID       string   `json:"tenant_id"`
 	ClusterName    string   `json:"cluster_name"`
 	Namespace      string   `json:"namespace"`
 	ServiceAccount string   `json:"service_account"`
+	PrincipalUID   string   `json:"principal_uid"`
 	Scopes         []string `json:"scopes"`
 	MaxConcurrent  int      `json:"max_concurrent_sandboxes"`
 }
@@ -86,6 +87,12 @@ func env(k, d string) string {
 func identityKey(i Identity) string {
 	return i.ClusterName + "/" + i.Namespace + "/" + i.ServiceAccount
 }
+func identityUIDKey(i Identity) string {
+	if i.PrincipalUID == "" {
+		return ""
+	}
+	return i.ClusterName + "/" + i.PrincipalUID
+}
 func bearer(r *http.Request) (string, error) {
 	v := r.Header.Get("Authorization")
 	if !strings.HasPrefix(v, "Bearer ") {
@@ -100,9 +107,17 @@ func jsonWrite(w http.ResponseWriter, code int, v any) {
 }
 func (s *Server) tenant(ctx context.Context, identity Identity) (*Tenant, error) {
 	var t Tenant
-	err := s.db.QueryRow(ctx, `SELECT tenant_id,cluster_name,namespace,service_account,scopes,max_concurrent,enabled FROM tenants WHERE cluster_name=$1 AND namespace=$2 AND service_account=$3 AND enabled`, identity.ClusterName, identity.Namespace, identity.ServiceAccount).Scan(&t.ID, &t.ClusterName, &t.Namespace, &t.ServiceAccount, &t.Scopes, &t.MaxConcurrent, &t.Enabled)
+	err := s.db.QueryRow(ctx, `SELECT tenant_id,cluster_name,namespace,service_account,principal_uid,scopes,max_concurrent,enabled FROM tenants WHERE cluster_name=$1 AND namespace=$2 AND service_account=$3 AND (principal_uid=$4 OR principal_uid='') AND enabled`, identity.ClusterName, identity.Namespace, identity.ServiceAccount, identity.PrincipalUID).Scan(&t.ID, &t.ClusterName, &t.Namespace, &t.ServiceAccount, &t.PrincipalUID, &t.Scopes, &t.MaxConcurrent, &t.Enabled)
 	if err != nil {
 		return nil, err
+	}
+	// Existing username-only mappings are upgraded on first successful KFA
+	// authentication. New mappings should provide principal_uid explicitly.
+	if identity.PrincipalUID != "" && t.PrincipalUID == "" {
+		if _, err := s.db.Exec(ctx, `UPDATE tenants SET principal_uid=$1,updated_at=CURRENT_TIMESTAMP WHERE tenant_id=$2 AND principal_uid=''`, identity.PrincipalUID, t.ID); err != nil {
+			return nil, err
+		}
+		t.PrincipalUID = identity.PrincipalUID
 	}
 	return &t, nil
 }
@@ -148,6 +163,7 @@ type tokenReview struct {
 		Authenticated bool `json:"authenticated"`
 		User          struct {
 			Username string              `json:"username"`
+			UID      string              `json:"uid"`
 			Extra    map[string][]string `json:"extra"`
 		} `json:"user"`
 		Error string `json:"error"`
@@ -199,7 +215,10 @@ func (s *Server) verifyWithKFA(ctx context.Context, token string) (Identity, err
 	if cluster == "" {
 		return Identity{}, errors.New("KFA response has no cluster identity")
 	}
-	return Identity{ClusterName: cluster, Namespace: parts[2], ServiceAccount: parts[3]}, nil
+	if review.Status.User.UID == "" {
+		return Identity{}, errors.New("KFA response has no ServiceAccount UID")
+	}
+	return Identity{ClusterName: cluster, Namespace: parts[2], ServiceAccount: parts[3], PrincipalUID: review.Status.User.UID}, nil
 }
 func (s *Server) admin(w http.ResponseWriter, r *http.Request) bool {
 	identity, err := s.identity(w, r)
@@ -208,7 +227,8 @@ func (s *Server) admin(w http.ResponseWriter, r *http.Request) bool {
 	}
 	allowed := false
 	for _, candidate := range s.cfg.AdminIdentities {
-		if strings.TrimSpace(candidate) == identityKey(identity) {
+		candidate = strings.TrimSpace(candidate)
+		if candidate == identityKey(identity) || candidate == identityUIDKey(identity) {
 			allowed = true
 			break
 		}
@@ -221,7 +241,7 @@ func (s *Server) admin(w http.ResponseWriter, r *http.Request) bool {
 }
 
 func (s *Server) initDB(ctx context.Context) error {
-	_, e := s.db.Exec(ctx, `CREATE TABLE IF NOT EXISTS tenants(tenant_id TEXT PRIMARY KEY,cluster_name TEXT NOT NULL DEFAULT '',namespace TEXT NOT NULL DEFAULT '',service_account TEXT NOT NULL DEFAULT '',scopes TEXT NOT NULL,max_concurrent INTEGER NOT NULL,enabled BOOLEAN NOT NULL DEFAULT TRUE,created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP); ALTER TABLE tenants ADD COLUMN IF NOT EXISTS cluster_name TEXT NOT NULL DEFAULT ''; ALTER TABLE tenants ADD COLUMN IF NOT EXISTS namespace TEXT NOT NULL DEFAULT ''; ALTER TABLE tenants ADD COLUMN IF NOT EXISTS service_account TEXT NOT NULL DEFAULT ''; ALTER TABLE tenants DROP COLUMN IF EXISTS key_hash; CREATE UNIQUE INDEX IF NOT EXISTS tenants_identity_idx ON tenants(cluster_name,namespace,service_account) WHERE cluster_name <> '' AND namespace <> '' AND service_account <> ''; CREATE TABLE IF NOT EXISTS sandbox_owners(sandbox_id TEXT PRIMARY KEY,tenant_id TEXT NOT NULL,allocation_state TEXT NOT NULL DEFAULT 'allocated',created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,last_activity_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP); CREATE INDEX IF NOT EXISTS sandbox_owners_tenant_idx ON sandbox_owners(tenant_id,allocation_state);`)
+	_, e := s.db.Exec(ctx, `CREATE TABLE IF NOT EXISTS tenants(tenant_id TEXT PRIMARY KEY,cluster_name TEXT NOT NULL DEFAULT '',namespace TEXT NOT NULL DEFAULT '',service_account TEXT NOT NULL DEFAULT '',principal_uid TEXT NOT NULL DEFAULT '',scopes TEXT NOT NULL,max_concurrent INTEGER NOT NULL,enabled BOOLEAN NOT NULL DEFAULT TRUE,created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP); ALTER TABLE tenants ADD COLUMN IF NOT EXISTS cluster_name TEXT NOT NULL DEFAULT ''; ALTER TABLE tenants ADD COLUMN IF NOT EXISTS namespace TEXT NOT NULL DEFAULT ''; ALTER TABLE tenants ADD COLUMN IF NOT EXISTS service_account TEXT NOT NULL DEFAULT ''; ALTER TABLE tenants ADD COLUMN IF NOT EXISTS principal_uid TEXT NOT NULL DEFAULT ''; ALTER TABLE tenants DROP COLUMN IF EXISTS key_hash; CREATE UNIQUE INDEX IF NOT EXISTS tenants_identity_idx ON tenants(cluster_name,namespace,service_account) WHERE cluster_name <> '' AND namespace <> '' AND service_account <> ''; CREATE UNIQUE INDEX IF NOT EXISTS tenants_principal_uid_idx ON tenants(cluster_name,principal_uid) WHERE cluster_name <> '' AND principal_uid <> ''; CREATE TABLE IF NOT EXISTS sandbox_owners(sandbox_id TEXT PRIMARY KEY,tenant_id TEXT NOT NULL,allocation_state TEXT NOT NULL DEFAULT 'allocated',created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,last_activity_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP); CREATE INDEX IF NOT EXISTS sandbox_owners_tenant_idx ON sandbox_owners(tenant_id,allocation_state);`)
 	return e
 }
 func (s *Server) recordOwner(ctx context.Context, id, tenant string) error {
@@ -414,12 +434,12 @@ func (s *Server) adminTenants(w http.ResponseWriter, r *http.Request) {
 		if len(in.Scopes) == 0 {
 			in.Scopes = []string{"sandbox:create", "sandbox:read", "sandbox:delete", "sandbox:command", "sandbox:files"}
 		}
-		_, e := s.db.Exec(r.Context(), `INSERT INTO tenants(tenant_id,cluster_name,namespace,service_account,scopes,max_concurrent) VALUES($1,$2,$3,$4,$5,$6)`, in.TenantID, in.ClusterName, in.Namespace, in.ServiceAccount, strings.Join(in.Scopes, ","), in.MaxConcurrent)
+		_, e := s.db.Exec(r.Context(), `INSERT INTO tenants(tenant_id,cluster_name,namespace,service_account,principal_uid,scopes,max_concurrent) VALUES($1,$2,$3,$4,$5,$6,$7)`, in.TenantID, in.ClusterName, in.Namespace, in.ServiceAccount, in.PrincipalUID, strings.Join(in.Scopes, ","), in.MaxConcurrent)
 		if e != nil {
 			jsonWrite(w, 409, map[string]string{"detail": "tenant already exists"})
 			return
 		}
-		jsonWrite(w, 200, map[string]any{"tenant_id": in.TenantID, "cluster_name": in.ClusterName, "namespace": in.Namespace, "service_account": in.ServiceAccount, "scopes": in.Scopes, "max_concurrent_sandboxes": in.MaxConcurrent})
+		jsonWrite(w, 200, map[string]any{"tenant_id": in.TenantID, "cluster_name": in.ClusterName, "namespace": in.Namespace, "service_account": in.ServiceAccount, "principal_uid": in.PrincipalUID, "scopes": in.Scopes, "max_concurrent_sandboxes": in.MaxConcurrent})
 		return
 	}
 	rows, e := s.db.Query(r.Context(), `SELECT tenant_id,scopes,max_concurrent,enabled,created_at FROM tenants ORDER BY tenant_id`)
@@ -435,9 +455,9 @@ func (s *Server) adminTenants(w http.ResponseWriter, r *http.Request) {
 		var enabled bool
 		var created time.Time
 		_ = rows.Scan(&id, &sc, &max, &enabled, &created)
-		var cluster, namespace, serviceAccount string
-		_ = s.db.QueryRow(r.Context(), `SELECT cluster_name,namespace,service_account FROM tenants WHERE tenant_id=$1`, id).Scan(&cluster, &namespace, &serviceAccount)
-		out = append(out, map[string]any{"tenant_id": id, "cluster_name": cluster, "namespace": namespace, "service_account": serviceAccount, "scopes": sc, "max_concurrent": max, "enabled": enabled, "created_at": created})
+		var cluster, namespace, serviceAccount, principalUID string
+		_ = s.db.QueryRow(r.Context(), `SELECT cluster_name,namespace,service_account,principal_uid FROM tenants WHERE tenant_id=$1`, id).Scan(&cluster, &namespace, &serviceAccount, &principalUID)
+		out = append(out, map[string]any{"tenant_id": id, "cluster_name": cluster, "namespace": namespace, "service_account": serviceAccount, "principal_uid": principalUID, "scopes": sc, "max_concurrent": max, "enabled": enabled, "created_at": created})
 	}
 	jsonWrite(w, 200, out)
 }

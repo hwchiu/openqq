@@ -539,11 +539,51 @@ generated or stored.
 
 ## kube-federated-auth authentication lab
 
+The complete tenant/principal identity contract, ServiceAccount lifecycle
+risks, migration behavior, and metrics rules are documented in
+[TENANT-IDENTITY.md](TENANT-IDENTITY.md).
+
 The current cluster also has a same-cluster authentication test deployment for
 [`kube-federated-auth`](https://github.com/null-ptr-exception/kube-federated-auth).
 Tenant Server now uses this KFA endpoint for every authenticated `/v1/...`
 request. The KFA caller credential is the Tenant Server Pod's projected
 ServiceAccount token.
+
+### Tenant identity and ServiceAccount rotation
+
+The bearer token is only a short-lived credential. It is never stored and its
+rotation does not create a new tenant. KFA returns both the readable
+`system:serviceaccount:<namespace>:<name>` username and the Kubernetes
+ServiceAccount object UID. Tenant Server uses the KFA `user.uid` as the
+principal binding, together with the cluster identity:
+
+```text
+principal_key = <cluster-name>/<service-account-uid>
+```
+
+The namespace and ServiceAccount name remain in PostgreSQL as searchable
+metadata. If an existing username-only mapping is found, the first successful
+KFA request backfills its UID. New admin mappings may provide
+`principal_uid` directly. Deleting and recreating a ServiceAccount with the
+same namespace and name produces a new UID and therefore does not inherit the
+old tenant mapping; an administrator must explicitly bind it again.
+
+Create a strict mapping when the UID is known:
+
+```json
+{
+  "tenant_id": "team-a",
+  "cluster_name": "local-cluster",
+  "namespace": "team-a",
+  "service_account": "runner",
+  "principal_uid": "<metadata.uid>",
+  "max_concurrent_sandboxes": 3
+}
+```
+
+`TENANT_SERVER_ADMIN_IDENTITIES` accepts the readable
+`cluster/namespace/service-account` form for compatibility and also accepts
+the stronger `cluster/service-account-uid` form.
 
 Resources:
 
