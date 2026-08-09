@@ -421,6 +421,7 @@ func (s *Server) forward(w http.ResponseWriter, r *http.Request, path string, te
 	req.Header.Set("OPEN-SANDBOX-API-KEY", s.cfg.UpstreamKey)
 	resp, e := s.http.Do(req)
 	if e != nil {
+		log.Printf("sandbox create upstream request failed request=%s upstream=%s: %v", requestID(r), s.cfg.Upstream, e)
 		jsonWrite(w, 502, map[string]string{"detail": "upstream unavailable"})
 		return
 	}
