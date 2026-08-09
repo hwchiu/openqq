@@ -148,7 +148,8 @@ The server ConfigMap also sets `max_sandbox_timeout_seconds=900`,
 support, direct ingress mode, and SQLite storage at `/data/opensandbox.db`.
 
 Tenant Server is deployed separately by `k8s/tenant-server.yaml` with three
-replicas, a rolling update (`maxUnavailable=0`), topology spread, and a
+replicas, a rolling update (`maxUnavailable=1`, compatible with exactly three
+anti-affined nodes), topology spread, and a
 PodDisruptionBudget requiring two available replicas. Apply
 `k8s/tenant-server-alerts.yaml` as well to install Prometheus alerts for
 replica loss, scrape loss, authentication failures, quota rejection, and
@@ -601,6 +602,10 @@ Database backup, restore, RPO/RTO, and recovery acceptance criteria are in
 [DISASTER-RECOVERY.md](DISASTER-RECOVERY.md). A PostgreSQL HA manifest alone
 does not constitute a disaster recovery capability until its object-store
 backup and restore exercise pass.
+
+The latest live lab evidence, including the successful Tenant Server smoke,
+the failed underlying OpenSandbox create diagnosis, and the CNI routing
+limitation, is recorded in [LIVE-VALIDATION.md](LIVE-VALIDATION.md).
 
 The current cluster also has a same-cluster authentication test deployment for
 [`kube-federated-auth`](https://github.com/null-ptr-exception/kube-federated-auth).
