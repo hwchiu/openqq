@@ -44,9 +44,12 @@ Tenant Server sandbox create: HTTP 502 upstream unavailable
 The same create request sent directly from `cp-0` to the OpenSandbox ClusterIP
 also timed out after 45 seconds with no HTTP status. OpenSandbox server logs
 showed health/list requests but no corresponding `POST /v1/sandboxes`; no
-sandbox pod was created. A subsequent list showed one stale `direct-diag`
-record, but the OpenSandbox DELETE API returned `SANDBOX_NOT_FOUND` and no
-corresponding Kubernetes sandbox pod existed. This proves the failure is in the underlying
+sandbox pod was created before the client timeout. A later controller log
+showed that the request eventually created one BatchSandbox and reached
+`Succeed`, after which its TTL deleted the BatchSandbox and returned the pool
+to ten available pods. The API list nevertheless retained one stale
+`direct-diag` record, while its DELETE API returned `SANDBOX_NOT_FOUND`.
+This proves the failure is in the underlying
 OpenSandbox create path or its controller/API interaction, not a tenant quota
 rejection or KFA authentication failure. The temporary tenant and ServiceAccount
 were cleaned up.
@@ -54,9 +57,10 @@ were cleaned up.
 Do not mark sandbox lifecycle, command, file transfer, or egress live
 integration as accepted until the direct OpenSandbox create path is repaired
 and `tests/tenant-server-integration.sh` passes with `CHECK_EGRESS=1`.
-The stale diagnostic record also requires an OpenSandbox storage reconciliation
-or supported administrative cleanup; it was not removed by deleting unrelated
-resources.
+The stale diagnostic record was cleared by a controlled OpenSandbox server
+restart after confirming that no BatchSandbox remained. No PVC or warm-pool
+resource was deleted. A subsequent integration retry still returned 502 before
+creating a BatchSandbox, so the lifecycle gate remains failed.
 
 ## Lab networking limitation
 
