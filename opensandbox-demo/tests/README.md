@@ -96,3 +96,13 @@ The reservation transaction locks the tenant row, counts allocated ownership
 plus active reservations, and removes reservations older than ten minutes.
 OpenSandbox create is called only after a reservation is committed; success
 commits ownership and all other paths release the reservation.
+
+The KFA production overlay can be validated without changing a cluster:
+
+```bash
+./kfa-overlay-render-smoke.sh
+```
+
+It requires three replicas, a ClusterIP Service, normal Pod networking, and a
+PodDisruptionBudget, and rejects an accidental production NodePort or
+`hostNetwork` setting.
