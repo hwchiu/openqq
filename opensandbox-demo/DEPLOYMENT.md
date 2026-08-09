@@ -588,6 +588,11 @@ The complete tenant/principal identity contract, ServiceAccount lifecycle
 risks, migration behavior, and metrics rules are documented in
 [TENANT-IDENTITY.md](TENANT-IDENTITY.md).
 
+Database backup, restore, RPO/RTO, and recovery acceptance criteria are in
+[DISASTER-RECOVERY.md](DISASTER-RECOVERY.md). A PostgreSQL HA manifest alone
+does not constitute a disaster recovery capability until its object-store
+backup and restore exercise pass.
+
 The current cluster also has a same-cluster authentication test deployment for
 [`kube-federated-auth`](https://github.com/null-ptr-exception/kube-federated-auth).
 Tenant Server now uses this KFA endpoint for every authenticated `/v1/...`
