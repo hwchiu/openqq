@@ -1,5 +1,40 @@
 # Tenant Server tests
 
+## Fast company-environment verification
+
+Run the combined gate after applying images, manifests, secrets, KFA, or
+PostgreSQL in a new cluster. It checks the Tenant Server, Demo Server, KFA,
+Kubernetes rollout state, authentication boundaries, tenant-labelled metrics,
+and optionally Prometheus discovery. It creates only a temporary tenant
+mapping and removes it through an exit cleanup trap; it does not create a
+sandbox or modify the warm pool.
+
+From a control-plane node with `kubectl` configured:
+
+```bash
+cd opensandbox-demo/tests
+TENANT_SERVER_URL=http://127.0.0.1:30081 \
+DEMO_SERVER_URL=http://127.0.0.1:30080 \
+CHECK_PROMETHEUS=1 \
+./deployment-smoke.sh
+```
+
+From an operator laptop through a private NodePort:
+
+```bash
+TENANT_SERVER_URL=http://10.10.0.154:30081 \
+DEMO_SERVER_URL=http://10.10.0.154:30080 \
+TENANT_SERVICEACCOUNT_ADMIN_TOKEN="$ADMIN_TOKEN" \
+TENANT_SERVICEACCOUNT_TOKEN="$CLIENT_TOKEN" \
+CHECK_K8S=0 CHECK_KFA=0 \
+./opensandbox-demo/tests/deployment-smoke.sh
+```
+
+If KFA or Prometheus is reachable only from inside the cluster, run the first
+form on a cluster node or use `kubectl port-forward` first. A successful gate
+ends with `PASS: complete deployment smoke test`. Any non-zero exit code is a
+deployment failure and should block traffic release.
+
 `tenant-server-smoke.sh` is a repeatable, non-destructive contract test. It uses the
 `kfa-test/kfa-test-client` ServiceAccount token, creates a temporary identity mapping,
 verifies health and tenant-labelled metrics, checks all three node-local replicas when

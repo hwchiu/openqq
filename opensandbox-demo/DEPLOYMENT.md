@@ -525,6 +525,14 @@ Verified after deployment:
 - tenant-labelled request, sandbox and active-session metrics;
 - test sandbox deletion and workload cleanup.
 
+For a repeatable post-deployment gate, run
+[`tests/deployment-smoke.sh`](tests/deployment-smoke.sh). It combines the
+health, rollout, KFA, authentication-boundary, PostgreSQL, tenant-metric, and
+optional Prometheus checks. It uses a temporary tenant mapping and cleans it
+up automatically; it deliberately does not create a sandbox or alter the warm
+pool. The command examples and laptop/control-plane variants are in
+[`tests/README.md`](tests/README.md).
+
 Validation tenant `kfa-test-tenant` maps to
 `local-cluster/kfa-test/kfa-test-client`. No tenant API key or tenant JWT is
 generated or stored.
