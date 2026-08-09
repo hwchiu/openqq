@@ -182,6 +182,31 @@ func TestEgressPatchUsesPrivateEndpointAndAllowlist(t *testing.T) {
 	}
 }
 
+func TestResetEgressFailsClosed(t *testing.T) {
+	egress := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost || r.URL.Path != "/policy" {
+			t.Fatalf("reset request = %s %s", r.Method, r.URL.Path)
+		}
+		http.Error(w, "sidecar unavailable", http.StatusServiceUnavailable)
+	}))
+	defer egress.Close()
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/sandboxes/sb-1/endpoints/18080" {
+			t.Fatalf("endpoint lookup path = %s", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"endpoint":"`+egress.URL+`"}`)
+	}))
+	defer upstream.Close()
+	s := testServer(upstream.URL, 1024)
+	s.cfg.EgressPort = 18080
+	s.cfg.EgressToken = "egress-secret"
+	s.cfg.EgressBaseline = []egressRule{{Action: "allow", Target: "opensandbox-server.opensandbox-system.svc.cluster.local"}}
+	if err := s.resetEgress(context.Background(), "sb-1"); err == nil {
+		t.Fatal("reset unexpectedly succeeded")
+	}
+}
+
 func TestForwardInjectsCredentialAndStreams(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if got := r.Header.Get("OPEN-SANDBOX-API-KEY"); got != "upstream-secret" {
