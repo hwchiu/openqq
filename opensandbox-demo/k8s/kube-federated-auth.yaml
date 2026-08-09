@@ -1,0 +1,187 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kube-federated-auth
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kfa-test
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-federated-auth
+  namespace: kube-federated-auth
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kube-federated-auth
+  namespace: kube-federated-auth
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "create", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kube-federated-auth
+  namespace: kube-federated-auth
+subjects:
+- kind: ServiceAccount
+  name: kube-federated-auth
+  namespace: kube-federated-auth
+roleRef:
+  kind: Role
+  name: kube-federated-auth
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kube-federated-auth-tokenreview
+rules:
+- apiGroups: ["authentication.k8s.io"]
+  resources: ["tokenreviews"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kube-federated-auth-tokenreview
+subjects:
+- kind: ServiceAccount
+  name: kube-federated-auth
+  namespace: kube-federated-auth
+roleRef:
+  kind: ClusterRole
+  name: kube-federated-auth-tokenreview
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-federated-auth
+  namespace: kube-federated-auth
+data:
+  clusters.yaml: |
+    # Authentication lab: same-cluster ServiceAccount validation.
+    # Add remote clusters only after their issuer, CA, bootstrap token and RBAC
+    # have been reviewed separately.
+    authorized_clients:
+      - "local-cluster/opensandbox-tenant-server/opensandbox-tenant-server"
+      - "local-cluster/kfa-test/kfa-test-client"
+    cache:
+      ttl: 30
+      negative_ttl: 10
+      max_entries: 1000
+    clusters:
+      local-cluster:
+        issuer: "https://kubernetes.default.svc.cluster.local"
+        # The API server's OIDC endpoints require authentication in this
+        # cluster. Use the private control-plane address for discovery/JWKS;
+        # keep issuer as the value used for token identity validation.
+        api_server: "https://10.10.0.48:6443"
+        ca_cert: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+        token_path: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-federated-auth
+  namespace: kube-federated-auth
+  labels:
+    app.kubernetes.io/name: kube-federated-auth
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: kube-federated-auth
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    nodePort: 30082
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-federated-auth
+  namespace: kube-federated-auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kube-federated-auth
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kube-federated-auth
+    spec:
+      # The current lab CNI has intermittent cross-node/service DNS failures.
+      # KFA must reach the API server during OIDC warm-up, so keep its control
+      # path on the host network and use the private API endpoint.
+      hostNetwork: true
+      dnsPolicy: Default
+      nodeSelector:
+        kubernetes.io/hostname: hw-k8s-2
+      hostAliases:
+      - ip: 10.10.0.48
+        hostnames:
+        - kubernetes.default.svc.cluster.local
+      serviceAccountName: kube-federated-auth
+      containers:
+      - name: kube-federated-auth
+        image: ghcr.io/rophy/kube-federated-auth:latest
+        imagePullPolicy: Always
+        env:
+        - name: CONFIG_PATH
+          value: /etc/kube-federated-auth/clusters.yaml
+        ports:
+        - name: http
+          containerPort: 8080
+        volumeMounts:
+        - name: config
+          mountPath: /etc/kube-federated-auth
+          readOnly: true
+        readinessProbe:
+          httpGet: {path: /health, port: http}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet: {path: /health, port: http}
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        resources:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      volumes:
+      - name: config
+        configMap:
+          name: kube-federated-auth
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kfa-test-client
+  namespace: kfa-test
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kfa-test-client
+  namespace: kfa-test
+  labels:
+    app.kubernetes.io/name: kfa-test-client
+spec:
+  serviceAccountName: kfa-test-client
+  restartPolicy: Always
+  containers:
+  - name: curl
+    image: curlimages/curl:8.10.1
+    command: ["sleep", "infinity"]

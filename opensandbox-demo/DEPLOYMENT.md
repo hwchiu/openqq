@@ -503,3 +503,45 @@ Verified after deployment:
 Validation tenants were `demo` and `analytics`. Tenant keys are returned only
 once by `POST /admin/tenants`; the tenant server stores only a hash, so a lost key
 must be replaced rather than retrieved.
+
+## kube-federated-auth authentication lab
+
+The current cluster also has a same-cluster authentication test deployment for
+[`kube-federated-auth`](https://github.com/null-ptr-exception/kube-federated-auth).
+It is intentionally installed separately from the Tenant Server authentication
+path; this lets us validate the federated TokenReview flow before changing
+production request handling.
+
+Resources:
+
+- Namespace: `kube-federated-auth`
+- Service: `kube-federated-auth`, private NodePort `30082`
+- Replica: one lab instance on `hw-k8s-2` (`10.10.0.48`)
+- Configuration: [kube-federated-auth.yaml](k8s/kube-federated-auth.yaml)
+
+The KFA ServiceAccount has only the permissions needed to read its credential
+Secret and create `authentication.k8s.io/TokenReview` objects. The configured
+`authorized_clients` allowlist includes the Tenant Server ServiceAccount and a
+temporary `kfa-test-client`; other callers are denied. OIDC discovery/JWKS uses
+the private API-server endpoint with the in-cluster CA and ServiceAccount token,
+while the token issuer remains the Kubernetes issuer URL.
+
+Repeatable smoke checks from `cp-0`:
+
+```bash
+KFA=http://10.10.0.48:30082
+curl -fsS "$KFA/health"
+
+TARGET=$(kubectl -n kfa-test create token kfa-test-client --duration=10m)
+CALLER=$(kubectl -n opensandbox-tenant-server create token opensandbox-tenant-server --duration=10m)
+curl -sS -X POST "$KFA/apis/authentication.k8s.io/v1/tokenreviews" \
+  -H "Authorization: Bearer $CALLER" \
+  -H 'Content-Type: application/json' \
+  -d "{\"apiVersion\":\"authentication.k8s.io/v1\",\"kind\":\"TokenReview\",\"spec\":{\"token\":\"$TARGET\"}}"
+```
+
+The successful response must contain `status.authenticated: true`, the target
+ServiceAccount username, and the federated cluster extra claim
+`local-cluster`. A caller outside `authorized_clients` must receive HTTP 403.
+The NodePort is for private-cluster testing only and must not be opened on the
+public firewall.
