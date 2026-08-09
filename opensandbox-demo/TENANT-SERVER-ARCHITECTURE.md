@@ -767,7 +767,7 @@ SQLite + PVC
 
 - Go OpenSandbox Tenant Server ×3 對外提供 tenant-aware API。
 - OpenSandbox Server 保持 ClusterIP-only。
-- Tenant Server 使用三個節點的 private host IP `18080`，Service 對外保留 NodePort `30081`。
+- Tenant Server 使用正常 Pod networking，內部透過 ClusterIP/Service DNS 溝通；測試環境可保留 NodePort `30081`，正式環境應由 HTTPS ingress 提供入口。
 - Tenant Server metrics 由 Prometheus ServiceMonitor scrape。
 - Grafana 依 `tenant` label 顯示 API、session、command 與 transfer usage。
 - OpenSandbox Server 的 server credential 不會下發給 tenant。

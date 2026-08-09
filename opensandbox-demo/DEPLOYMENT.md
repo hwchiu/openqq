@@ -154,6 +154,14 @@ PodDisruptionBudget requiring two available replicas. Apply
 replica loss, scrape loss, authentication failures, quota rejection, and
 upstream 5xx responses.
 
+For a production private-network deployment, apply
+`k8s/tenant-server-networkpolicy.yaml` after confirming the ingress controller
+uses the `ingress-nginx` namespace label. It applies default-deny ingress and
+egress, then permits Prometheus, ingress-nginx, CoreDNS, KFA, OpenSandbox, and
+PostgreSQL only. The policy assumes normal Pod networking; do not combine it
+with `hostNetwork: true`. The lab NodePort smoke path should be run before
+enabling this policy, then replaced by HTTPS ingress traffic.
+
 ## Warm pool configuration
 
 The current pool is `opensandbox/python-warm-pool`:
@@ -523,8 +531,9 @@ enabled. There are three Ready replicas on the three nodes. PostgreSQL state is
 currently shared through the existing transitional single-instance Service and its
 PVC; the target production
 manifest is a three-instance CloudNativePG HA Cluster with its operator-managed
-read-write Service. The Tenant Server listens on private host port `18080`; NodePort `30081` remains the
-client entry point. OpenSandbox Server remains ClusterIP-only.
+read-write Service. The Tenant Server listens on Pod port `18080`; its Service
+provides internal ClusterIP/DNS routing and NodePort `30081` remains only for
+private lab validation. OpenSandbox Server remains ClusterIP-only.
 
 The Go Tenant Server migration is complete and currently has three Ready replicas.
 The CloudNativePG operator and `opensandbox-postgres-ha` Cluster manifest are

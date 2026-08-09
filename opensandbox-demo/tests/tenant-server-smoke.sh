@@ -58,9 +58,9 @@ if [[ "$CHECK_K8S" == 1 ]]; then
   [[ "$ready" == 3 ]] || fail "expected 3 Ready replicas, got ${ready:-0}"
   while read -r ip; do
     [[ -z "$ip" ]] && continue
-    node_health="$(json "http://$ip:18080/health")"
-    [[ "$(jq -r .status <<<"$node_health")" == ok ]] || fail "node $ip health: $node_health"
-  done < <(kubectl get nodes -o json | jq -r '.items[].status.addresses[] | select(.type == "InternalIP") | .address')
+    pod_health="$(json "http://$ip:18080/health")"
+    [[ "$(jq -r .status <<<"$pod_health")" == ok ]] || fail "Tenant Server pod $ip health: $pod_health"
+  done < <(kubectl -n opensandbox-tenant-server get pods -l app.kubernetes.io/name=opensandbox-tenant-server -o json | jq -r '.items[].status.podIP')
 fi
 
 metrics="$(json "$BASE_URL/metrics")"
@@ -90,18 +90,18 @@ snapshot_status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 \
 # Metrics are process-local. With three replicas behind a NodePort, the
 # authenticated request and the following /metrics request can land on
 # different Pods. In Kubernetes mode, send the request directly to every
-# host-networked replica and inspect that same node-local endpoint.
+# replica Pod IP and inspect that same endpoint.
 if [[ "$CHECK_K8S" == 1 ]]; then
   metric_found=0
   while read -r ip; do
     [[ -z "$ip" ]] && continue
     curl -sS -o /dev/null --max-time 5 \
       -H "Authorization: Bearer $CLIENT_TOKEN" "http://$ip:18080/v1/sandboxes" 2>/dev/null || true
-    node_metrics="$(curl -fsS --max-time 10 "http://$ip:18080/metrics")" || fail "cannot read metrics from node $ip"
-    if grep -q "tenant=\"$TENANT_ID\"" <<<"$node_metrics"; then
+    pod_metrics="$(curl -fsS --max-time 10 "http://$ip:18080/metrics")" || fail "cannot read metrics from pod $ip"
+    if grep -q "tenant=\"$TENANT_ID\"" <<<"$pod_metrics"; then
       metric_found=1
     fi
-  done < <(kubectl get nodes -o json | jq -r '.items[].status.addresses[] | select(.type == "InternalIP") | .address')
+  done < <(kubectl -n opensandbox-tenant-server get pods -l app.kubernetes.io/name=opensandbox-tenant-server -o json | jq -r '.items[].status.podIP')
 else
   curl -sS -o /dev/null --max-time 5 \
     -H "Authorization: Bearer $CLIENT_TOKEN" "$BASE_URL/v1/sandboxes" 2>/dev/null || true

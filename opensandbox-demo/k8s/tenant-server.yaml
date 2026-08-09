@@ -32,8 +32,7 @@ spec:
         app.kubernetes.io/name: opensandbox-tenant-server
     spec:
       serviceAccountName: opensandbox-tenant-server
-      dnsPolicy: Default
-      hostNetwork: true
+      dnsPolicy: ClusterFirst
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -54,7 +53,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: OPENSANDBOX_SERVER_URL
-          value: http://10.107.229.160:8080
+          value: http://opensandbox-server.opensandbox-system.svc.cluster.local:18080
         - name: OPENSANDBOX_API_KEY
           valueFrom:
             secretKeyRef:
@@ -72,7 +71,7 @@ spec:
               name: opensandbox-tenant-server-secrets
               key: database-url
         - name: KFA_URL
-          value: http://10.10.0.48:30082
+          value: http://kube-federated-auth.kube-federated-auth.svc.cluster.local:8080
         - name: KFA_TOKEN_PATH
           value: /var/run/secrets/kubernetes.io/serviceaccount/token
         - name: KFA_TIMEOUT

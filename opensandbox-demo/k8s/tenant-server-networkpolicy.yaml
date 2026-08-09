@@ -1,0 +1,82 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: opensandbox-tenant-server-default-deny
+  namespace: opensandbox-tenant-server
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: opensandbox-tenant-server
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: opensandbox-tenant-server-ingress
+  namespace: opensandbox-tenant-server
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: opensandbox-tenant-server
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    ports:
+    - protocol: TCP
+      port: 18080
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 18080
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: opensandbox-tenant-server-egress
+  namespace: opensandbox-tenant-server
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: opensandbox-tenant-server
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-federated-auth
+    ports:
+    - protocol: TCP
+      port: 8080
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: opensandbox-system
+    ports:
+    - protocol: TCP
+      port: 18080
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: opensandbox-tenant-server
+    ports:
+    - protocol: TCP
+      port: 5432
