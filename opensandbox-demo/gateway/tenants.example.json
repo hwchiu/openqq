@@ -1,0 +1,11 @@
+{
+  "tenants": {
+    "team-a": {
+      "tenant_id": "team-a",
+      "key_hash": "sha256-of-the-tenant-key",
+      "enabled": true,
+      "scopes": ["sandbox:read", "sandbox:create", "sandbox:command", "sandbox:delete", "sandbox:files"],
+      "max_concurrent_sandboxes": 3
+    }
+  }
+}

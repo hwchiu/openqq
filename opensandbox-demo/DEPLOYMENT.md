@@ -390,3 +390,105 @@ quotas, durable session storage, rate limiting, output limits, audit logging,
 TLS, network egress policy, and a hardened runtime such as gVisor, Kata, or
 Firecracker. Keep the OpenSandbox server Service private and expose only an
 authenticated application/API gateway.
+
+## Tenant gateway modes
+
+完整的 tenant gateway、DB schema、warm-pool claim、egress state machine 與
+tenant metrics 架構請參考
+[TENANT-GATEWAY-ARCHITECTURE.md](TENANT-GATEWAY-ARCHITECTURE.md)。
+
+The tenant gateway is designed as the tenant-aware boundary in front of the
+single OpenSandbox Server API key. A tenant never submits or receives the
+OpenSandbox server key. The gateway validates a tenant key, checks scopes and
+quota, adds the server-side `OPEN-SANDBOX-API-KEY`, and forwards only the
+allowed OpenSandbox API surface.
+
+Supported tenant stores:
+
+```text
+TENANT_STORE=sqlite    durable dynamic store on the gateway PVC
+TENANT_STORE=vault     Vault KV v2, short-cache reads, no gateway restart
+TENANT_STORE=configmap read-only development snapshot, reloads on file change
+```
+
+The gateway must preserve tenant ownership for every sandbox ID. It exposes
+create, lifecycle, command and file-proxy operations, but intentionally returns
+404 for snapshot and unknown routes. Upload requests are bounded by
+`MAX_BODY_BYTES`; downloads and SSE command responses are streamed rather than
+buffered as a complete response. Prometheus metrics include:
+
+```text
+opensandbox_gateway_requests_total{tenant,method,route,status}
+opensandbox_gateway_request_duration_seconds{tenant,method,route}
+opensandbox_gateway_sandboxes_created_total{tenant}
+opensandbox_gateway_sandboxes_deleted_total{tenant}
+opensandbox_gateway_active_sandboxes{tenant}
+opensandbox_gateway_commands_total{tenant}
+opensandbox_gateway_uploaded_bytes_total{tenant}
+opensandbox_gateway_downloaded_bytes_total{tenant}
+opensandbox_gateway_quota_rejections_total{tenant}
+```
+
+For Vault mode, the gateway authenticates with the Kubernetes auth method and
+uses a KV v2 tenant index plus one record per tenant. The cache is deliberately
+short so enable/disable/key rotation takes effect without a Deployment
+restart. Vault should be external or highly available before using this mode
+for production.
+
+The current cluster deployment uses SQLite mode and keeps its state on the
+gateway PVC. The gateway is exposed internally through the private ClusterIP
+and externally through NodePort `30081`; the OpenSandbox Server itself remains
+ClusterIP-only. Create a tenant without restarting the gateway:
+
+```bash
+ADMIN_TOKEN="$(kubectl -n opensandbox-gateway get secret opensandbox-tenant-gateway-secrets \
+  -o jsonpath='{.data.admin-token}' | base64 -d)"
+
+curl -X POST http://<gateway-private-ip>:8080/admin/tenants \
+  -H "X-Gateway-Admin-Token: $ADMIN_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"tenant_id":"team-a","max_concurrent_sandboxes":3}'
+```
+
+The response contains the tenant key once. Store it in the caller's secret
+manager and send it as `Authorization: Bearer <tenant-key>` to the normal
+OpenSandbox `/v1/...` endpoints. The gateway records the sandbox-to-tenant
+ownership mapping, so one tenant cannot list or operate another tenant's
+sandbox.
+
+Useful Prometheus queries for tenant usage are:
+
+```promql
+sum by (tenant) (rate(opensandbox_gateway_requests_total[5m]))
+sum by (tenant) (rate(opensandbox_gateway_sandboxes_created_total[15m]))
+sum by (tenant) (opensandbox_gateway_active_sandboxes)
+sum by (tenant) (rate(opensandbox_gateway_commands_total[5m]))
+sum by (tenant) (rate(opensandbox_gateway_uploaded_bytes_total[5m]))
+sum by (tenant) (rate(opensandbox_gateway_downloaded_bytes_total[5m]))
+```
+
+These labels are intentionally attached at the gateway boundary, where tenant
+identity is known. Do not add tenant labels to sandbox Pod names or arbitrary
+request paths; that would create high-cardinality metrics. The bundled
+ServiceMonitor scrapes `/metrics`, and its target is verified through the
+Prometheus `up{job="opensandbox-tenant-gateway"}` query.
+
+### Current deployment verification
+
+The deployed gateway runs in `opensandbox-gateway` with SQLite mode enabled
+and state stored on the `opensandbox-tenant-gateway-data` PVC. Its private
+ClusterIP is `10.96.10.36:8080` and its NodePort is `30081`; OpenSandbox Server
+remains ClusterIP-only.
+
+Verified after deployment:
+
+- tenant sandbox create/list and ownership isolation;
+- `/v1/snapshots` rejected with HTTP 404;
+- adding a tenant without gateway restart;
+- Prometheus target `up{job="opensandbox-tenant-gateway"} = 1`;
+- tenant-labelled request, sandbox and active-session metrics;
+- test sandbox deletion and workload cleanup.
+
+Validation tenants were `demo` and `analytics`. Tenant keys are returned only
+once by `POST /admin/tenants`; the gateway stores only a hash, so a lost key
+must be replaced rather than retrieved.

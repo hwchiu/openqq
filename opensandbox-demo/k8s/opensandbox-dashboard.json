@@ -1,0 +1,104 @@
+{
+  "uid": "opensandbox-overview",
+  "title": "OpenSandbox Overview",
+  "tags": ["opensandbox", "kubernetes"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "templating": {"list": []},
+  "time": {"from": "now-1h", "to": "now"},
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Warm Pool Pods",
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 0},
+      "targets": [{"expr": "count(kube_pod_labels{namespace=\"opensandbox\",label_sandbox_opensandbox_io_pool_name=\"python-warm-pool\"})", "refId": "A"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "colorMode": "value", "graphMode": "none", "justifyMode": "center"},
+      "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []}
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Running OpenSandbox Pods",
+      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 0},
+      "targets": [{"expr": "sum(kube_pod_status_phase{namespace=\"opensandbox\",phase=\"Running\"})", "refId": "A"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "colorMode": "value", "graphMode": "none", "justifyMode": "center"},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "OpenSandbox Restarts (1h)",
+      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 0},
+      "targets": [{"expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=~\"opensandbox|opensandbox-system\"}[1h]))", "refId": "A"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "colorMode": "value", "graphMode": "none", "justifyMode": "center"},
+      "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}, {"color": "red", "value": 5}]}}, "overrides": []}
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "OpenSandbox Pod CPU",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 5},
+      "targets": [{"expr": "sum by (namespace) (rate(container_cpu_usage_seconds_total{namespace=~\"opensandbox|opensandbox-system\",container!=\"\"}[5m]))", "legendFormat": "{{namespace}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "cores", "min": 0}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "OpenSandbox Pod Memory",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 5},
+      "targets": [{"expr": "sum by (namespace) (container_memory_working_set_bytes{namespace=~\"opensandbox|opensandbox-system\",container!=\"\"})", "legendFormat": "{{namespace}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "bytes", "min": 0}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Warm Pool Pod Status",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 13},
+      "targets": [{"expr": "sum by (phase) (kube_pod_status_phase{namespace=\"opensandbox\",pod=~\"python-warm-pool-.*\"})", "legendFormat": "{{phase}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "OpenSandbox Pods",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 13},
+      "targets": [{"expr": "kube_pod_status_ready{namespace=~\"opensandbox|opensandbox-system\"}", "format": "table", "instant": true, "refId": "A"}],
+      "transformations": [{"id": "organize", "options": {"excludeByName": {"Time": true, "Value": true, "job": true, "instance": true}, "indexByName": {}, "renameByName": {"pod": "Pod", "condition": "Condition", "namespace": "Namespace"}}}],
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "options": {"showHeader": true}
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Tenant Requests / sec",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 21},
+      "targets": [{"expr": "sum by (tenant) (rate(opensandbox_gateway_requests_total[5m]))", "legendFormat": "{{tenant}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "reqps", "min": 0}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Tenant Sandbox Sessions",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 21},
+      "targets": [{"expr": "sum by (tenant) (opensandbox_gateway_active_sandboxes)", "legendFormat": "{{tenant}}", "refId": "A"}, {"expr": "sum by (tenant) (rate(opensandbox_gateway_sandboxes_created_total[15m]))", "legendFormat": "{{tenant}} created/second", "refId": "B"}],
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Tenant Commands and Transfer",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 29},
+      "targets": [{"expr": "sum by (tenant) (rate(opensandbox_gateway_commands_total[5m]))", "legendFormat": "{{tenant}} commands/s", "refId": "A"}, {"expr": "sum by (tenant) (rate(opensandbox_gateway_uploaded_bytes_total[5m]) + rate(opensandbox_gateway_downloaded_bytes_total[5m]))", "legendFormat": "{{tenant}} bytes/s", "refId": "B"}],
+      "fieldConfig": {"defaults": {"unit": "Bps", "min": 0}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
+    }
+  ]
+}
