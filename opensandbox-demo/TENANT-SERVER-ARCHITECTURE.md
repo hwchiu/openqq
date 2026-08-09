@@ -12,13 +12,15 @@ Client / Agent
      | Kubernetes ServiceAccount token
      v
 OpenSandbox Tenant Server ×3
-  - KFA TokenReview authentication
-  - quota / scope
-  - sandbox ownership
-  - warm-pool claim
-  - egress policy
-  - streaming proxy
-  - tenant metrics
+     |  \
+     |   \-- TokenReview request + Tenant Server SA token
+     |       v
+     |     KFA
+     |       |
+     |       \-- Kubernetes OIDC/API and JWKS
+     |
+     |-- identity lookup / authorization --> PostgreSQL
+     |     (tenant mapping, scope, quota, ownership)
      |
      | one private server credential
      v
@@ -27,6 +29,10 @@ OpenSandbox Server
      v
 Warm Pool / Sandbox Pods
 ```
+
+Tenant Server also owns the following business functions: warm-pool claim/reset, egress
+policy lifecycle, streaming proxy and tenant-labelled metrics. KFA does not access
+PostgreSQL and does not make tenant authorization decisions.
 
 OpenSandbox Server 只負責 sandbox lifecycle 與 runtime 操作；tenant identity、
 權限、配額與 audit context 由 Tenant Server 管理。
@@ -323,13 +329,41 @@ effect 之前。尤其是 create、command、upload 與 egress policy API，不�
 
 #### 多副本下的 request 行為
 
-每個 Tenant Server replica 都使用同一個 KFA endpoint 與 PostgreSQL Service：
+每個 Tenant Server replica 都同時依賴 KFA endpoint 與 PostgreSQL Service，但兩者
+不是 KFA → PostgreSQL 的串接關係。KFA 只負責把 token 轉成已驗證的 Kubernetes
+identity；Tenant Server 收到 identity 後，才自行查 PostgreSQL 執行 tenant
+authorization：
 
 ```text
-Request A -> Tenant Server replica 1 -> KFA -> PostgreSQL
-Request B -> Tenant Server replica 2 -> KFA -> PostgreSQL
-Request C -> Tenant Server replica 3 -> KFA -> PostgreSQL
+                              ┌──> KFA ──> Kubernetes OIDC/API
+Request A -> Tenant Server ───┤
+                              └──> PostgreSQL identity/tenant lookup
+                                      │
+                                      └──> OpenSandbox admission/proxy
+
+Request B -> Tenant Server replica 2
+                              ├──> KFA
+                              └──> PostgreSQL
+
+Request C -> Tenant Server replica 3
+                              ├──> KFA
+                              └──> PostgreSQL
 ```
+
+對單一 request 而言，實際時序是：
+
+```text
+Client
+  -> Tenant Server
+  -> KFA TokenReview
+  <- verified identity
+  -> PostgreSQL identity/tenant lookup
+  -> scope/quota/ownership admission
+  -> OpenSandbox Server
+```
+
+因此 PostgreSQL 不會被 KFA 呼叫；KFA 也不知道 `tenant_id`、scope、quota 或
+sandbox ownership。這些都是 Tenant Server 在取得 KFA identity 後才執行的業務授權。
 
 Tenant Server 不假設 request 一定回到相同 replica，也不使用 local memory 來保存
 tenant mapping 或 ownership。KFA cache 位於 KFA instance；如果未來 KFA 擴成多副本，
