@@ -29,6 +29,16 @@ func TestPostgresPrincipalAndQuotaIntegration(t *testing.T) {
 	if err := s.initDB(ctx); err != nil {
 		t.Fatal(err)
 	}
+	var migrationCount int
+	if err := db.QueryRow(ctx, `SELECT count(*) FROM schema_migrations`).Scan(&migrationCount); err != nil {
+		t.Fatal(err)
+	}
+	if migrationCount != len(schemaMigrations) {
+		t.Fatalf("migration count=%d, want %d", migrationCount, len(schemaMigrations))
+	}
+	if err := s.initDB(ctx); err != nil {
+		t.Fatal(err)
+	}
 	tenantID := fmt.Sprintf("integration-%d", time.Now().UnixNano())
 	defer db.Exec(context.Background(), `DELETE FROM tenants WHERE tenant_id=$1`, tenantID)
 	if _, err := db.Exec(ctx, `INSERT INTO tenants(tenant_id,cluster_name,namespace,service_account,scopes,max_concurrent) VALUES($1,'test-cluster','test-ns','legacy','sandbox:create',1)`, tenantID); err != nil {

@@ -24,6 +24,10 @@ kubeconfig.raw
 # Tenant Server local build artifact
 opensandbox-demo/tenant-server-go/tenant-server-linux-amd64
 
+# Python test/build cache
+__pycache__/
+*.py[cod]
+
 # Local comparison-matrix runner outputs
 /testing/results/latest/*
 !/testing/results/latest/README.md

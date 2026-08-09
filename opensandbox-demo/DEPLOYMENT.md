@@ -135,6 +135,13 @@ The server currently uses `OPENSANDBOX_INSECURE_SERVER=YES`, but its Service is
 internal only. Do not expose this Service directly to the Internet without
 adding authentication and TLS.
 
+Tenant Server PostgreSQL schema changes are applied through the versioned
+`schema_migrations` table. The current migration set creates the tenant and
+ownership baseline, KFA principal bindings, quota reservations, and audit
+events. Startup is idempotent, but production changes should still be tested
+against a restored database before rollout; the integration test can verify
+the migration chain with `TEST_DATABASE_URL`.
+
 The server ConfigMap also sets `max_sandbox_timeout_seconds=900`,
 `limit_concurrency=128`, `thread_pool_size=32`, Kubernetes
 `workload_provider=batchsandbox`, `image_pull_policy=IfNotPresent`, informer

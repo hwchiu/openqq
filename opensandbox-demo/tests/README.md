@@ -78,7 +78,8 @@ python3 -m unittest discover -s ../backend -p 'test_*.py'
 ```
 
 The PostgreSQL integration test is skipped unless `TEST_DATABASE_URL` is set.
-It verifies KFA UID principal binding and concurrent quota reservations:
+It verifies versioned migrations, KFA UID principal binding, idempotent
+migration startup, and concurrent quota reservations:
 
 ```bash
 TEST_DATABASE_URL=postgres://postgres:password@127.0.0.1:5432/tenant_test \
