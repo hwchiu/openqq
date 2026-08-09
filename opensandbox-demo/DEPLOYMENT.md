@@ -162,6 +162,14 @@ PostgreSQL only. The policy assumes normal Pod networking; do not combine it
 with `hostNetwork: true`. The lab NodePort smoke path should be run before
 enabling this policy, then replaced by HTTPS ingress traffic.
 
+For the production HTTPS entrypoint, adapt and apply
+`k8s/tenant-server-ingress.yaml`. It requires the `nginx` IngressClass and a
+pre-provisioned `opensandbox-tenant-server-tls` Secret (normally delivered by
+cert-manager or an external secret operator). The manifest forces HTTPS,
+allows 50MiB uploads, disables proxy buffering for file/SSE streaming, and
+routes only to the Tenant Server Service. Do not expose the OpenSandbox Server
+Service or the egress sidecar endpoint through the ingress.
+
 ## Warm pool configuration
 
 The current pool is `opensandbox/python-warm-pool`:

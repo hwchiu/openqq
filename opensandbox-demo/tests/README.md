@@ -106,3 +106,14 @@ The KFA production overlay can be validated without changing a cluster:
 It requires three replicas, a ClusterIP Service, normal Pod networking, and a
 PodDisruptionBudget, and rejects an accidental production NodePort or
 `hostNetwork` setting.
+
+The HTTPS entrypoint can also be validated without changing a cluster:
+
+```bash
+./tenant-server-ingress-render-smoke.sh
+```
+
+Before applying the ingress, provision the `opensandbox-tenant-server-tls`
+Secret through cert-manager or an external secret manager and replace the
+example hostname. The ingress is the only public entrypoint; the OpenSandbox
+Service remains internal.
