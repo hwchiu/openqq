@@ -56,7 +56,163 @@ Tenant Server 對外維持 OpenSandbox `/v1/...` API 形式，並在內部注入
 Upload、download 與 command output 必須採 streaming，並設定 request body、
 response body、timeout 與 concurrency 上限，避免 Tenant Server 自身成為記憶體瓶頸。
 
-## 3. DB 的責任
+## 3. End-to-end workflows
+
+### 3.1 Tenant onboarding 與 key rotation
+
+Tenant 建立和正常 sandbox request 是兩條不同的權限路徑。管理者只把 admin
+credential 提供給內部管理面；一般 tenant 永遠只使用自己的 bearer key。
+
+```mermaid
+sequenceDiagram
+    actor Operator
+    participant TS as Tenant Server
+    participant DB as PostgreSQL
+    participant Secret as Secret Manager
+    Operator->>TS: POST /admin/tenants
+    TS->>DB: INSERT tenant + key_hash + scopes + quota
+    DB-->>TS: committed
+    TS-->>Operator: tenant_key (shown once)
+    Operator->>Secret: store tenant_key
+    Note over TS,DB: future replicas read the same state
+    Operator->>TS: disable or rotate tenant
+    TS->>DB: update enabled / key_hash / version
+    DB-->>TS: committed
+    Note over TS: no Deployment restart; next request uses new state
+```
+
+### 3.2 Normal request admission
+
+所有 `/v1/...` request 都先經過相同的 admission pipeline。任何一個檢查失敗都
+在呼叫 OpenSandbox 前結束，避免未授權 request 產生 side effect。
+
+```text
+request
+  |
+  +--> parse Bearer key
+  +--> hash key and load enabled tenant
+  +--> resolve route -> required scope
+  +--> check request size / rate / tenant quota
+  +--> for sandbox ID: verify sandbox_ownership(tenant_id, sandbox_id)
+  +--> attach request_id and tenant metrics
+  +--> allowlisted OpenSandbox proxy with server credential
+  +--> stream response and update last_activity_at
+```
+
+### 3.3 Warm-pool claim、reset 與交付
+
+warm pool 的重點不是單純預先建立 Pod，而是每次 claim 前都要消除前一個 tenant
+留下的 ownership、檔案與 egress 狀態。claim、reset、ownership commit 應具有可重試
+的狀態機；同一個 request 重送時不能產生兩筆 active ownership。
+
+```mermaid
+flowchart TD
+    A[Create request] --> B{tenant/scope/quota valid?}
+    B -- no --> X[Reject without sandbox]
+    B -- yes --> C{available warm sandbox?}
+    C -- yes --> D[Claim with DB lease]
+    C -- no --> E[Create new sandbox]
+    D --> F[quarantine + reset old state]
+    E --> F
+    F --> G[default deny baseline]
+    G --> H{reset verified?}
+    H -- no --> I[mark quarantine and audit failure]
+    H -- yes --> J[write sandbox ownership]
+    J --> K[return sandbox session]
+```
+
+實際的安全順序是：
+
+1. 先取得 tenant quota 與 pool lease，避免多副本同時認領同一個 sandbox。
+2. 將 sandbox 標記為 `quarantine`，暫時不讓 client 使用。
+3. 清除前一個 tenant 的 egress grants、DNS 規則、session metadata 與 workspace。
+4. 套用 default-deny baseline；預設不允許 DNS 或外部 egress。
+5. 驗證 reset 結果，再寫入新的 `sandbox_ownership` 與 `allocation_state=allocated`。
+6. 若任一步失敗，保留 quarantine 狀態並由補償工作重試，不把半清理的 sandbox 交付。
+
+### 3.4 Egress request 與 FQDN lifecycle
+
+Sandbox 初始不具備 DNS 流量。Tenant Server 先驗證 tenant 是否擁有 sandbox，再驗證
+FQDN 格式、port、租戶 allowlist 與 grant TTL，最後才建立可追蹤的 policy change。
+
+```mermaid
+sequenceDiagram
+    participant Agent
+    participant TS as Tenant Server
+    participant DB as PostgreSQL
+    participant NP as Egress Policy Controller
+    participant DNS as CoreDNS
+    Agent->>TS: POST /sessions/{id}/egress {fqdn, ports}
+    TS->>DB: verify ownership + insert requested grant
+    TS->>NP: apply DNS + FQDN allow rule
+    NP-->>TS: policy applied / rejected
+    alt applied
+        TS->>DB: state=active, expires_at
+        TS-->>Agent: grant active
+        Agent->>DNS: resolve approved FQDN
+    else rejected
+        TS->>DB: state=revoked + audit failure
+        TS-->>Agent: error
+    end
+```
+
+規則回收不依賴 client 是否正常關閉網頁：DELETE、TTL expiry、server restart recovery
+與 pool release 都會執行同一個 idempotent revoke/reset 流程。當該 sandbox 已沒有
+active FQDN grant 時，DNS allow 也一併移除。
+
+### 3.5 Command、upload、download 的 streaming flow
+
+Tenant Server 不把大型檔案或長時間 command output 全部讀進 memory。每一個 stream
+都要套用 body limit、idle timeout、overall timeout、client disconnect cancellation
+與 concurrency quota。
+
+```text
+Agent
+  -> authenticated command/upload/download request
+  -> Tenant Server admission + ownership check
+  -> OpenSandbox stream
+  -> copy chunks while enforcing limits
+  -> client disconnect cancels upstream context
+  -> record bytes / duration / status, never record content
+```
+
+### 3.6 TTL、release 與故障補償
+
+```mermaid
+stateDiagram-v2
+    [*] --> available
+    available --> allocated: claim lease
+    allocated --> allocated: command/file activity extends last_activity_at
+    allocated --> releasing: DELETE or TTL expired
+    releasing --> available: reset verified and pool retained
+    releasing --> deleted: pool policy deletes sandbox
+    allocated --> quarantine: reset or policy failure
+    quarantine --> releasing: retry succeeds
+    quarantine --> quarantine: retry/backoff
+```
+
+TTL worker 必須以 PostgreSQL row lock 或 lease version 搶工作；因此三個 Tenant Server
+replica 同時掃描 expired rows 時只有一個可以執行 release。所有 transition 都要有
+audit event，讓 operator 能分辨「正常 TTL 回收」與「因 egress reset 失敗而隔離」。
+
+### 3.7 Multi-replica request 與資料流
+
+```text
+Client
+  -> NodePort / private node IP
+       +--> Tenant Server replica 1 --+
+       +--> Tenant Server replica 2 ---+--> PostgreSQL read-write Service
+       +--> Tenant Server replica 3 --+          |
+                                             ownership / tenant / grants
+                                                    |
+                                             OpenSandbox Server
+```
+
+Tenant Server 不使用本地檔案保存租戶狀態，也不把 request sticky session 當成一致性
+機制。任何 replica 都能處理下一個 request；一致性由 PostgreSQL transaction、ownership
+constraint 與 lease version 提供。
+
+## 4. DB 的責任
 
 Tenant Server 需要一個 durable state store。這個 DB 不只是存 tenant key，也應該保存
 跨請求需要的 ownership、egress、quota 與 audit 狀態。
@@ -138,7 +294,7 @@ metadata
 quota rejection 與被拒絕的 API route，但不要將 tenant key、檔案內容或 command
 secret 寫入 audit log。
 
-## 4. Warm pool 與 egress 的整合
+## 5. Warm pool 與 egress 的整合
 
 Warm pool 的 Pod 可能會被不同 tenant 依序使用，因此 claim 不是單純把一個
 sandbox ID 回傳給 client，而是一個需要 transaction 與安全清理的流程。
@@ -184,7 +340,7 @@ remove DNS access when no active FQDN grants remain
 只要仍有 active FQDN grant，就必須持續允許 CoreDNS，否則 FQDN 動態解析與
 refresh 會失敗。
 
-## 5. Request flow
+## 6. Request flow
 
 ### 建立 sandbox
 
@@ -222,7 +378,7 @@ DELETE / TTL expiry / pool release
   -> emit audit event
 ```
 
-## 6. Tenant metrics
+## 7. Tenant metrics
 
 Tenant Server 是最可靠的 tenant metrics 邊界，因為 request 進入時已經完成 tenant
 authentication。建議提供：
@@ -244,7 +400,7 @@ CPU、memory、Pod churn，應透過 `sandbox_id -> tenant_id` ownership mapping
 關聯。不要直接把任意 request path 或 sandbox ID 當成 Prometheus label，避免
 高 cardinality。
 
-## 7. Store 選擇
+## 8. Store 選擇
 
 ### PostgreSQL HA
 
@@ -297,7 +453,7 @@ SQLite + PVC
   -> Vault 保存 credential，PostgreSQL 保存 operational state
 ```
 
-## 8. 目前部署邊界
+## 9. 目前部署邊界
 
 - Go OpenSandbox Tenant Server ×3 對外提供 tenant-aware API。
 - OpenSandbox Server 保持 ClusterIP-only。
@@ -306,7 +462,7 @@ SQLite + PVC
 - Grafana 依 `tenant` label 顯示 API、session、command 與 transfer usage。
 - OpenSandbox Server 的 server credential 不會下發給 tenant。
 
-## 9. 重要安全原則
+## 10. 重要安全原則
 
 1. tenant key 只顯示一次，遺失就 rotate，不提供明文查詢。
 2. egress reset 失敗時不得交付 warm-pool sandbox。
@@ -315,7 +471,29 @@ SQLite + PVC
 5. Tenant Server DB、Prometheus 與 audit log 不應保存 command secret 或檔案內容。
 6. Production 應加入 TLS、rate limit、per-tenant quota、DB backup 與 key rotation。
 
-## 10. 實作檔案
+## 11. 測試與驗收 workflow
+
+每次 Go code、Docker image、Kubernetes manifest、DB schema、authentication 或
+egress policy 變更，都依序執行：
+
+```text
+go test -race -count=1 ./...
+  -> build immutable image
+  -> import image to every node
+  -> kubectl apply + rollout status
+  -> tenant-server-smoke.sh
+  -> optional CHECK_K8S=1 CHECK_PROMETHEUS=1
+  -> inspect Grafana / Prometheus target
+```
+
+目前 smoke test 會驗證 health、三副本、每個 private node endpoint、metrics tenant
+label、unauthenticated rejection、temporary tenant lifecycle、disabled tenant rejection、
+snapshot deny 與 Prometheus 三個 target；並在成功或失敗時清理 temporary tenant。
+不會創建 sandbox，因此可以在 production-like 環境反覆執行。真正涉及 sandbox 的
+integration test 必須使用專用測試 tenant 與 disposable pool，完成後確認 ownership、
+egress grant、Pod 與檔案都已清理。
+
+## 12. 實作檔案
 
 - Go Tenant Server：[main.go](tenant-server-go/main.go)
 - Go module：[go.mod](tenant-server-go/go.mod)
