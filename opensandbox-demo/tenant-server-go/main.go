@@ -10,8 +10,11 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -26,6 +29,10 @@ type Config struct {
 	Upstream, UpstreamKey, DatabaseURL, EgressResetTemplate string
 	KFAURL, KFATokenPath                                    string
 	KFATimeout                                              time.Duration
+	EgressPort                                              int
+	EgressToken                                             string
+	EgressAllowedFQDNs                                      map[string]struct{}
+	EgressBaseline                                          []egressRule
 	AdminIdentities                                         []string
 	MaxBody                                                 int64
 }
@@ -36,6 +43,14 @@ type Tenant struct {
 }
 type Identity struct {
 	ClusterName, Namespace, ServiceAccount, PrincipalUID string
+}
+type egressRule struct {
+	Action string `json:"action"`
+	Target string `json:"target"`
+}
+type egressPolicy struct {
+	DefaultAction string       `json:"defaultAction"`
+	Egress        []egressRule `json:"egress"`
 }
 type TenantInput struct {
 	TenantID       string   `json:"tenant_id"`
@@ -87,6 +102,30 @@ func env(k, d string) string {
 		return v
 	}
 	return d
+}
+
+var fqdnPattern = regexp.MustCompile(`^(\*\.)?[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$`)
+
+func csvSet(value string) map[string]struct{} {
+	out := map[string]struct{}{}
+	for _, item := range strings.Split(value, ",") {
+		item = strings.ToLower(strings.TrimSpace(item))
+		if item != "" {
+			out[item] = struct{}{}
+		}
+	}
+	return out
+}
+
+func validateFQDN(value string) (string, error) {
+	value = strings.ToLower(strings.TrimSpace(value))
+	if value == "" || len(value) > 253 || strings.ContainsAny(value, "/\\ \t\r\n") || strings.Contains(value, "://") || !fqdnPattern.MatchString(value) {
+		return "", errors.New("target must be a valid FQDN")
+	}
+	if net.ParseIP(strings.TrimPrefix(value, "*.")) != nil {
+		return "", errors.New("IP addresses are not accepted as FQDN targets")
+	}
+	return value, nil
 }
 func identityKey(i Identity) string {
 	return i.ClusterName + "/" + i.Namespace + "/" + i.ServiceAccount
@@ -485,6 +524,166 @@ func (s *Server) list(w http.ResponseWriter, r *http.Request) {
 	}
 	jsonWrite(w, resp.StatusCode, p)
 }
+
+type egressEndpoint struct {
+	Endpoint string            `json:"endpoint"`
+	Headers  map[string]string `json:"headers"`
+}
+
+func (s *Server) sandboxEgressEndpoint(ctx context.Context, sandboxID string) (egressEndpoint, error) {
+	if s.cfg.EgressPort <= 0 {
+		return egressEndpoint{}, errors.New("egress endpoint is not configured")
+	}
+	requestCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(requestCtx, http.MethodGet, fmt.Sprintf("%s/v1/sandboxes/%s/endpoints/%d?use_server_proxy=true", s.cfg.Upstream, url.PathEscape(sandboxID), s.cfg.EgressPort), nil)
+	if err != nil {
+		return egressEndpoint{}, err
+	}
+	req.Header.Set("OPEN-SANDBOX-API-KEY", s.cfg.UpstreamKey)
+	resp, err := s.http.Do(req)
+	if err != nil {
+		return egressEndpoint{}, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return egressEndpoint{}, fmt.Errorf("endpoint lookup returned HTTP %d", resp.StatusCode)
+	}
+	var endpoint egressEndpoint
+	if err := json.NewDecoder(resp.Body).Decode(&endpoint); err != nil {
+		return egressEndpoint{}, err
+	}
+	parsed, err := url.Parse(endpoint.Endpoint)
+	if err != nil || parsed.Host == "" || (parsed.Scheme != "http" && parsed.Scheme != "https") {
+		return egressEndpoint{}, errors.New("OpenSandbox returned an invalid egress endpoint")
+	}
+	if endpoint.Headers == nil {
+		endpoint.Headers = map[string]string{}
+	}
+	if s.cfg.EgressToken != "" {
+		endpoint.Headers["OPENSANDBOX-EGRESS-AUTH"] = s.cfg.EgressToken
+	}
+	return endpoint, nil
+}
+
+func (s *Server) egressPolicyRequest(ctx context.Context, endpoint egressEndpoint, method string, body any) (json.RawMessage, error) {
+	requestCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+	encoded, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequestWithContext(requestCtx, method, strings.TrimRight(endpoint.Endpoint, "/")+"/policy", strings.NewReader(string(encoded)))
+	if err != nil {
+		return nil, err
+	}
+	for key, value := range endpoint.Headers {
+		req.Header.Set(key, value)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := s.http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(io.LimitReader(resp.Body, s.cfg.MaxBody+1))
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("egress policy returned HTTP %d: %s", resp.StatusCode, strings.TrimSpace(string(data)))
+	}
+	return data, nil
+}
+
+func (s *Server) egress(w http.ResponseWriter, r *http.Request, sandboxID string, tenant *Tenant) {
+	if !tenant.scope(w, "sandbox:egress") {
+		return
+	}
+	endpoint, err := s.sandboxEgressEndpoint(r.Context(), sandboxID)
+	if err != nil {
+		jsonWrite(w, 502, map[string]string{"detail": "egress endpoint unavailable"})
+		return
+	}
+	var data json.RawMessage
+	switch r.Method {
+	case http.MethodGet:
+		data, err = s.egressPolicyRequest(r.Context(), endpoint, http.MethodGet, map[string]any{})
+	case http.MethodPatch:
+		var input egressRule
+		if json.NewDecoder(r.Body).Decode(&input) != nil || (input.Action != "allow" && input.Action != "deny") {
+			jsonWrite(w, 400, map[string]string{"detail": "action must be allow or deny"})
+			return
+		}
+		input.Target, err = validateFQDN(input.Target)
+		if err != nil {
+			jsonWrite(w, 400, map[string]string{"detail": err.Error()})
+			return
+		}
+		if input.Action == "allow" {
+			if _, ok := s.cfg.EgressAllowedFQDNs[input.Target]; !ok {
+				jsonWrite(w, 403, map[string]string{"detail": "FQDN is not in the administrator allowlist"})
+				return
+			}
+		}
+		if input.Action == "deny" {
+			for _, baseline := range s.cfg.EgressBaseline {
+				if baseline.Action == "allow" && baseline.Target == input.Target {
+					jsonWrite(w, 403, map[string]string{"detail": "baseline FQDN cannot be removed"})
+					return
+				}
+			}
+		}
+		data, err = s.egressPolicyRequest(r.Context(), endpoint, http.MethodPatch, []egressRule{input})
+	case http.MethodDelete:
+		var input struct {
+			Target string `json:"target"`
+		}
+		if json.NewDecoder(r.Body).Decode(&input) != nil {
+			jsonWrite(w, 400, map[string]string{"detail": "target is required"})
+			return
+		}
+		input.Target, err = validateFQDN(input.Target)
+		if err != nil {
+			jsonWrite(w, 400, map[string]string{"detail": err.Error()})
+			return
+		}
+		if _, ok := s.cfg.EgressAllowedFQDNs[input.Target]; !ok {
+			jsonWrite(w, 403, map[string]string{"detail": "FQDN is not in the administrator allowlist"})
+			return
+		}
+		for _, baseline := range s.cfg.EgressBaseline {
+			if baseline.Action == "allow" && baseline.Target == input.Target {
+				jsonWrite(w, 403, map[string]string{"detail": "baseline FQDN cannot be removed"})
+				return
+			}
+		}
+		data, err = s.egressPolicyRequest(r.Context(), endpoint, http.MethodDelete, []string{input.Target})
+	default:
+		jsonWrite(w, 405, map[string]string{"detail": "method not allowed"})
+		return
+	}
+	if err != nil {
+		jsonWrite(w, 502, map[string]string{"detail": "egress policy operation failed"})
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(data)
+}
+
+func (s *Server) resetEgress(ctx context.Context, sandboxID string) error {
+	if s.cfg.EgressToken == "" || len(s.cfg.EgressBaseline) == 0 {
+		return nil
+	}
+	endpoint, err := s.sandboxEgressEndpoint(ctx, sandboxID)
+	if err != nil {
+		return err
+	}
+	_, err = s.egressPolicyRequest(ctx, endpoint, http.MethodPost, egressPolicy{DefaultAction: "deny", Egress: s.cfg.EgressBaseline})
+	return err
+}
+
 func (s *Server) sandbox(w http.ResponseWriter, r *http.Request) {
 	rest := strings.TrimPrefix(r.URL.Path, "/v1/sandboxes/")
 	parts := strings.SplitN(rest, "/", 2)
@@ -498,6 +697,11 @@ func (s *Server) sandbox(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(parts) == 1 {
 		if r.Method == "DELETE" {
+			if err := s.resetEgress(r.Context(), id); err != nil {
+				s.audit(r.Context(), requestID(r), t.ID, t.PrincipalUID, "sandbox.delete", id, "blocked", "egress reset failed")
+				jsonWrite(w, 502, map[string]string{"detail": "sandbox egress reset failed"})
+				return
+			}
 			s.forward(w, r, "/v1/sandboxes/"+id, t, "sandbox:delete")
 			s.removeOwner(r.Context(), id, t.ID)
 			s.deleted.WithLabelValues(t.ID).Inc()
@@ -508,6 +712,10 @@ func (s *Server) sandbox(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	path := "/v1/sandboxes/" + rest
+	if strings.HasSuffix(path, "/egress") {
+		s.egress(w, r, id, t)
+		return
+	}
 	required := "sandbox:command"
 	if strings.Contains(path, "/files/") {
 		required = "sandbox:files"
@@ -532,7 +740,7 @@ func (s *Server) adminTenants(w http.ResponseWriter, r *http.Request) {
 			in.MaxConcurrent = 3
 		}
 		if len(in.Scopes) == 0 {
-			in.Scopes = []string{"sandbox:create", "sandbox:read", "sandbox:delete", "sandbox:command", "sandbox:files"}
+			in.Scopes = []string{"sandbox:create", "sandbox:read", "sandbox:delete", "sandbox:command", "sandbox:files", "sandbox:egress"}
 		}
 		_, e := s.db.Exec(r.Context(), `INSERT INTO tenants(tenant_id,cluster_name,namespace,service_account,principal_uid,scopes,max_concurrent) VALUES($1,$2,$3,$4,$5,$6,$7)`, in.TenantID, in.ClusterName, in.Namespace, in.ServiceAccount, in.PrincipalUID, strings.Join(in.Scopes, ","), in.MaxConcurrent)
 		if e != nil {
@@ -667,7 +875,9 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	ctx := context.Background()
 	kfaTimeout, _ := time.ParseDuration(env("KFA_TIMEOUT", "10s"))
-	cfg := Config{Upstream: strings.TrimRight(env("OPENSANDBOX_SERVER_URL", "http://opensandbox-server.opensandbox-system:8080"), "/"), UpstreamKey: os.Getenv("OPENSANDBOX_API_KEY"), DatabaseURL: os.Getenv("TENANT_SERVER_DATABASE_URL"), EgressResetTemplate: os.Getenv("EGRESS_RESET_URL_TEMPLATE"), KFAURL: strings.TrimRight(env("KFA_URL", "http://kube-federated-auth.kube-federated-auth.svc.cluster.local:8080"), "/"), KFATokenPath: env("KFA_TOKEN_PATH", "/var/run/secrets/kubernetes.io/serviceaccount/token"), KFATimeout: kfaTimeout, AdminIdentities: strings.Split(env("TENANT_SERVER_ADMIN_IDENTITIES", "local-cluster/opensandbox-tenant-server/opensandbox-tenant-server"), ","), MaxBody: 50 * 1024 * 1024}
+	egressPort, _ := strconv.Atoi(env("OPENSANDBOX_EGRESS_PORT", "18080"))
+	baselineTarget := env("OPENSANDBOX_EGRESS_BASELINE_FQDN", "opensandbox-server.opensandbox-system.svc.cluster.local")
+	cfg := Config{Upstream: strings.TrimRight(env("OPENSANDBOX_SERVER_URL", "http://opensandbox-server.opensandbox-system:8080"), "/"), UpstreamKey: os.Getenv("OPENSANDBOX_API_KEY"), DatabaseURL: os.Getenv("TENANT_SERVER_DATABASE_URL"), EgressResetTemplate: os.Getenv("EGRESS_RESET_URL_TEMPLATE"), KFAURL: strings.TrimRight(env("KFA_URL", "http://kube-federated-auth.kube-federated-auth.svc.cluster.local:8080"), "/"), KFATokenPath: env("KFA_TOKEN_PATH", "/var/run/secrets/kubernetes.io/serviceaccount/token"), KFATimeout: kfaTimeout, EgressPort: egressPort, EgressToken: os.Getenv("OPENSANDBOX_EGRESS_TOKEN"), EgressAllowedFQDNs: csvSet(os.Getenv("OPENSANDBOX_EGRESS_ALLOWED_FQDNS")), EgressBaseline: []egressRule{{Action: "allow", Target: baselineTarget}}, AdminIdentities: strings.Split(env("TENANT_SERVER_ADMIN_IDENTITIES", "local-cluster/opensandbox-tenant-server/opensandbox-tenant-server"), ","), MaxBody: 50 * 1024 * 1024}
 	if v, err := strconv.ParseInt(env("MAX_BODY_BYTES", strconv.FormatInt(cfg.MaxBody, 10)), 10, 64); err == nil {
 		cfg.MaxBody = v
 	}

@@ -135,6 +135,52 @@ func TestScope(t *testing.T) {
 	_ = s
 }
 
+func TestValidateFQDN(t *testing.T) {
+	for _, value := range []string{"example.com", "*.example.com"} {
+		if got, err := validateFQDN(value); err != nil || got == "" {
+			t.Fatalf("validateFQDN(%q) = %q, %v", value, got, err)
+		}
+	}
+	for _, value := range []string{"https://example.com", "127.0.0.1", "10.0.0.0/8", "bad value"} {
+		if _, err := validateFQDN(value); err == nil {
+			t.Fatalf("validateFQDN(%q) unexpectedly succeeded", value)
+		}
+	}
+}
+
+func TestEgressPatchUsesPrivateEndpointAndAllowlist(t *testing.T) {
+	egress := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("OPENSANDBOX-EGRESS-AUTH") != "egress-secret" {
+			t.Fatalf("egress token missing")
+		}
+		if r.Method != http.MethodPatch || r.URL.Path != "/policy" {
+			t.Fatalf("egress request = %s %s", r.Method, r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"ok":true}`)
+	}))
+	defer egress.Close()
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/sandboxes/sb-1/endpoints/18080" {
+			t.Fatalf("endpoint lookup path = %s", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"endpoint":"`+egress.URL+`"}`)
+	}))
+	defer upstream.Close()
+	s := testServer(upstream.URL, 1024)
+	s.cfg.EgressPort = 18080
+	s.cfg.EgressToken = "egress-secret"
+	s.cfg.EgressAllowedFQDNs = map[string]struct{}{"example.com": {}}
+	s.cfg.EgressBaseline = []egressRule{{Action: "allow", Target: "opensandbox-server.opensandbox-system.svc.cluster.local"}}
+	r := httptest.NewRequest(http.MethodPatch, "/v1/sandboxes/sb-1/egress", strings.NewReader(`{"action":"allow","target":"Example.com"}`))
+	w := httptest.NewRecorder()
+	s.egress(w, r, "sb-1", &Tenant{ID: "team-a", Scopes: "sandbox:egress"})
+	if w.Code != http.StatusOK || w.Body.String() != `{"ok":true}` {
+		t.Fatalf("egress response = %d %q", w.Code, w.Body.String())
+	}
+}
+
 func TestForwardInjectsCredentialAndStreams(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if got := r.Header.Get("OPEN-SANDBOX-API-KEY"); got != "upstream-secret" {

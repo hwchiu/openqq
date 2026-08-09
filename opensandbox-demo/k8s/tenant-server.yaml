@@ -76,6 +76,17 @@ spec:
           value: /var/run/secrets/kubernetes.io/serviceaccount/token
         - name: KFA_TIMEOUT
           value: 10s
+        - name: OPENSANDBOX_EGRESS_PORT
+          value: "18080"
+        - name: OPENSANDBOX_EGRESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: opensandbox-egress-secret
+              key: token
+        - name: OPENSANDBOX_EGRESS_ALLOWED_FQDNS
+          value: example.com,www.google.com,pypi.org,files.pythonhosted.org,github.com,api.github.com
+        - name: OPENSANDBOX_EGRESS_BASELINE_FQDN
+          value: opensandbox-server.opensandbox-system.svc.cluster.local
         - name: MAX_BODY_BYTES
           value: "52428800"
         - name: LISTEN_ADDR

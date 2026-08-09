@@ -237,6 +237,10 @@ kubectl -n opensandbox create secret generic opensandbox-egress-secret \
 kubectl -n opensandbox-system create secret generic opensandbox-egress-secret \
   --from-literal=token="$EGRESS_TOKEN" \
   --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl -n opensandbox-tenant-server create secret generic opensandbox-egress-secret \
+  --from-literal=token="$EGRESS_TOKEN" \
+  --dry-run=client -o yaml | kubectl apply -f -
 ```
 
 Create the backend/frontend ConfigMaps and restart the demo deployment:
@@ -503,9 +507,24 @@ curl -X POST http://<tenant-server-private-ip>:18080/admin/tenants \
 The response registers the ServiceAccount identity; no tenant key is generated.
 The caller sends its own ServiceAccount token as `Authorization: Bearer <token>`
 to the normal OpenSandbox `/v1/...` endpoints. Tenant Server verifies that token
-through KFA and records the sandbox-to-tenant
-ownership mapping, so one tenant cannot list or operate another tenant's
-sandbox.
+through KFA and records the sandbox-to-tenant ownership mapping, so one tenant
+cannot list or operate another tenant's sandbox.
+
+Tenant Server also owns sandbox egress policy operations. The client needs the
+`sandbox:egress` scope; the server validates the FQDN against
+`OPENSANDBOX_EGRESS_ALLOWED_FQDNS`, resolves the private OpenSandbox endpoint,
+injects the egress token server-side, and never accepts an IP/CIDR or URL:
+
+```text
+GET    /v1/sandboxes/{sandbox_id}/egress
+PATCH  /v1/sandboxes/{sandbox_id}/egress  {"action":"allow","target":"example.com"}
+DELETE /v1/sandboxes/{sandbox_id}/egress  {"target":"example.com"}
+```
+
+Deleting a sandbox first applies the baseline deny policy and protected
+OpenSandbox-server allow rule. If reset fails, deletion is blocked and an
+audit event records the failure so a pooled sandbox cannot be returned with a
+previous tenant's egress grant.
 
 Useful Prometheus queries for tenant usage are:
 
