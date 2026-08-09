@@ -72,6 +72,8 @@ spec:
           value: http://10.10.0.48:30082
         - name: KFA_TOKEN_PATH
           value: /var/run/secrets/kubernetes.io/serviceaccount/token
+        - name: KFA_TIMEOUT
+          value: 10s
         - name: MAX_BODY_BYTES
           value: "52428800"
         - name: LISTEN_ADDR

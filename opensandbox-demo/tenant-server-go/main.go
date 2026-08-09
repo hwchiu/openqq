@@ -25,6 +25,7 @@ import (
 type Config struct {
 	Upstream, UpstreamKey, DatabaseURL, EgressResetTemplate string
 	KFAURL, KFATokenPath                                    string
+	KFATimeout                                              time.Duration
 	AdminIdentities                                         []string
 	MaxBody                                                 int64
 }
@@ -174,6 +175,12 @@ type tokenReview struct {
 }
 
 func (s *Server) verifyWithKFA(ctx context.Context, token string) (Identity, error) {
+	timeout := s.cfg.KFATimeout
+	if timeout <= 0 {
+		timeout = 10 * time.Second
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 	serverToken, err := os.ReadFile(s.cfg.KFATokenPath)
 	if err != nil {
 		return Identity{}, fmt.Errorf("read KFA caller token: %w", err)
@@ -664,7 +671,8 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	ctx := context.Background()
-	cfg := Config{Upstream: strings.TrimRight(env("OPENSANDBOX_SERVER_URL", "http://opensandbox-server.opensandbox-system:8080"), "/"), UpstreamKey: os.Getenv("OPENSANDBOX_API_KEY"), DatabaseURL: os.Getenv("TENANT_SERVER_DATABASE_URL"), EgressResetTemplate: os.Getenv("EGRESS_RESET_URL_TEMPLATE"), KFAURL: strings.TrimRight(env("KFA_URL", "http://kube-federated-auth.kube-federated-auth.svc.cluster.local:8080"), "/"), KFATokenPath: env("KFA_TOKEN_PATH", "/var/run/secrets/kubernetes.io/serviceaccount/token"), AdminIdentities: strings.Split(env("TENANT_SERVER_ADMIN_IDENTITIES", "local-cluster/opensandbox-tenant-server/opensandbox-tenant-server"), ","), MaxBody: 50 * 1024 * 1024}
+	kfaTimeout, _ := time.ParseDuration(env("KFA_TIMEOUT", "10s"))
+	cfg := Config{Upstream: strings.TrimRight(env("OPENSANDBOX_SERVER_URL", "http://opensandbox-server.opensandbox-system:8080"), "/"), UpstreamKey: os.Getenv("OPENSANDBOX_API_KEY"), DatabaseURL: os.Getenv("TENANT_SERVER_DATABASE_URL"), EgressResetTemplate: os.Getenv("EGRESS_RESET_URL_TEMPLATE"), KFAURL: strings.TrimRight(env("KFA_URL", "http://kube-federated-auth.kube-federated-auth.svc.cluster.local:8080"), "/"), KFATokenPath: env("KFA_TOKEN_PATH", "/var/run/secrets/kubernetes.io/serviceaccount/token"), KFATimeout: kfaTimeout, AdminIdentities: strings.Split(env("TENANT_SERVER_ADMIN_IDENTITIES", "local-cluster/opensandbox-tenant-server/opensandbox-tenant-server"), ","), MaxBody: 50 * 1024 * 1024}
 	if v, err := strconv.ParseInt(env("MAX_BODY_BYTES", strconv.FormatInt(cfg.MaxBody, 10)), 10, 64); err == nil {
 		cfg.MaxBody = v
 	}

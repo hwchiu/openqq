@@ -239,6 +239,7 @@ OPENSANDBOX_EXEC_BASE_URL_TEMPLATE=http://opensandbox-server.opensandbox-system.
 OPENSANDBOX_POOL_REF=python-warm-pool
 RUN_TTL_SECONDS=180
 OPENSANDBOX_EGRESS_ALLOWED_FQDNS=pypi.org,files.pythonhosted.org,github.com,api.github.com,example.com,google.com,www.google.com
+KFA_TIMEOUT=10s
 ```
 
 The Execd proxy port (`44772`) must match the Execd configuration used by the
