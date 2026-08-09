@@ -1,16 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"context"
-	"crypto/rand"
-	"crypto/sha256"
-	"crypto/subtle"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
-	"math/big"
 	"net/http"
 	"os"
 	"strconv"
@@ -24,18 +21,26 @@ import (
 )
 
 type Config struct {
-	Upstream, UpstreamKey, AdminToken, DatabaseURL, EgressResetTemplate string
-	MaxBody                                                             int64
+	Upstream, UpstreamKey, DatabaseURL, EgressResetTemplate string
+	KFAURL, KFATokenPath                                    string
+	AdminIdentities                                         []string
+	MaxBody                                                 int64
 }
 type Tenant struct {
-	ID, Scopes    string
-	MaxConcurrent int
-	Enabled       bool
+	ID, ClusterName, Namespace, ServiceAccount, Scopes string
+	MaxConcurrent                                      int
+	Enabled                                            bool
+}
+type Identity struct {
+	ClusterName, Namespace, ServiceAccount string
 }
 type TenantInput struct {
-	TenantID      string   `json:"tenant_id"`
-	Scopes        []string `json:"scopes"`
-	MaxConcurrent int      `json:"max_concurrent_sandboxes"`
+	TenantID       string   `json:"tenant_id"`
+	ClusterName    string   `json:"cluster_name"`
+	Namespace      string   `json:"namespace"`
+	ServiceAccount string   `json:"service_account"`
+	Scopes         []string `json:"scopes"`
+	MaxConcurrent  int      `json:"max_concurrent_sandboxes"`
 }
 type Server struct {
 	cfg                                                     Config
@@ -70,26 +75,21 @@ var (
 	registry = prometheus.NewRegistry()
 )
 
+type tenantContextKey struct{}
+
 func env(k, d string) string {
 	if v := os.Getenv(k); v != "" {
 		return v
 	}
 	return d
 }
-func sha(v string) string { b := sha256.Sum256([]byte(v)); return hex.EncodeToString(b[:]) }
-func newKey() string {
-	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
-	out := make([]byte, 43)
-	for i := range out {
-		n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(chars))))
-		out[i] = chars[n.Int64()]
-	}
-	return "osb_tenant_" + string(out)
+func identityKey(i Identity) string {
+	return i.ClusterName + "/" + i.Namespace + "/" + i.ServiceAccount
 }
 func bearer(r *http.Request) (string, error) {
 	v := r.Header.Get("Authorization")
 	if !strings.HasPrefix(v, "Bearer ") {
-		return "", errors.New("tenant bearer token required")
+		return "", errors.New("Kubernetes ServiceAccount bearer token required")
 	}
 	return strings.TrimSpace(strings.TrimPrefix(v, "Bearer ")), nil
 }
@@ -98,9 +98,9 @@ func jsonWrite(w http.ResponseWriter, code int, v any) {
 	w.WriteHeader(code)
 	_ = json.NewEncoder(w).Encode(v)
 }
-func (s *Server) tenant(ctx context.Context, key string) (*Tenant, error) {
+func (s *Server) tenant(ctx context.Context, identity Identity) (*Tenant, error) {
 	var t Tenant
-	err := s.db.QueryRow(ctx, `SELECT tenant_id,scopes,max_concurrent,enabled FROM tenants WHERE key_hash=$1 AND enabled`, sha(key)).Scan(&t.ID, &t.Scopes, &t.MaxConcurrent, &t.Enabled)
+	err := s.db.QueryRow(ctx, `SELECT tenant_id,cluster_name,namespace,service_account,scopes,max_concurrent,enabled FROM tenants WHERE cluster_name=$1 AND namespace=$2 AND service_account=$3 AND enabled`, identity.ClusterName, identity.Namespace, identity.ServiceAccount).Scan(&t.ID, &t.ClusterName, &t.Namespace, &t.ServiceAccount, &t.Scopes, &t.MaxConcurrent, &t.Enabled)
 	if err != nil {
 		return nil, err
 	}
@@ -116,29 +116,112 @@ func (t *Tenant) scope(w http.ResponseWriter, wanted string) bool {
 	return false
 }
 func (s *Server) auth(w http.ResponseWriter, r *http.Request) *Tenant {
-	key, e := bearer(r)
+	identity, e := s.identity(w, r)
 	if e != nil {
-		jsonWrite(w, 401, map[string]string{"detail": e.Error()})
 		return nil
 	}
-	t, e := s.tenant(r.Context(), key)
+	t, e := s.tenant(r.Context(), identity)
 	if e != nil {
-		jsonWrite(w, 401, map[string]string{"detail": "invalid or disabled tenant key"})
+		jsonWrite(w, 403, map[string]string{"detail": "ServiceAccount is not mapped to an enabled tenant"})
 		return nil
 	}
+	*r = *r.WithContext(context.WithValue(r.Context(), tenantContextKey{}, t.ID))
 	return t
 }
+
+func (s *Server) identity(w http.ResponseWriter, r *http.Request) (Identity, error) {
+	token, err := bearer(r)
+	if err != nil {
+		jsonWrite(w, http.StatusUnauthorized, map[string]string{"detail": err.Error()})
+		return Identity{}, err
+	}
+	identity, err := s.verifyWithKFA(r.Context(), token)
+	if err != nil {
+		jsonWrite(w, http.StatusUnauthorized, map[string]string{"detail": "invalid Kubernetes ServiceAccount identity"})
+		return Identity{}, err
+	}
+	return identity, nil
+}
+
+type tokenReview struct {
+	Status struct {
+		Authenticated bool `json:"authenticated"`
+		User          struct {
+			Username string              `json:"username"`
+			Extra    map[string][]string `json:"extra"`
+		} `json:"user"`
+		Error string `json:"error"`
+	} `json:"status"`
+}
+
+func (s *Server) verifyWithKFA(ctx context.Context, token string) (Identity, error) {
+	serverToken, err := os.ReadFile(s.cfg.KFATokenPath)
+	if err != nil {
+		return Identity{}, fmt.Errorf("read KFA caller token: %w", err)
+	}
+	payload, err := json.Marshal(map[string]any{
+		"apiVersion": "authentication.k8s.io/v1",
+		"kind":       "TokenReview",
+		"spec":       map[string]string{"token": token},
+	})
+	if err != nil {
+		return Identity{}, fmt.Errorf("encode TokenReview: %w", err)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(s.cfg.KFAURL, "/")+"/apis/authentication.k8s.io/v1/tokenreviews", bytes.NewReader(payload))
+	if err != nil {
+		return Identity{}, fmt.Errorf("create KFA request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+strings.TrimSpace(string(serverToken)))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := s.http.Do(req)
+	if err != nil {
+		return Identity{}, fmt.Errorf("KFA unavailable: %w", err)
+	}
+	defer resp.Body.Close()
+	var review tokenReview
+	if err := json.NewDecoder(resp.Body).Decode(&review); err != nil {
+		return Identity{}, fmt.Errorf("decode KFA response: %w", err)
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 || !review.Status.Authenticated {
+		if review.Status.Error != "" {
+			return Identity{}, errors.New(review.Status.Error)
+		}
+		return Identity{}, fmt.Errorf("KFA rejected token with HTTP %d", resp.StatusCode)
+	}
+	parts := strings.Split(review.Status.User.Username, ":")
+	if len(parts) != 4 || parts[0] != "system" || parts[1] != "serviceaccount" || parts[2] == "" || parts[3] == "" {
+		return Identity{}, fmt.Errorf("KFA returned unsupported username %q", review.Status.User.Username)
+	}
+	cluster := ""
+	if values := review.Status.User.Extra["authentication.kubernetes.io/cluster-name"]; len(values) == 1 {
+		cluster = values[0]
+	}
+	if cluster == "" {
+		return Identity{}, errors.New("KFA response has no cluster identity")
+	}
+	return Identity{ClusterName: cluster, Namespace: parts[2], ServiceAccount: parts[3]}, nil
+}
 func (s *Server) admin(w http.ResponseWriter, r *http.Request) bool {
-	v := r.Header.Get("X-Tenant-Server-Admin-Token")
-	if s.cfg.AdminToken == "" || subtle.ConstantTimeCompare([]byte(v), []byte(s.cfg.AdminToken)) != 1 {
-		jsonWrite(w, 401, map[string]string{"detail": "tenant server admin token required"})
+	identity, err := s.identity(w, r)
+	if err != nil {
+		return false
+	}
+	allowed := false
+	for _, candidate := range s.cfg.AdminIdentities {
+		if strings.TrimSpace(candidate) == identityKey(identity) {
+			allowed = true
+			break
+		}
+	}
+	if !allowed {
+		jsonWrite(w, http.StatusForbidden, map[string]string{"detail": "ServiceAccount is not an admin identity"})
 		return false
 	}
 	return true
 }
 
 func (s *Server) initDB(ctx context.Context) error {
-	_, e := s.db.Exec(ctx, `CREATE TABLE IF NOT EXISTS tenants(tenant_id TEXT PRIMARY KEY,key_hash TEXT UNIQUE NOT NULL,scopes TEXT NOT NULL,max_concurrent INTEGER NOT NULL,enabled BOOLEAN NOT NULL DEFAULT TRUE,created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP); CREATE TABLE IF NOT EXISTS sandbox_owners(sandbox_id TEXT PRIMARY KEY,tenant_id TEXT NOT NULL,allocation_state TEXT NOT NULL DEFAULT 'allocated',created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,last_activity_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP); CREATE INDEX IF NOT EXISTS sandbox_owners_tenant_idx ON sandbox_owners(tenant_id,allocation_state);`)
+	_, e := s.db.Exec(ctx, `CREATE TABLE IF NOT EXISTS tenants(tenant_id TEXT PRIMARY KEY,cluster_name TEXT NOT NULL DEFAULT '',namespace TEXT NOT NULL DEFAULT '',service_account TEXT NOT NULL DEFAULT '',scopes TEXT NOT NULL,max_concurrent INTEGER NOT NULL,enabled BOOLEAN NOT NULL DEFAULT TRUE,created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP); ALTER TABLE tenants ADD COLUMN IF NOT EXISTS cluster_name TEXT NOT NULL DEFAULT ''; ALTER TABLE tenants ADD COLUMN IF NOT EXISTS namespace TEXT NOT NULL DEFAULT ''; ALTER TABLE tenants ADD COLUMN IF NOT EXISTS service_account TEXT NOT NULL DEFAULT ''; ALTER TABLE tenants DROP COLUMN IF EXISTS key_hash; CREATE UNIQUE INDEX IF NOT EXISTS tenants_identity_idx ON tenants(cluster_name,namespace,service_account) WHERE cluster_name <> '' AND namespace <> '' AND service_account <> ''; CREATE TABLE IF NOT EXISTS sandbox_owners(sandbox_id TEXT PRIMARY KEY,tenant_id TEXT NOT NULL,allocation_state TEXT NOT NULL DEFAULT 'allocated',created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,last_activity_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP); CREATE INDEX IF NOT EXISTS sandbox_owners_tenant_idx ON sandbox_owners(tenant_id,allocation_state);`)
 	return e
 }
 func (s *Server) recordOwner(ctx context.Context, id, tenant string) error {
@@ -321,8 +404,8 @@ func (s *Server) adminTenants(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.Method == "POST" {
 		var in TenantInput
-		if json.NewDecoder(r.Body).Decode(&in) != nil || in.TenantID == "" {
-			jsonWrite(w, 400, map[string]string{"detail": "invalid tenant"})
+		if json.NewDecoder(r.Body).Decode(&in) != nil || in.TenantID == "" || in.ClusterName == "" || in.Namespace == "" || in.ServiceAccount == "" {
+			jsonWrite(w, 400, map[string]string{"detail": "tenant_id, cluster_name, namespace and service_account are required"})
 			return
 		}
 		if in.MaxConcurrent == 0 {
@@ -331,13 +414,12 @@ func (s *Server) adminTenants(w http.ResponseWriter, r *http.Request) {
 		if len(in.Scopes) == 0 {
 			in.Scopes = []string{"sandbox:create", "sandbox:read", "sandbox:delete", "sandbox:command", "sandbox:files"}
 		}
-		key := newKey()
-		_, e := s.db.Exec(r.Context(), `INSERT INTO tenants(tenant_id,key_hash,scopes,max_concurrent) VALUES($1,$2,$3,$4)`, in.TenantID, sha(key), strings.Join(in.Scopes, ","), in.MaxConcurrent)
+		_, e := s.db.Exec(r.Context(), `INSERT INTO tenants(tenant_id,cluster_name,namespace,service_account,scopes,max_concurrent) VALUES($1,$2,$3,$4,$5,$6)`, in.TenantID, in.ClusterName, in.Namespace, in.ServiceAccount, strings.Join(in.Scopes, ","), in.MaxConcurrent)
 		if e != nil {
 			jsonWrite(w, 409, map[string]string{"detail": "tenant already exists"})
 			return
 		}
-		jsonWrite(w, 200, map[string]string{"tenant_id": in.TenantID, "tenant_key": key, "warning": "shown once; store securely"})
+		jsonWrite(w, 200, map[string]any{"tenant_id": in.TenantID, "cluster_name": in.ClusterName, "namespace": in.Namespace, "service_account": in.ServiceAccount, "scopes": in.Scopes, "max_concurrent_sandboxes": in.MaxConcurrent})
 		return
 	}
 	rows, e := s.db.Query(r.Context(), `SELECT tenant_id,scopes,max_concurrent,enabled,created_at FROM tenants ORDER BY tenant_id`)
@@ -353,7 +435,9 @@ func (s *Server) adminTenants(w http.ResponseWriter, r *http.Request) {
 		var enabled bool
 		var created time.Time
 		_ = rows.Scan(&id, &sc, &max, &enabled, &created)
-		out = append(out, map[string]any{"tenant_id": id, "scopes": sc, "max_concurrent": max, "enabled": enabled, "created_at": created})
+		var cluster, namespace, serviceAccount string
+		_ = s.db.QueryRow(r.Context(), `SELECT cluster_name,namespace,service_account FROM tenants WHERE tenant_id=$1`, id).Scan(&cluster, &namespace, &serviceAccount)
+		out = append(out, map[string]any{"tenant_id": id, "cluster_name": cluster, "namespace": namespace, "service_account": serviceAccount, "scopes": sc, "max_concurrent": max, "enabled": enabled, "created_at": created})
 	}
 	jsonWrite(w, 200, out)
 }
@@ -375,16 +459,14 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	w = sw
 	start := time.Now()
 	tenant := "unauthenticated"
-	if key, e := bearer(r); e == nil {
-		if t, e := s.tenant(r.Context(), key); e == nil {
-			tenant = t.ID
-		}
-	}
 	route := r.URL.Path
 	if strings.Contains(route, "/proxy/") {
 		route = "/v1/sandboxes/{sandbox_id}/proxy/{port}/{operation}"
 	}
 	defer func() {
+		if value, ok := r.Context().Value(tenantContextKey{}).(string); ok {
+			tenant = value
+		}
 		status := sw.status
 		if status == 0 {
 			status = http.StatusOK
@@ -425,7 +507,7 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	ctx := context.Background()
-	cfg := Config{Upstream: strings.TrimRight(env("OPENSANDBOX_SERVER_URL", "http://opensandbox-server.opensandbox-system:8080"), "/"), UpstreamKey: os.Getenv("OPENSANDBOX_API_KEY"), AdminToken: os.Getenv("TENANT_SERVER_ADMIN_TOKEN"), DatabaseURL: os.Getenv("TENANT_SERVER_DATABASE_URL"), EgressResetTemplate: os.Getenv("EGRESS_RESET_URL_TEMPLATE"), MaxBody: 50 * 1024 * 1024}
+	cfg := Config{Upstream: strings.TrimRight(env("OPENSANDBOX_SERVER_URL", "http://opensandbox-server.opensandbox-system:8080"), "/"), UpstreamKey: os.Getenv("OPENSANDBOX_API_KEY"), DatabaseURL: os.Getenv("TENANT_SERVER_DATABASE_URL"), EgressResetTemplate: os.Getenv("EGRESS_RESET_URL_TEMPLATE"), KFAURL: strings.TrimRight(env("KFA_URL", "http://kube-federated-auth.kube-federated-auth.svc.cluster.local:8080"), "/"), KFATokenPath: env("KFA_TOKEN_PATH", "/var/run/secrets/kubernetes.io/serviceaccount/token"), AdminIdentities: strings.Split(env("TENANT_SERVER_ADMIN_IDENTITIES", "local-cluster/opensandbox-tenant-server/opensandbox-tenant-server"), ","), MaxBody: 50 * 1024 * 1024}
 	if v, err := strconv.ParseInt(env("MAX_BODY_BYTES", strconv.FormatInt(cfg.MaxBody, 10)), 10, 64); err == nil {
 		cfg.MaxBody = v
 	}

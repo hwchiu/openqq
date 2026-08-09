@@ -57,11 +57,8 @@ spec:
             secretKeyRef:
               name: opensandbox-tenant-server-secrets
               key: opensandbox-api-key
-        - name: TENANT_SERVER_ADMIN_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: opensandbox-tenant-server-secrets
-              key: admin-token
+        - name: TENANT_SERVER_ADMIN_IDENTITIES
+          value: local-cluster/opensandbox-tenant-server/opensandbox-tenant-server
         - name: TENANT_STORE
           value: postgres
         - name: TENANT_SERVER_STATE_STORE
@@ -71,6 +68,10 @@ spec:
             secretKeyRef:
               name: opensandbox-tenant-server-secrets
               key: database-url
+        - name: KFA_URL
+          value: http://10.10.0.48:30082
+        - name: KFA_TOKEN_PATH
+          value: /var/run/secrets/kubernetes.io/serviceaccount/token
         - name: MAX_BODY_BYTES
           value: "52428800"
         - name: LISTEN_ADDR

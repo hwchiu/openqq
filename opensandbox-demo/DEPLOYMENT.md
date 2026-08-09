@@ -397,11 +397,12 @@ authenticated application/API tenant server.
 tenant metrics 架構請參考
 [TENANT-SERVER-ARCHITECTURE.md](TENANT-SERVER-ARCHITECTURE.md)。
 
-The Go OpenSandbox Tenant Server is designed as the tenant-aware boundary in front of the
+The Go OpenSandbox Tenant Server is the tenant-aware boundary in front of the
 single OpenSandbox Server API key. A tenant never submits or receives the
-OpenSandbox server key. The tenant server validates a tenant key, checks scopes and
-quota, adds the server-side `OPEN-SANDBOX-API-KEY`, and forwards only the
-allowed OpenSandbox API surface.
+OpenSandbox server key. The client sends a Kubernetes ServiceAccount token;
+Tenant Server sends it to KFA using its own ServiceAccount token, maps the
+verified `cluster/namespace/serviceaccount` identity to PostgreSQL, checks
+scopes and quota, and forwards only the allowed OpenSandbox API surface.
 
 Supported tenant stores:
 
@@ -442,18 +443,18 @@ Service remains available through NodePort `30081`. OpenSandbox Server itself
 remains ClusterIP-only. Create a tenant without restarting any Tenant Server:
 
 ```bash
-ADMIN_TOKEN="$(kubectl -n opensandbox-tenant-server get secret opensandbox-tenant-server-secrets \
-  -o jsonpath='{.data.admin-token}' | base64 -d)"
+ADMIN_TOKEN="$(kubectl -n opensandbox-tenant-server create token opensandbox-tenant-server --duration=10m)"
 
 curl -X POST http://<tenant-server-private-ip>:18080/admin/tenants \
-  -H "X-Tenant-Server-Admin-Token: $ADMIN_TOKEN" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H 'Content-Type: application/json' \
-  -d '{"tenant_id":"team-a","max_concurrent_sandboxes":3}'
+  -d '{"tenant_id":"team-a","cluster_name":"local-cluster","namespace":"team-a","service_account":"runner","max_concurrent_sandboxes":3}'
 ```
 
-The response contains the tenant key once. Store it in the caller's secret
-manager and send it as `Authorization: Bearer <tenant-key>` to the normal
-OpenSandbox `/v1/...` endpoints. The tenant server records the sandbox-to-tenant
+The response registers the ServiceAccount identity; no tenant key is generated.
+The caller sends its own ServiceAccount token as `Authorization: Bearer <token>`
+to the normal OpenSandbox `/v1/...` endpoints. Tenant Server verifies that token
+through KFA and records the sandbox-to-tenant
 ownership mapping, so one tenant cannot list or operate another tenant's
 sandbox.
 
@@ -500,17 +501,17 @@ Verified after deployment:
 - tenant-labelled request, sandbox and active-session metrics;
 - test sandbox deletion and workload cleanup.
 
-Validation tenants were `demo` and `analytics`. Tenant keys are returned only
-once by `POST /admin/tenants`; the tenant server stores only a hash, so a lost key
-must be replaced rather than retrieved.
+Validation tenant `kfa-test-tenant` maps to
+`local-cluster/kfa-test/kfa-test-client`. No tenant API key or tenant JWT is
+generated or stored.
 
 ## kube-federated-auth authentication lab
 
 The current cluster also has a same-cluster authentication test deployment for
 [`kube-federated-auth`](https://github.com/null-ptr-exception/kube-federated-auth).
-It is intentionally installed separately from the Tenant Server authentication
-path; this lets us validate the federated TokenReview flow before changing
-production request handling.
+Tenant Server now uses this KFA endpoint for every authenticated `/v1/...`
+request. The KFA caller credential is the Tenant Server Pod's projected
+ServiceAccount token.
 
 Resources:
 

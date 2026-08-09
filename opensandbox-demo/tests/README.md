@@ -1,11 +1,12 @@
 # Tenant Server tests
 
-`tenant-server-smoke.sh` is a repeatable, non-destructive contract test. It creates a
-unique temporary tenant, verifies health and tenant-labelled metrics, checks all three
-node-local replicas when run with `CHECK_K8S=1`, confirms unauthenticated traffic is
-rejected and `/v1/snapshots` is not exposed, then disables the temporary tenant. A
-cleanup trap removes the temporary tenant even when an assertion fails. It does not
-create a sandbox or alter the warm pool.
+`tenant-server-smoke.sh` is a repeatable, non-destructive contract test. It uses the
+`kfa-test/kfa-test-client` ServiceAccount token, creates a temporary identity mapping,
+verifies health and tenant-labelled metrics, checks all three node-local replicas when
+run with `CHECK_K8S=1`, confirms unauthenticated traffic is rejected and
+`/v1/snapshots` is not exposed, then disables the temporary tenant. A cleanup trap
+removes the temporary tenant even when an assertion fails. It does not create a
+sandbox or alter the warm pool.
 
 Run from a cluster node:
 
@@ -18,7 +19,7 @@ Run from another machine through a NodePort:
 
 ```bash
 TENANT_SERVER_URL=http://10.10.0.154:30081 \
-TENANT_SERVER_ADMIN_TOKEN='read-from-your-secret-manager' \
+TENANT_SERVICEACCOUNT_ADMIN_TOKEN='projected-serviceaccount-token' \
 ./tenant-server-smoke.sh
 ```
 

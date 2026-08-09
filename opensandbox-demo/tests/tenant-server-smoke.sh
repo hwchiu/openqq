@@ -6,32 +6,48 @@ set -euo pipefail
 # Required tools: curl, jq, kubectl only when CHECK_K8S=1.
 
 BASE_URL="${TENANT_SERVER_URL:-http://127.0.0.1:18080}"
-ADMIN_TOKEN="${TENANT_SERVER_ADMIN_TOKEN:-}"
+ADMIN_TOKEN="${TENANT_SERVICEACCOUNT_ADMIN_TOKEN:-}"
 CHECK_K8S="${CHECK_K8S:-0}"
 CHECK_PROMETHEUS="${CHECK_PROMETHEUS:-0}"
 STAMP="$(date +%s)-$$"
 TENANT_ID="smoke-${STAMP}"
-TENANT_KEY=""
+CLIENT_TOKEN="${TENANT_SERVICEACCOUNT_TOKEN:-}"
+CLIENT_NAMESPACE="${TENANT_NAMESPACE:-kfa-test}"
+CLIENT_SERVICE_ACCOUNT="${TENANT_SERVICE_ACCOUNT:-kfa-test-client}"
 CREATED=0
+CLIENT_CREATED=0
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 json() { curl -fsS --retry 4 --retry-delay 1 --retry-connrefused --max-time 15 "$@"; }
 cleanup() {
-  if [[ "$CREATED" == 1 && -n "$TENANT_KEY" ]]; then
+  if [[ "$CREATED" == 1 ]]; then
     curl -sS -X DELETE --max-time 15 \
-      -H "X-Tenant-Server-Admin-Token: $ADMIN_TOKEN" \
+      -H "Authorization: Bearer $ADMIN_TOKEN" \
       "$BASE_URL/admin/tenants/$TENANT_ID" >/dev/null || true
+  fi
+  if [[ "$CLIENT_CREATED" == 1 ]]; then
+    kubectl -n "$CLIENT_NAMESPACE" delete serviceaccount "$CLIENT_SERVICE_ACCOUNT" --ignore-not-found=true >/dev/null || true
   fi
 }
 trap cleanup EXIT
 
 if [[ -z "$ADMIN_TOKEN" ]]; then
   if [[ "$CHECK_K8S" == 1 ]]; then
-    ADMIN_TOKEN="$(kubectl -n opensandbox-tenant-server get secret opensandbox-tenant-server-secrets -o jsonpath='{.data.admin-token}' | base64 -d)"
+    ADMIN_TOKEN="$(kubectl -n opensandbox-tenant-server create token opensandbox-tenant-server --duration=10m)"
   else
-    fail "set TENANT_SERVER_ADMIN_TOKEN or run with CHECK_K8S=1"
+    fail "set TENANT_SERVICEACCOUNT_ADMIN_TOKEN or run with CHECK_K8S=1"
   fi
 fi
+
+if [[ -z "$CLIENT_TOKEN" && "$CHECK_K8S" == 1 ]]; then
+  if [[ "$CLIENT_SERVICE_ACCOUNT" == kfa-test-client ]]; then
+    CLIENT_SERVICE_ACCOUNT="smoke-client-${STAMP}"
+    kubectl -n "$CLIENT_NAMESPACE" create serviceaccount "$CLIENT_SERVICE_ACCOUNT" >/dev/null
+    CLIENT_CREATED=1
+  fi
+  CLIENT_TOKEN="$(kubectl -n "$CLIENT_NAMESPACE" create token "$CLIENT_SERVICE_ACCOUNT" --duration=10m)"
+fi
+[[ -n "$CLIENT_TOKEN" ]] || fail "set TENANT_SERVICEACCOUNT_TOKEN or run with CHECK_K8S=1"
 
 health="$(json "$BASE_URL/health")"
 [[ "$(jq -r .status <<<"$health")" == ok ]] || fail "health: $health"
@@ -54,29 +70,34 @@ unauth_status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "$BASE_UR
 [[ "$unauth_status" == 401 ]] || fail "unauthenticated request returned $unauth_status"
 
 created="$(json -X POST "$BASE_URL/admin/tenants" \
-  -H "X-Tenant-Server-Admin-Token: $ADMIN_TOKEN" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H 'Content-Type: application/json' \
-  -d "{\"tenant_id\":\"$TENANT_ID\",\"max_concurrent_sandboxes\":1}")"
-TENANT_KEY="$(jq -r .tenant_key <<<"$created")"
-[[ -n "$TENANT_KEY" && "$TENANT_KEY" != null ]] || fail "tenant creation: $created"
+  -d "{\"tenant_id\":\"$TENANT_ID\",\"cluster_name\":\"local-cluster\",\"namespace\":\"$CLIENT_NAMESPACE\",\"service_account\":\"$CLIENT_SERVICE_ACCOUNT\",\"max_concurrent_sandboxes\":1}")"
+[[ "$(jq -r .service_account <<<"$created")" == "$CLIENT_SERVICE_ACCOUNT" ]] || fail "tenant creation: $created"
 CREATED=1
 
-listed="$(json -H "X-Tenant-Server-Admin-Token: $ADMIN_TOKEN" "$BASE_URL/admin/tenants")"
+listed="$(json -H "Authorization: Bearer $ADMIN_TOKEN" "$BASE_URL/admin/tenants")"
 jq -e --arg id "$TENANT_ID" 'any(.[]; .tenant_id == $id)' <<<"$listed" >/dev/null || fail "tenant missing from admin list"
 
 snapshot_status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 \
-  -H "Authorization: Bearer $TENANT_KEY" "$BASE_URL/v1/snapshots")"
+  -H "Authorization: Bearer $CLIENT_TOKEN" "$BASE_URL/v1/snapshots")"
 [[ "$snapshot_status" == 404 ]] || fail "snapshot route returned $snapshot_status"
+
+# `/v1/snapshots` is rejected before authentication by design. Exercise an
+# authenticated allowlisted route separately; upstream availability is not
+# part of this smoke test, so 200/4xx/502 are all acceptable here.
+curl -sS -o /dev/null --max-time 15 \
+  -H "Authorization: Bearer $CLIENT_TOKEN" "$BASE_URL/v1/sandboxes" || true
 
 metrics_after="$(json "$BASE_URL/metrics")"
 grep -q "tenant=\"$TENANT_ID\"" <<<"$metrics_after" || fail "tenant label missing from metrics"
 
-disabled="$(json -X DELETE -H "X-Tenant-Server-Admin-Token: $ADMIN_TOKEN" \
+disabled="$(json -X DELETE -H "Authorization: Bearer $ADMIN_TOKEN" \
   "$BASE_URL/admin/tenants/$TENANT_ID")"
 [[ "$(jq -r .enabled <<<"$disabled")" == false ]] || fail "tenant disable: $disabled"
 
 disabled_status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 \
-  -H "Authorization: Bearer $TENANT_KEY" "$BASE_URL/v1/sandboxes")"
+  -H "Authorization: Bearer $CLIENT_TOKEN" "$BASE_URL/v1/sandboxes")"
 [[ "$disabled_status" == 401 || "$disabled_status" == 403 ]] || fail "disabled tenant returned $disabled_status"
 
 if [[ "$CHECK_PROMETHEUS" == 1 ]]; then

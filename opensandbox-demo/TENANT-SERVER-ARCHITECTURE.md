@@ -9,10 +9,10 @@ OpenSandbox Tenant Server 位於外部 client 與 OpenSandbox Server 之間，�
 ```text
 Client / Agent
      |
-     | tenant key
+     | Kubernetes ServiceAccount token
      v
 OpenSandbox Tenant Server ×3
-  - tenant authentication
+  - KFA TokenReview authentication
   - quota / scope
   - sandbox ownership
   - warm-pool claim
@@ -31,13 +31,17 @@ Warm Pool / Sandbox Pods
 OpenSandbox Server 只負責 sandbox lifecycle 與 runtime 操作；tenant identity、
 權限、配額與 audit context 由 Tenant Server 管理。
 
+Tenant Server 不自行簽發、解析或保存 tenant JWT/API key。它把 client 的
+ServiceAccount token 交給 KFA 驗證，再用 KFA 回傳的
+`cluster/namespace/serviceaccount` identity 對應 PostgreSQL tenant record。
+
 ## 2. Tenant Server 必須提供的效果
 
 ### Tenant isolation
 
-- 每個 tenant 使用自己的 tenant key。
-- Tenant Server 只儲存 tenant key 的 hash，不儲存明文 key。
-- API request 先解析 tenant，再執行 scope 與 quota 檢查。
+- 每個 tenant 對應一個或多個 Kubernetes ServiceAccount identity。
+- Tenant Server 透過 KFA 驗證 token，不儲存 client token、JWT 或 API key。
+- API request 先解析 KFA identity，再執行 scope 與 quota 檢查。
 - sandbox 建立後記錄 `sandbox_id -> tenant_id` ownership。
 - tenant 只能 list、command、upload、download、delete 自己的 sandbox。
 - OpenSandbox Server 的共同 server key 永遠不下發給 client。
@@ -58,10 +62,10 @@ response body、timeout 與 concurrency 上限，避免 Tenant Server 自身成�
 
 ## 3. End-to-end workflows
 
-### 3.1 Tenant onboarding 與 key rotation
+### 3.1 Tenant onboarding 與 identity mapping
 
 Tenant 建立和正常 sandbox request 是兩條不同的權限路徑。管理者只把 admin
-credential 提供給內部管理面；一般 tenant 永遠只使用自己的 bearer key。
+credential 提供給內部管理面；一般 client 使用自己的 ServiceAccount token。
 
 ```mermaid
 sequenceDiagram
@@ -70,13 +74,11 @@ sequenceDiagram
     participant DB as PostgreSQL
     participant Secret as Secret Manager
     Operator->>TS: POST /admin/tenants
-    TS->>DB: INSERT tenant + key_hash + scopes + quota
+    TS->>DB: INSERT tenant identity + scopes + quota
     DB-->>TS: committed
-    TS-->>Operator: tenant_key (shown once)
-    Operator->>Secret: store tenant_key
     Note over TS,DB: future replicas read the same state
-    Operator->>TS: disable or rotate tenant
-    TS->>DB: update enabled / key_hash / version
+    Operator->>TS: disable or update identity mapping
+    TS->>DB: update enabled / identity / version
     DB-->>TS: committed
     Note over TS: no Deployment restart; next request uses new state
 ```
@@ -89,8 +91,9 @@ sequenceDiagram
 ```text
 request
   |
-  +--> parse Bearer key
-  +--> hash key and load enabled tenant
+  +--> parse Bearer ServiceAccount token
+  +--> Tenant Server SA calls KFA TokenReview
+  +--> load enabled tenant by cluster/namespace/serviceaccount
   +--> resolve route -> required scope
   +--> check request size / rate / tenant quota
   +--> for sandbox ID: verify sandbox_ownership(tenant_id, sandbox_id)
@@ -214,35 +217,36 @@ constraint 與 lease version 提供。
 
 ## 4. DB 的責任
 
-Tenant Server 需要一個 durable state store。這個 DB 不只是存 tenant key，也應該保存
+Tenant Server 需要一個 durable state store。這個 DB 不保存 client credential，而是保存
 跨請求需要的 ownership、egress、quota 與 audit 狀態。
 
 ### Tenant
 
 ```text
 tenant_id
-key_hash
+cluster_name
+namespace
+service_account
 enabled
 scopes
 max_concurrent_sandboxes
 max_request_bytes
 created_at
 updated_at
-rotated_at
 display_name
-client_id
 last_authenticated_at
 status_reason
 ```
 
-`key_hash` 使用不可逆雜湊；新增 tenant 時只回傳一次明文 key。停用 tenant
-不需要重啟 Tenant Server，之後的新 request 立即被拒絕。
+`cluster_name`、`namespace`、`service_account` 組成 tenant identity。停用或
+變更 identity 不需要重啟 Tenant Server，之後的新 request 立即依照資料庫狀態
+被拒絕或重新映射。
 
-Tenant 的資料分成四類：身份（`tenant_id`、`display_name`、`client_id`）、
-credential 狀態（只有 `key_hash`、key version、rotation time，絕不保存明文 key）、
+Tenant 的資料分成四類：身份（`tenant_id`、`cluster_name`、`namespace`、`service_account`）、
+credential 狀態（由 KFA 與 Kubernetes ServiceAccount 管理，Tenant Server 不保存明文 token）、
 授權與資源限制（`scopes`、sandbox/concurrency、request/file bytes quota），以及
-營運狀態（enabled、建立/更新/最後驗證時間與停用原因）。明文 tenant key 只在
-建立或輪替時回傳一次，由呼叫端的 secret manager 保存。
+營運狀態（enabled、建立/更新/最後驗證時間與停用原因）。ServiceAccount token
+由 Kubernetes projected token 機制提供與輪替。
 
 ### Sandbox ownership
 
@@ -291,7 +295,7 @@ metadata
 ```
 
 建議記錄 tenant create、key rotate、sandbox claim/release、egress allow/revoke、
-quota rejection 與被拒絕的 API route，但不要將 tenant key、檔案內容或 command
+quota rejection 與被拒絕的 API route，但不要將 ServiceAccount token、檔案內容或 command
 secret 寫入 audit log。
 
 ## 5. Warm pool 與 egress 的整合
@@ -435,14 +439,14 @@ database 或使用 leader/locking 設計。
 
 ### Vault
 
-適合 production tenant credential、key rotation 與多副本 Tenant Server。Tenant Server 透過
+適合 production tenant identity 與多副本 Tenant Server。Tenant Server 透過
 Kubernetes auth 取得短期 Vault token，使用短 cache 讀取 tenant records；Vault
 資料變更不需要重啟 Tenant Server。
 
 ### ConfigMap
 
 適合 development 或唯讀設定快照。Tenant Server 可監看檔案變更並 reload，但不適合
-保存明文 tenant key，也不適合 ownership、egress grant 或高頻 audit state。
+保存 client token，也不適合 ownership、egress grant 或高頻 audit state。
 
 建議的演進順序：
 
@@ -464,12 +468,12 @@ SQLite + PVC
 
 ## 10. 重要安全原則
 
-1. tenant key 只顯示一次，遺失就 rotate，不提供明文查詢。
+1. Tenant identity 由 Kubernetes ServiceAccount 與 KFA 管理，不在 Tenant Server 產生或保存 key。
 2. egress reset 失敗時不得交付 warm-pool sandbox。
 3. 不讓外部 client 取得 Kubernetes API 權限。
 4. 任何 sandbox 操作都必須同時通過 tenant authentication 與 ownership check。
 5. Tenant Server DB、Prometheus 與 audit log 不應保存 command secret 或檔案內容。
-6. Production 應加入 TLS、rate limit、per-tenant quota、DB backup 與 key rotation。
+6. Production 應加入 TLS、rate limit、per-tenant quota、DB backup 與 ServiceAccount/KFA rotation。
 
 ## 11. 測試與驗收 workflow
 

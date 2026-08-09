@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -12,7 +15,7 @@ import (
 
 func testServer(upstream string, maxBody int64) *Server {
 	return &Server{
-		cfg:        Config{Upstream: upstream, UpstreamKey: "upstream-secret", AdminToken: "admin-secret", MaxBody: maxBody},
+		cfg:        Config{Upstream: upstream, UpstreamKey: "upstream-secret", MaxBody: maxBody},
 		http:       &http.Client{},
 		active:     *prometheus.NewGaugeVec(prometheus.GaugeOpts{Name: "test_active"}, []string{"tenant"}),
 		requests:   prometheus.NewCounterVec(prometheus.CounterOpts{Name: "test_requests_total"}, []string{"tenant", "method", "route", "status"}),
@@ -46,13 +49,48 @@ func TestBearer(t *testing.T) {
 	}
 }
 
-func TestKeyFormatAndHash(t *testing.T) {
-	a, b := newKey(), newKey()
-	if a == b || !strings.HasPrefix(a, "osb_tenant_") || len(a) != 54 {
-		t.Fatalf("unexpected generated keys: %q %q", a, b)
+func TestIdentityKey(t *testing.T) {
+	got := identityKey(Identity{ClusterName: "local-cluster", Namespace: "team-a", ServiceAccount: "runner"})
+	if got != "local-cluster/team-a/runner" {
+		t.Fatalf("identityKey() = %q", got)
 	}
-	if sha(a) == sha(b) || len(sha(a)) != 64 {
-		t.Fatal("key hash is not deterministic and one-way shaped")
+}
+
+func TestVerifyWithKFA(t *testing.T) {
+	tokenFile, err := os.CreateTemp(t.TempDir(), "sa-token")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tokenFile.WriteString("tenant-server-sa-token"); err != nil {
+		t.Fatal(err)
+	}
+	_ = tokenFile.Close()
+	kfa := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost || r.URL.Path != "/apis/authentication.k8s.io/v1/tokenreviews" {
+			t.Fatalf("unexpected KFA request: %s %s", r.Method, r.URL.Path)
+		}
+		if got := r.Header.Get("Authorization"); got != "Bearer tenant-server-sa-token" {
+			t.Fatalf("KFA caller credential = %q", got)
+		}
+		json.NewEncoder(w).Encode(map[string]any{"status": map[string]any{
+			"authenticated": true,
+			"user": map[string]any{
+				"username": "system:serviceaccount:kfa-test:kfa-test-client",
+				"extra":    map[string][]string{"authentication.kubernetes.io/cluster-name": {"local-cluster"}},
+			},
+		}})
+	}))
+	defer kfa.Close()
+	s := testServer("http://unused", 1024)
+	s.cfg.KFAURL = kfa.URL
+	s.cfg.KFATokenPath = tokenFile.Name()
+	s.http = kfa.Client()
+	identity, err := s.verifyWithKFA(context.Background(), "client-token")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if identity != (Identity{ClusterName: "local-cluster", Namespace: "kfa-test", ServiceAccount: "kfa-test-client"}) {
+		t.Fatalf("identity = %+v", identity)
 	}
 }
 

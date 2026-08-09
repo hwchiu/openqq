@@ -72,7 +72,9 @@ data:
     # have been reviewed separately.
     authorized_clients:
       - "local-cluster/opensandbox-tenant-server/opensandbox-tenant-server"
-      - "local-cluster/kfa-test/kfa-test-client"
+      # Test-only wildcard so the repeatable smoke test can create a fresh
+      # disposable ServiceAccount on every run.
+      - "local-cluster/kfa-test/*"
     cache:
       ttl: 30
       negative_ttl: 10
@@ -101,7 +103,7 @@ spec:
   ports:
   - name: http
     port: 8080
-    targetPort: 8080
+    targetPort: 18082
     nodePort: 30082
 ---
 apiVersion: apps/v1
@@ -138,9 +140,11 @@ spec:
         env:
         - name: CONFIG_PATH
           value: /etc/kube-federated-auth/clusters.yaml
+        - name: PORT
+          value: "18082"
         ports:
         - name: http
-          containerPort: 8080
+          containerPort: 18082
         volumeMounts:
         - name: config
           mountPath: /etc/kube-federated-auth
