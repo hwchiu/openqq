@@ -34,6 +34,7 @@ type Config struct {
 	EgressAllowedFQDNs                                      map[string]struct{}
 	EgressBaseline                                          []egressRule
 	UpstreamCreateTimeout                                   time.Duration
+	OwnerReconcileInterval, OwnerReconcileGrace             time.Duration
 	AdminIdentities                                         []string
 	MaxBody                                                 int64
 }
@@ -93,8 +94,9 @@ func (w *statusWriter) Write(p []byte) (int, error) {
 }
 
 var (
-	registry = prometheus.NewRegistry()
-	errQuota = errors.New("tenant sandbox quota exceeded")
+	registry             = prometheus.NewRegistry()
+	errQuota             = errors.New("tenant sandbox quota exceeded")
+	errOwnershipConflict = errors.New("sandbox ownership already belongs to another tenant")
 )
 
 type tenantContextKey struct{}
@@ -373,8 +375,14 @@ func (s *Server) bindPrincipal(ctx context.Context, tenantID string, identity Id
 	return err
 }
 func (s *Server) recordOwner(ctx context.Context, id, tenant string) error {
-	_, e := s.db.Exec(ctx, `INSERT INTO sandbox_owners(sandbox_id,tenant_id) VALUES($1,$2) ON CONFLICT(sandbox_id) DO UPDATE SET tenant_id=EXCLUDED.tenant_id,allocation_state='allocated',last_activity_at=CURRENT_TIMESTAMP`, id, tenant)
-	return e
+	tag, e := s.db.Exec(ctx, `INSERT INTO sandbox_owners(sandbox_id,tenant_id,allocation_state,released_at,last_error) VALUES($1,$2,'allocated',NULL,'') ON CONFLICT(sandbox_id) DO NOTHING`, id, tenant)
+	if e != nil {
+		return e
+	}
+	if tag.RowsAffected() != 1 {
+		return errOwnershipConflict
+	}
+	return nil
 }
 func (s *Server) owns(ctx context.Context, id, tenant string) bool {
 	var n int
@@ -387,8 +395,10 @@ func (s *Server) activeCount(ctx context.Context, tenant string) int {
 	return n
 }
 func (s *Server) removeOwner(ctx context.Context, id, tenant string) {
-	_, _ = s.db.Exec(ctx, `UPDATE sandbox_owners SET allocation_state='released',last_activity_at=CURRENT_TIMESTAMP WHERE sandbox_id=$1 AND tenant_id=$2 AND allocation_state='allocated'`, id, tenant)
-	s.active.WithLabelValues(tenant).Dec()
+	tag, _ := s.db.Exec(ctx, `UPDATE sandbox_owners SET allocation_state='released',released_at=CURRENT_TIMESTAMP,last_activity_at=CURRENT_TIMESTAMP WHERE sandbox_id=$1 AND tenant_id=$2 AND allocation_state='allocated'`, id, tenant)
+	if tag.RowsAffected() == 1 {
+		s.active.WithLabelValues(tenant).Dec()
+	}
 }
 
 func (s *Server) forward(w http.ResponseWriter, r *http.Request, path string, tenant *Tenant, required string) {
@@ -442,6 +452,165 @@ func (s *Server) forward(w http.ResponseWriter, r *http.Request, path string, te
 	}
 }
 
+func (s *Server) deleteUpstreamSandbox(ctx context.Context, id string) error {
+	requestCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(requestCtx, http.MethodDelete, s.cfg.Upstream+"/v1/sandboxes/"+url.PathEscape(id), nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("OPEN-SANDBOX-API-KEY", s.cfg.UpstreamKey)
+	resp, err := s.http.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("upstream delete returned HTTP %d", resp.StatusCode)
+	}
+	return nil
+}
+
+func filterSandboxPayload(payload any, owns func(string) bool) any {
+	filter := func(items []any) []any {
+		out := make([]any, 0, len(items))
+		for _, raw := range items {
+			if item, ok := raw.(map[string]any); ok {
+				if id, ok := item["id"].(string); ok && owns(id) {
+					out = append(out, item)
+				}
+			}
+		}
+		return out
+	}
+	switch value := payload.(type) {
+	case []any:
+		return filter(value)
+	case map[string]any:
+		if items, ok := value["items"].([]any); ok {
+			value["items"] = filter(items)
+		}
+		return value
+	default:
+		return payload
+	}
+}
+
+func sandboxIDs(payload any) map[string]struct{} {
+	ids := map[string]struct{}{}
+	add := func(items []any) {
+		for _, raw := range items {
+			if item, ok := raw.(map[string]any); ok {
+				if id, ok := item["id"].(string); ok && id != "" {
+					ids[id] = struct{}{}
+				}
+			}
+		}
+	}
+	switch value := payload.(type) {
+	case []any:
+		add(value)
+	case map[string]any:
+		if items, ok := value["items"].([]any); ok {
+			add(items)
+		}
+	}
+	return ids
+}
+
+func (s *Server) upstreamSandboxIDs(ctx context.Context) (map[string]struct{}, error) {
+	requestCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(requestCtx, http.MethodGet, s.cfg.Upstream+"/v1/sandboxes", nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("OPEN-SANDBOX-API-KEY", s.cfg.UpstreamKey)
+	resp, err := s.http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("upstream list returned HTTP %d", resp.StatusCode)
+	}
+	var payload any
+	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+		return nil, err
+	}
+	return sandboxIDs(payload), nil
+}
+
+func (s *Server) syncActiveMetrics(ctx context.Context) error {
+	rows, err := s.db.Query(ctx, `SELECT tenant_id,count(*) FROM sandbox_owners WHERE allocation_state='allocated' GROUP BY tenant_id`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var tenant string
+		var count int
+		if err := rows.Scan(&tenant, &count); err != nil {
+			return err
+		}
+		s.active.WithLabelValues(tenant).Set(float64(count))
+	}
+	return rows.Err()
+}
+
+func (s *Server) reconcileOwners(ctx context.Context) error {
+	ids, err := s.upstreamSandboxIDs(ctx)
+	if err != nil {
+		return err
+	}
+	grace := s.cfg.OwnerReconcileGrace
+	if grace <= 0 {
+		grace = time.Minute
+	}
+	rows, err := s.db.Query(ctx, `SELECT sandbox_id,tenant_id FROM sandbox_owners WHERE allocation_state='allocated' AND created_at < CURRENT_TIMESTAMP - $1::interval`, fmt.Sprintf("%d seconds", int(grace.Seconds())))
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id, tenant string
+		if err := rows.Scan(&id, &tenant); err != nil {
+			return err
+		}
+		if _, ok := ids[id]; ok {
+			continue
+		}
+		tag, err := s.db.Exec(ctx, `UPDATE sandbox_owners SET allocation_state='expired',released_at=CURRENT_TIMESTAMP,last_activity_at=CURRENT_TIMESTAMP,last_error='upstream sandbox no longer exists' WHERE sandbox_id=$1 AND allocation_state='allocated'`, id)
+		if err != nil {
+			return err
+		}
+		if tag.RowsAffected() == 1 {
+			s.active.WithLabelValues(tenant).Dec()
+			s.audit(ctx, "reconcile-"+id, tenant, "", "sandbox.expire", id, "succeeded", "upstream sandbox no longer exists")
+		}
+	}
+	return rows.Err()
+}
+
+func (s *Server) reconcileLoop(ctx context.Context) {
+	interval := s.cfg.OwnerReconcileInterval
+	if interval <= 0 {
+		interval = 30 * time.Second
+	}
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			if err := s.reconcileOwners(ctx); err != nil {
+				log.Printf("ownership reconciliation failed: %v", err)
+			}
+		}
+	}
+}
+
 func (s *Server) create(w http.ResponseWriter, r *http.Request) {
 	t := s.auth(w, r)
 	if t == nil || !t.scope(w, "sandbox:create") {
@@ -488,7 +657,14 @@ func (s *Server) create(w http.ResponseWriter, r *http.Request) {
 		}
 		if json.Unmarshal(data, &x) == nil && x.ID != "" {
 			if e = s.recordOwner(r.Context(), x.ID, t.ID); e != nil {
-				jsonWrite(w, 500, map[string]string{"detail": "ownership persistence failed"})
+				if cleanupErr := s.deleteUpstreamSandbox(r.Context(), x.ID); cleanupErr != nil {
+					log.Printf("sandbox ownership cleanup failed request=%s sandbox=%s: %v", requestID(r), x.ID, cleanupErr)
+				}
+				if errors.Is(e, errOwnershipConflict) {
+					jsonWrite(w, http.StatusConflict, map[string]string{"detail": "sandbox ownership claim conflict"})
+				} else {
+					jsonWrite(w, http.StatusServiceUnavailable, map[string]string{"detail": "ownership persistence failed"})
+				}
 				return
 			}
 			s.created.WithLabelValues(t.ID).Inc()
@@ -517,22 +693,12 @@ func (s *Server) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer resp.Body.Close()
-	var p map[string]any
+	var p any
 	if json.NewDecoder(resp.Body).Decode(&p) != nil {
 		jsonWrite(w, 502, map[string]string{"detail": "invalid upstream response"})
 		return
 	}
-	if items, ok := p["items"].([]any); ok {
-		out := items[:0]
-		for _, raw := range items {
-			if x, ok := raw.(map[string]any); ok {
-				if id, _ := x["id"].(string); s.owns(r.Context(), id, t.ID) {
-					out = append(out, x)
-				}
-			}
-		}
-		p["items"] = out
-	}
+	p = filterSandboxPayload(p, func(id string) bool { return s.owns(r.Context(), id, t.ID) })
 	jsonWrite(w, resp.StatusCode, p)
 }
 
@@ -897,9 +1063,11 @@ func main() {
 	if upstreamCreateTimeout <= 0 {
 		upstreamCreateTimeout = 180 * time.Second
 	}
+	ownerReconcileInterval, _ := time.ParseDuration(env("OWNER_RECONCILE_INTERVAL", "30s"))
+	ownerReconcileGrace, _ := time.ParseDuration(env("OWNER_RECONCILE_GRACE", "60s"))
 	egressPort, _ := strconv.Atoi(env("OPENSANDBOX_EGRESS_PORT", "18080"))
 	baselineTarget := env("OPENSANDBOX_EGRESS_BASELINE_FQDN", "opensandbox-server.opensandbox-system.svc.cluster.local")
-	cfg := Config{Upstream: strings.TrimRight(env("OPENSANDBOX_SERVER_URL", "http://opensandbox-server.opensandbox-system:8080"), "/"), UpstreamKey: os.Getenv("OPENSANDBOX_API_KEY"), DatabaseURL: os.Getenv("TENANT_SERVER_DATABASE_URL"), EgressResetTemplate: os.Getenv("EGRESS_RESET_URL_TEMPLATE"), KFAURL: strings.TrimRight(env("KFA_URL", "http://kube-federated-auth.kube-federated-auth.svc.cluster.local:8080"), "/"), KFATokenPath: env("KFA_TOKEN_PATH", "/var/run/secrets/kubernetes.io/serviceaccount/token"), KFATimeout: kfaTimeout, EgressPort: egressPort, EgressToken: os.Getenv("OPENSANDBOX_EGRESS_TOKEN"), EgressAllowedFQDNs: csvSet(os.Getenv("OPENSANDBOX_EGRESS_ALLOWED_FQDNS")), EgressBaseline: []egressRule{{Action: "allow", Target: baselineTarget}}, UpstreamCreateTimeout: upstreamCreateTimeout, AdminIdentities: strings.Split(env("TENANT_SERVER_ADMIN_IDENTITIES", "local-cluster/opensandbox-tenant-server/opensandbox-tenant-server"), ","), MaxBody: 50 * 1024 * 1024}
+	cfg := Config{Upstream: strings.TrimRight(env("OPENSANDBOX_SERVER_URL", "http://opensandbox-server.opensandbox-system:8080"), "/"), UpstreamKey: os.Getenv("OPENSANDBOX_API_KEY"), DatabaseURL: os.Getenv("TENANT_SERVER_DATABASE_URL"), EgressResetTemplate: os.Getenv("EGRESS_RESET_URL_TEMPLATE"), KFAURL: strings.TrimRight(env("KFA_URL", "http://kube-federated-auth.kube-federated-auth.svc.cluster.local:8080"), "/"), KFATokenPath: env("KFA_TOKEN_PATH", "/var/run/secrets/kubernetes.io/serviceaccount/token"), KFATimeout: kfaTimeout, EgressPort: egressPort, EgressToken: os.Getenv("OPENSANDBOX_EGRESS_TOKEN"), EgressAllowedFQDNs: csvSet(os.Getenv("OPENSANDBOX_EGRESS_ALLOWED_FQDNS")), EgressBaseline: []egressRule{{Action: "allow", Target: baselineTarget}}, UpstreamCreateTimeout: upstreamCreateTimeout, OwnerReconcileInterval: ownerReconcileInterval, OwnerReconcileGrace: ownerReconcileGrace, AdminIdentities: strings.Split(env("TENANT_SERVER_ADMIN_IDENTITIES", "local-cluster/opensandbox-tenant-server/opensandbox-tenant-server"), ","), MaxBody: 50 * 1024 * 1024}
 	if v, err := strconv.ParseInt(env("MAX_BODY_BYTES", strconv.FormatInt(cfg.MaxBody, 10)), 10, 64); err == nil {
 		cfg.MaxBody = v
 	}
@@ -918,6 +1086,10 @@ func main() {
 	if e = s.initDB(ctx); e != nil {
 		log.Fatal(e)
 	}
+	if e = s.syncActiveMetrics(ctx); e != nil {
+		log.Fatal(e)
+	}
+	go s.reconcileLoop(ctx)
 	listenAddr := env("LISTEN_ADDR", ":8080")
 	log.Printf("Go Tenant Server listening on %s with PostgreSQL", listenAddr)
 	log.Fatal(http.ListenAndServe(listenAddr, http.HandlerFunc(s.handler)))

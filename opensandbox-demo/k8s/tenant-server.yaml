@@ -81,6 +81,10 @@ spec:
           value: 10s
         - name: UPSTREAM_CREATE_TIMEOUT
           value: 180s
+        - name: OWNER_RECONCILE_INTERVAL
+          value: 30s
+        - name: OWNER_RECONCILE_GRACE
+          value: 60s
         - name: OPENSANDBOX_EGRESS_PORT
           value: "18080"
         - name: OPENSANDBOX_EGRESS_TOKEN

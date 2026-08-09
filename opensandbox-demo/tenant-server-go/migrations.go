@@ -100,6 +100,14 @@ CREATE TABLE IF NOT EXISTS audit_events(
 );
 CREATE INDEX IF NOT EXISTS audit_events_tenant_time_idx
   ON audit_events(tenant_id,created_at DESC);
+		`,
+	},
+	{
+		Version: 4,
+		Name:    "ownership lifecycle timestamps",
+		SQL: `
+ALTER TABLE sandbox_owners ADD COLUMN IF NOT EXISTS released_at TIMESTAMPTZ;
+ALTER TABLE sandbox_owners ADD COLUMN IF NOT EXISTS last_error TEXT NOT NULL DEFAULT '';
 `,
 	},
 }

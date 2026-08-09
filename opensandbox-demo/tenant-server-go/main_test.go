@@ -61,6 +61,32 @@ func TestIdentityKey(t *testing.T) {
 	}
 }
 
+func TestFilterSandboxPayloadSupportsArrayAndItemsEnvelope(t *testing.T) {
+	owned := map[string]bool{"owned": true}
+	owns := func(id string) bool { return owned[id] }
+	array := []any{map[string]any{"id": "owned"}, map[string]any{"id": "other"}}
+	filtered, ok := filterSandboxPayload(array, owns).([]any)
+	if !ok || len(filtered) != 1 || filtered[0].(map[string]any)["id"] != "owned" {
+		t.Fatalf("filtered array = %#v", filtered)
+	}
+	envelope := map[string]any{"items": array, "next": "cursor"}
+	filteredEnvelope, ok := filterSandboxPayload(envelope, owns).(map[string]any)
+	if !ok || len(filteredEnvelope["items"].([]any)) != 1 || filteredEnvelope["next"] != "cursor" {
+		t.Fatalf("filtered envelope = %#v", filteredEnvelope)
+	}
+}
+
+func TestSandboxIDsSupportsArrayAndItemsEnvelope(t *testing.T) {
+	got := sandboxIDs([]any{map[string]any{"id": "a"}, map[string]any{"id": ""}})
+	if _, ok := got["a"]; !ok || len(got) != 1 {
+		t.Fatalf("array IDs = %#v", got)
+	}
+	got = sandboxIDs(map[string]any{"items": []any{map[string]any{"id": "b"}}})
+	if _, ok := got["b"]; !ok || len(got) != 1 {
+		t.Fatalf("envelope IDs = %#v", got)
+	}
+}
+
 func TestVerifyWithKFA(t *testing.T) {
 	tokenFile, err := os.CreateTemp(t.TempDir(), "sa-token")
 	if err != nil {

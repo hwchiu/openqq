@@ -500,9 +500,13 @@ stateDiagram-v2
     quarantine --> quarantine: retry/backoff
 ```
 
-TTL worker 必須以 PostgreSQL row lock 或 lease version 搶工作；因此三個 Tenant Server
-replica 同時掃描 expired rows 時只有一個可以執行 release。所有 transition 都要有
-audit event，讓 operator 能分辨「正常 TTL 回收」與「因 egress reset 失敗而隔離」。
+Tenant Server 會以固定 interval 查詢 OpenSandbox 的完整 sandbox list；只有在 list
+成功、ownership row 超過 grace period 且 upstream 已沒有該 sandbox 時，才將 row
+從 `allocated` 原子更新為 `expired`。三個 replica 同時掃描時，`WHERE
+allocation_state='allocated'` 讓只有一個 replica 能更新該 row；list 失敗時不會
+釋放任何 ownership。所有 transition 都要有 audit event，讓 operator 能分辨
+「正常 TTL 回收」與「因 egress reset 失敗而隔離」。啟動時也會從 PostgreSQL
+重新同步 active gauge，避免 replica restart 造成 metrics 歸零或負值。
 
 ### 3.7 Multi-replica request 與資料流
 

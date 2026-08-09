@@ -92,13 +92,14 @@ and one-event SSE queue behavior:
 python3 -m unittest discover -s ../backend -p 'test_*.py'
 ```
 
-The PostgreSQL integration test is skipped unless `TEST_DATABASE_URL` is set.
-It verifies versioned migrations, KFA UID principal binding, idempotent
-migration startup, and concurrent quota reservations:
+The PostgreSQL integration tests are skipped unless `TEST_DATABASE_URL` is set.
+They verify versioned migrations, KFA UID principal binding, idempotent
+migration startup, concurrent quota reservations, ownership conflict
+protection, and TTL ownership reconciliation:
 
 ```bash
 TEST_DATABASE_URL=postgres://postgres:password@127.0.0.1:5432/tenant_test \
-go test -race -count=1 -run TestPostgresPrincipalAndQuotaIntegration ./...
+go test -race -count=1 -run 'TestPostgres(PrincipalAndQuota|OwnershipReconcile)Integration' ./...
 ```
 
 The reservation transaction locks the tenant row, counts allocated ownership

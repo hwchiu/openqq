@@ -360,6 +360,7 @@ Create a pooled sandbox directly:
 curl -X POST http://127.0.0.1:18080/v1/sandboxes \
   -H 'Content-Type: application/json' \
   -d '{
+    "image": {"uri": "python:3.12-slim"},
     "timeout": 180,
     "extensions": {"poolRef": "python-warm-pool"},
     "metadata": {"source": "manual-test"}
@@ -410,9 +411,12 @@ pooled pod survives one client's sandbox lifecycle and is reused by another
 client. When a browser simply disappears, the three-minute TTL releases the
 allocation; the next claim performs the safety reset. Therefore, a dynamic
 rule is not guaranteed to disappear immediately at TTL expiry in the current
-demo. If immediate cleanup independent of the backend is required, add an
-in-cluster controller that watches sandbox expiry/release and calls the
-sidecar reset API.
+demo. The Go Tenant Server has an independent ownership reconciler: it lists
+upstream sandboxes periodically and marks old DB ownership rows as `expired`
+when the upstream object is gone. This prevents TTL expiry from permanently
+consuming tenant quota, but it cannot reset a sidecar after the upstream object
+has already disappeared; claim-time baseline reset remains the required safety
+boundary for pooled pods.
 
 The OpenSandbox egress documentation also warns that a Pool-created pod must
 include its egress sidecar in the Pool template; a per-request lifecycle
@@ -497,6 +501,12 @@ opensandbox_tenant_server_egress_operations_total{tenant,method,result}
 `UPSTREAM_CREATE_TIMEOUT` defaults to 180 seconds and applies only to sandbox
 creation. Long-running command streams and downloads remain governed by the
 client connection rather than this create deadline.
+
+`OWNER_RECONCILE_INTERVAL` defaults to `30s` and
+`OWNER_RECONCILE_GRACE` defaults to `60s`. Every replica periodically lists
+OpenSandbox sandboxes; only an old ownership row missing from a successful
+upstream list is marked `expired`. This prevents an upstream TTL expiry from
+permanently consuming tenant quota. A failed list never releases ownership.
 
 For Vault mode, the tenant server authenticates with the Kubernetes auth method and
 uses a KV v2 tenant index plus one record per tenant. The cache is deliberately

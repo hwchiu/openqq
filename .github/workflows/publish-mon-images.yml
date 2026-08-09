@@ -7,6 +7,7 @@ on:
       - "opensandbox-demo/backend/**"
       - "opensandbox-demo/frontend/index.html"
       - "opensandbox-demo/tenant-server-go/**"
+      - "opensandbox-demo/tests/**"
       - "opensandbox-demo/k8s/**"
       - ".github/workflows/publish-mon-images.yml"
   workflow_dispatch:
