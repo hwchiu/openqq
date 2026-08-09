@@ -657,7 +657,10 @@ func (s *Server) create(w http.ResponseWriter, r *http.Request) {
 		}
 		if json.Unmarshal(data, &x) == nil && x.ID != "" {
 			if e = s.recordOwner(r.Context(), x.ID, t.ID); e != nil {
-				if cleanupErr := s.deleteUpstreamSandbox(r.Context(), x.ID); cleanupErr != nil {
+				cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 15*time.Second)
+				cleanupErr := s.deleteUpstreamSandbox(cleanupCtx, x.ID)
+				cleanupCancel()
+				if cleanupErr != nil {
 					log.Printf("sandbox ownership cleanup failed request=%s sandbox=%s: %v", requestID(r), x.ID, cleanupErr)
 				}
 				if errors.Is(e, errOwnershipConflict) {
