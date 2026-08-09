@@ -20,7 +20,7 @@
 - [ ] 說明 backend 持有 OpenSandbox credential，不將 Kubernetes credential 給 agent
 - [ ] 說明 OpenSandbox server、controller、warm pool、sandbox、execd 的責任
 - [ ] 加入完整架構圖：client → backend → OpenSandbox → pool/sandbox
-- [ ] 加入 egress gateway、CoreDNS 與 external FQDN 的資料流
+- [ ] 加入 egress policy、CoreDNS 與 external FQDN 的資料流
 - [ ] 清楚區分 Kubernetes API server 與 OpenSandbox API server
 - [ ] 說明 cluster 內部元件使用 private network
 

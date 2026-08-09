@@ -18,33 +18,40 @@ from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
 from pydantic import BaseModel, Field
 
+try:
+    import psycopg
+except ImportError:  # SQLite / ConfigMap / Vault development modes do not need psycopg.
+    psycopg = None
+
 
 UPSTREAM = os.getenv("OPENSANDBOX_SERVER_URL", "http://opensandbox-server.opensandbox-system.svc.cluster.local:8080").rstrip("/")
 UPSTREAM_KEY = os.getenv("OPENSANDBOX_API_KEY", "")
-ADMIN_TOKEN = os.getenv("GATEWAY_ADMIN_TOKEN", "")
+ADMIN_TOKEN = os.getenv("TENANT_SERVER_ADMIN_TOKEN", "")
 STORE_KIND = os.getenv("TENANT_STORE", "sqlite").lower()
-DB_PATH = os.getenv("GATEWAY_DB_PATH", "/data/gateway.db")
+DATABASE_URL = os.getenv("TENANT_SERVER_DATABASE_URL", "")
+STATE_STORE_KIND = os.getenv("TENANT_SERVER_STATE_STORE", STORE_KIND).lower()
+DB_PATH = os.getenv("TENANT_SERVER_DB_PATH", "/data/tenant server.db")
 CONFIG_PATH = os.getenv("TENANT_CONFIG_PATH", "/config/tenants.json")
 VAULT_ADDR = os.getenv("VAULT_ADDR", "").rstrip("/")
 VAULT_TOKEN = os.getenv("VAULT_TOKEN", "")
-VAULT_ROLE = os.getenv("VAULT_ROLE", "opensandbox-gateway")
+VAULT_ROLE = os.getenv("VAULT_ROLE", "opensandbox-tenant-server")
 VAULT_KV_MOUNT = os.getenv("VAULT_KV_MOUNT", "secret")
 VAULT_PREFIX = os.getenv("VAULT_PREFIX", "opensandbox/tenants")
 VAULT_CACHE_SECONDS = float(os.getenv("VAULT_CACHE_SECONDS", "5"))
 MAX_BODY_BYTES = int(os.getenv("MAX_BODY_BYTES", str(50 * 1024 * 1024)))
 DENIED_PATHS = ("/snapshots", "/snapshot")
 
-REQUESTS = Counter("opensandbox_gateway_requests_total", "Gateway requests", ["tenant", "method", "route", "status"])
-REQUEST_LATENCY = Histogram("opensandbox_gateway_request_duration_seconds", "Gateway request latency", ["tenant", "method", "route"])
-SANDBOX_CREATED = Counter("opensandbox_gateway_sandboxes_created_total", "Sandboxes created", ["tenant"])
-SANDBOX_DELETED = Counter("opensandbox_gateway_sandboxes_deleted_total", "Sandboxes deleted", ["tenant"])
-COMMANDS = Counter("opensandbox_gateway_commands_total", "Sandbox command requests", ["tenant"])
-UPLOADED = Counter("opensandbox_gateway_uploaded_bytes_total", "Request bytes accepted", ["tenant"])
-DOWNLOADED = Counter("opensandbox_gateway_downloaded_bytes_total", "Response bytes streamed", ["tenant"])
-ACTIVE = Gauge("opensandbox_gateway_active_sandboxes", "Active sandboxes owned by tenant", ["tenant"])
-QUOTA_REJECTED = Counter("opensandbox_gateway_quota_rejections_total", "Tenant quota rejections", ["tenant"])
+REQUESTS = Counter("opensandbox_tenant_server_requests_total", "Tenant Server requests", ["tenant", "method", "route", "status"])
+REQUEST_LATENCY = Histogram("opensandbox_tenant_server_request_duration_seconds", "Tenant Server request latency", ["tenant", "method", "route"])
+SANDBOX_CREATED = Counter("opensandbox_tenant_server_sandboxes_created_total", "Sandboxes created", ["tenant"])
+SANDBOX_DELETED = Counter("opensandbox_tenant_server_sandboxes_deleted_total", "Sandboxes deleted", ["tenant"])
+COMMANDS = Counter("opensandbox_tenant_server_commands_total", "Sandbox command requests", ["tenant"])
+UPLOADED = Counter("opensandbox_tenant_server_uploaded_bytes_total", "Request bytes accepted", ["tenant"])
+DOWNLOADED = Counter("opensandbox_tenant_server_downloaded_bytes_total", "Response bytes streamed", ["tenant"])
+ACTIVE = Gauge("opensandbox_tenant_server_active_sandboxes", "Active sandboxes owned by tenant", ["tenant"])
+QUOTA_REJECTED = Counter("opensandbox_tenant_server_quota_rejections_total", "Tenant quota rejections", ["tenant"])
 
-app = FastAPI(title="OpenSandbox Tenant Gateway", version="0.2.0")
+app = FastAPI(title="OpenSandbox Tenant Tenant Server", version="0.2.0")
 
 
 class TenantInput(BaseModel):
@@ -124,6 +131,64 @@ class SQLiteTenantStore(TenantStore):
             with closing(self._init()) as conn:
                 n = conn.execute("UPDATE tenants SET enabled=0 WHERE tenant_id=?", (tenant_id,)).rowcount
                 conn.commit(); return bool(n)
+        return await asyncio.to_thread(write)
+
+
+class PostgresTenantStore(TenantStore):
+    """Shared tenant store for horizontally scaled tenant server replicas."""
+    def _conn(self):
+        if not psycopg or not DATABASE_URL:
+            raise RuntimeError("psycopg and TENANT_SERVER_DATABASE_URL are required for postgres mode")
+        return psycopg.connect(DATABASE_URL)
+
+    def _init(self):
+        with self._conn() as conn:
+            conn.execute("""CREATE TABLE IF NOT EXISTS tenants (
+                tenant_id TEXT PRIMARY KEY, key_hash TEXT NOT NULL UNIQUE, scopes TEXT NOT NULL,
+                max_concurrent INTEGER NOT NULL, enabled BOOLEAN NOT NULL DEFAULT TRUE,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )""")
+            conn.commit()
+
+    async def get_by_key(self, raw_key: str) -> dict[str, Any] | None:
+        def read():
+            self._init()
+            with self._conn() as conn:
+                row = conn.execute("SELECT * FROM tenants WHERE key_hash=%s AND enabled=TRUE", (sha(raw_key),)).fetchone()
+                if not row: return None
+                columns = [d.name for d in conn.execute("SELECT * FROM tenants LIMIT 0").description]
+                item = dict(zip(columns, row)); item["scopes"] = item["scopes"].split(",")
+                return item
+        return await asyncio.to_thread(read)
+
+    async def create(self, data: dict[str, Any]) -> str:
+        raw = new_key()
+        def write():
+            self._init()
+            with self._conn() as conn:
+                conn.execute("INSERT INTO tenants(tenant_id,key_hash,scopes,max_concurrent) VALUES(%s,%s,%s,%s)", (data["tenant_id"], sha(raw), ",".join(sorted(set(data["scopes"]))), data["max_concurrent_sandboxes"]))
+                conn.commit()
+        try:
+            await asyncio.to_thread(write)
+        except Exception as exc:
+            if "duplicate key" in str(exc).lower(): raise HTTPException(409, "tenant already exists") from exc
+            raise
+        return raw
+
+    async def list(self) -> list[dict[str, Any]]:
+        def read():
+            self._init()
+            with self._conn() as conn:
+                rows = conn.execute("SELECT tenant_id,scopes,max_concurrent,enabled,created_at FROM tenants ORDER BY tenant_id").fetchall()
+                return [{"tenant_id": r[0], "scopes": r[1], "max_concurrent": r[2], "enabled": r[3], "created_at": r[4]} for r in rows]
+        return await asyncio.to_thread(read)
+
+    async def disable(self, tenant_id: str) -> bool:
+        def write():
+            self._init()
+            with self._conn() as conn:
+                cur = conn.execute("UPDATE tenants SET enabled=FALSE,updated_at=CURRENT_TIMESTAMP WHERE tenant_id=%s", (tenant_id,)); conn.commit(); return cur.rowcount > 0
         return await asyncio.to_thread(write)
 
 
@@ -215,6 +280,7 @@ class VaultTenantStore(TenantStore):
 def make_store() -> TenantStore:
     if STORE_KIND == "vault": return VaultTenantStore()
     if STORE_KIND == "configmap": return ConfigMapTenantStore()
+    if STORE_KIND == "postgres": return PostgresTenantStore()
     return SQLiteTenantStore()
 
 
@@ -222,37 +288,68 @@ store = make_store()
 
 
 def state_conn() -> sqlite3.Connection:
-    path = os.getenv("GATEWAY_STATE_DB_PATH", "/data/state.db")
+    path = os.getenv("TENANT_SERVER_STATE_DB_PATH", "/data/state.db")
     conn = sqlite3.connect(path, timeout=10)
     conn.execute("CREATE TABLE IF NOT EXISTS sandbox_owners (sandbox_id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)")
     conn.commit()
     return conn
 
 
+def pg_state_init():
+    if not psycopg or not DATABASE_URL: raise RuntimeError("Postgres state requires TENANT_SERVER_DATABASE_URL")
+    with psycopg.connect(DATABASE_URL) as conn:
+        conn.execute("""CREATE TABLE IF NOT EXISTS sandbox_owners (
+            sandbox_id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL,
+            allocation_state TEXT NOT NULL DEFAULT 'allocated',
+            created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            last_activity_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )"""); conn.commit()
+
+
 def record_sandbox(sandbox_id: str, tenant_id: str) -> None:
+    if STATE_STORE_KIND == "postgres":
+        pg_state_init()
+        with psycopg.connect(DATABASE_URL) as conn:
+            conn.execute("""INSERT INTO sandbox_owners(sandbox_id,tenant_id,allocation_state)
+                VALUES(%s,%s,'allocated') ON CONFLICT (sandbox_id) DO UPDATE SET tenant_id=EXCLUDED.tenant_id, allocation_state='allocated', last_activity_at=CURRENT_TIMESTAMP""", (sandbox_id, tenant_id)); conn.commit()
+        ACTIVE.labels(tenant_id).inc(); return
     with closing(state_conn()) as conn:
         conn.execute("INSERT OR REPLACE INTO sandbox_owners(sandbox_id,tenant_id) VALUES(?,?)", (sandbox_id, tenant_id)); conn.commit()
     ACTIVE.labels(tenant_id).inc()
 
 
 def owned_sandbox(sandbox_id: str, tenant_id: str) -> bool:
+    if STATE_STORE_KIND == "postgres":
+        pg_state_init()
+        with psycopg.connect(DATABASE_URL) as conn:
+            return conn.execute("SELECT 1 FROM sandbox_owners WHERE sandbox_id=%s AND tenant_id=%s AND allocation_state='allocated'", (sandbox_id, tenant_id)).fetchone() is not None
     with closing(state_conn()) as conn:
         return conn.execute("SELECT 1 FROM sandbox_owners WHERE sandbox_id=? AND tenant_id=?", (sandbox_id, tenant_id)).fetchone() is not None
 
 
 def remove_sandbox(sandbox_id: str, tenant_id: str) -> None:
+    if STATE_STORE_KIND == "postgres":
+        pg_state_init()
+        with psycopg.connect(DATABASE_URL) as conn:
+            cur = conn.execute("UPDATE sandbox_owners SET allocation_state='released',last_activity_at=CURRENT_TIMESTAMP WHERE sandbox_id=%s AND tenant_id=%s AND allocation_state='allocated'", (sandbox_id, tenant_id)); conn.commit()
+        if cur.rowcount: ACTIVE.labels(tenant_id).dec()
+        return
     with closing(state_conn()) as conn:
         removed = conn.execute("DELETE FROM sandbox_owners WHERE sandbox_id=? AND tenant_id=?", (sandbox_id, tenant_id)).rowcount; conn.commit()
     if removed: ACTIVE.labels(tenant_id).dec()
 
 
 def active_count(tenant_id: str) -> int:
+    if STATE_STORE_KIND == "postgres":
+        pg_state_init()
+        with psycopg.connect(DATABASE_URL) as conn:
+            return conn.execute("SELECT count(*) FROM sandbox_owners WHERE tenant_id=%s AND allocation_state='allocated'", (tenant_id,)).fetchone()[0]
     with closing(state_conn()) as conn:
         return conn.execute("SELECT count(*) FROM sandbox_owners WHERE tenant_id=?", (tenant_id,)).fetchone()[0]
 
 
 def admin_auth(value: str | None):
-    if not ADMIN_TOKEN or not value or not hmac.compare_digest(value, ADMIN_TOKEN): raise HTTPException(401, "gateway admin token required")
+    if not ADMIN_TOKEN or not value or not hmac.compare_digest(value, ADMIN_TOKEN): raise HTTPException(401, "tenant server admin token required")
 
 
 async def tenant_auth(authorization: str | None) -> dict[str, Any]:
@@ -313,14 +410,14 @@ async def limited_body(request: Request) -> AsyncIterator[bytes]:
     total = 0
     async for chunk in request.stream():
         total += len(chunk)
-        if total > MAX_BODY_BYTES: raise HTTPException(413, "request body exceeds gateway limit")
+        if total > MAX_BODY_BYTES: raise HTTPException(413, "request body exceeds tenant server limit")
         yield chunk
 
 
 async def proxy(request: Request, path: str, tenant: dict[str, Any], required_scope: str):
     scope(tenant, required_scope)
-    if denied(path): raise HTTPException(404, "API route is not exposed by tenant gateway")
-    if request.headers.get("content-length") and int(request.headers["content-length"]) > MAX_BODY_BYTES: raise HTTPException(413, "request body exceeds gateway limit")
+    if denied(path): raise HTTPException(404, "API route is not exposed by tenant server")
+    if request.headers.get("content-length") and int(request.headers["content-length"]) > MAX_BODY_BYTES: raise HTTPException(413, "request body exceeds tenant server limit")
     outbound = app.state.http.build_request(request.method, f"{UPSTREAM}/{path.lstrip('/')}", params=request.query_params, headers=forward_headers(request), content=limited_body(request))
     upstream = await app.state.http.send(outbound, stream=True)
 
@@ -342,6 +439,13 @@ async def proxy(request: Request, path: str, tenant: dict[str, Any], required_sc
 @app.on_event("startup")
 async def startup():
     app.state.http = httpx.AsyncClient(timeout=None)
+    if STORE_KIND == "postgres": store._init()
+    if STATE_STORE_KIND == "postgres": pg_state_init()
+    if STATE_STORE_KIND == "postgres":
+        with psycopg.connect(DATABASE_URL) as conn:
+            rows = conn.execute("SELECT tenant_id,count(*) FROM sandbox_owners WHERE allocation_state='allocated' GROUP BY tenant_id").fetchall()
+            for row in rows: ACTIVE.labels(row[0]).set(row[1])
+        return
     with closing(state_conn()) as conn:
         for row in conn.execute("SELECT tenant_id,count(*) AS n FROM sandbox_owners GROUP BY tenant_id"):
             ACTIVE.labels(row[0]).set(row[1])
@@ -361,19 +465,19 @@ async def metrics():
 
 
 @app.post("/admin/tenants")
-async def create_tenant(payload: TenantInput, x_gateway_admin_token: str | None = Header(default=None)):
-    admin_auth(x_gateway_admin_token); raw = await store.create(payload.model_dump())
+async def create_tenant(payload: TenantInput, x_tenant_server_admin_token: str | None = Header(default=None)):
+    admin_auth(x_tenant_server_admin_token); raw = await store.create(payload.model_dump())
     return {"tenant_id": payload.tenant_id, "tenant_key": raw, "warning": "shown once; store securely"}
 
 
 @app.get("/admin/tenants")
-async def list_tenants(x_gateway_admin_token: str | None = Header(default=None)):
-    admin_auth(x_gateway_admin_token); return await store.list()
+async def list_tenants(x_tenant_server_admin_token: str | None = Header(default=None)):
+    admin_auth(x_tenant_server_admin_token); return await store.list()
 
 
 @app.delete("/admin/tenants/{tenant_id}")
-async def disable_tenant(tenant_id: str, x_gateway_admin_token: str | None = Header(default=None)):
-    admin_auth(x_gateway_admin_token)
+async def disable_tenant(tenant_id: str, x_tenant_server_admin_token: str | None = Header(default=None)):
+    admin_auth(x_tenant_server_admin_token)
     if not await store.disable(tenant_id): raise HTTPException(404, "tenant not found")
     return {"tenant_id": tenant_id, "enabled": False}
 
@@ -438,4 +542,4 @@ async def sandbox_proxy(sandbox_id: str, port: int, path: str, request: Request,
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def deny_unknown(path: str):
-    return JSONResponse({"detail": "API route is not exposed by tenant gateway", "path": "/" + path}, status_code=404)
+    return JSONResponse({"detail": "API route is not exposed by tenant server", "path": "/" + path}, status_code=404)

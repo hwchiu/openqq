@@ -21,6 +21,9 @@ kubeconfig
 kubeconfig.raw
 *.kubeconfig
 
+# Tenant Server local build artifact
+opensandbox-demo/tenant-server-go/tenant-server-linux-amd64
+
 # Local comparison-matrix runner outputs
 /testing/results/latest/*
 !/testing/results/latest/README.md

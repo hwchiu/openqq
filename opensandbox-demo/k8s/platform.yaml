@@ -131,7 +131,7 @@ spec:
         command: ["opensandbox-server"]
         args: ["--config", "/etc/opensandbox/sandbox.toml"]
         env:
-        # Tenant authentication is enforced by opensandbox-tenant-gateway.
+        # Tenant authentication is enforced by opensandbox-tenant-server.
         # The server is ClusterIP-only and is not exposed directly.
         - name: OPENSANDBOX_INSECURE_SERVER
           value: "YES"

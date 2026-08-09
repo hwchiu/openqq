@@ -78,7 +78,7 @@
       "type": "timeseries",
       "title": "Tenant Requests / sec",
       "gridPos": {"h": 8, "w": 12, "x": 0, "y": 21},
-      "targets": [{"expr": "sum by (tenant) (rate(opensandbox_gateway_requests_total[5m]))", "legendFormat": "{{tenant}}", "refId": "A"}],
+      "targets": [{"expr": "sum by (tenant) (rate(opensandbox_tenant_server_requests_total[5m]))", "legendFormat": "{{tenant}}", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "reqps", "min": 0}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
     },
@@ -87,7 +87,7 @@
       "type": "timeseries",
       "title": "Tenant Sandbox Sessions",
       "gridPos": {"h": 8, "w": 12, "x": 12, "y": 21},
-      "targets": [{"expr": "sum by (tenant) (opensandbox_gateway_active_sandboxes)", "legendFormat": "{{tenant}}", "refId": "A"}, {"expr": "sum by (tenant) (rate(opensandbox_gateway_sandboxes_created_total[15m]))", "legendFormat": "{{tenant}} created/second", "refId": "B"}],
+      "targets": [{"expr": "sum by (tenant) (opensandbox_tenant_server_active_sandboxes)", "legendFormat": "{{tenant}}", "refId": "A"}, {"expr": "sum by (tenant) (rate(opensandbox_tenant_server_sandboxes_created_total[15m]))", "legendFormat": "{{tenant}} created/second", "refId": "B"}],
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
     },
@@ -96,7 +96,7 @@
       "type": "timeseries",
       "title": "Tenant Commands and Transfer",
       "gridPos": {"h": 8, "w": 12, "x": 0, "y": 29},
-      "targets": [{"expr": "sum by (tenant) (rate(opensandbox_gateway_commands_total[5m]))", "legendFormat": "{{tenant}} commands/s", "refId": "A"}, {"expr": "sum by (tenant) (rate(opensandbox_gateway_uploaded_bytes_total[5m]) + rate(opensandbox_gateway_downloaded_bytes_total[5m]))", "legendFormat": "{{tenant}} bytes/s", "refId": "B"}],
+      "targets": [{"expr": "sum by (tenant) (rate(opensandbox_tenant_server_commands_total[5m]))", "legendFormat": "{{tenant}} commands/s", "refId": "A"}, {"expr": "sum by (tenant) (rate(opensandbox_tenant_server_uploaded_bytes_total[5m]) + rate(opensandbox_tenant_server_downloaded_bytes_total[5m]))", "legendFormat": "{{tenant}} bytes/s", "refId": "B"}],
       "fieldConfig": {"defaults": {"unit": "Bps", "min": 0}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
     }
