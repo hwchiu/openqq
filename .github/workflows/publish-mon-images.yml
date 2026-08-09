@@ -34,6 +34,10 @@ jobs:
           python3 -m pip install --disable-pip-version-check -r opensandbox-demo/backend/requirements.txt
           python3 -m unittest discover -s opensandbox-demo/backend -p 'test_*.py'
 
+      - name: Validate repeatable test scripts
+        run: |
+          bash -n opensandbox-demo/tests/*.sh
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

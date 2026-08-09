@@ -63,6 +63,12 @@ egress-policy, or authentication change. A later integration suite should add a
 dedicated disposable sandbox namespace and cover create, command streaming, upload,
 download, ownership isolation, pool claim/release, TTL expiry, and egress reset.
 
+That sandbox-level suite is now available as
+`tenant-server-integration.sh`. Unlike the deployment smoke test, it creates
+one disposable pooled sandbox and verifies command execution, upload,
+download, and cleanup. Set `CHECK_EGRESS=1` to also exercise the Tenant Server
+egress boundary. Its exit trap deletes the sandbox and temporary tenant.
+
 The Go unit tests run without Kubernetes, PostgreSQL, or OpenSandbox:
 
 ```bash
