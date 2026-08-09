@@ -70,6 +70,13 @@ cd ../tenant-server-go
 go test -race -count=1 ./...
 ```
 
+The Demo Server unit tests cover FQDN validation, safe workspace filenames,
+and one-event SSE queue behavior:
+
+```bash
+python3 -m unittest discover -s ../backend -p 'test_*.py'
+```
+
 The PostgreSQL integration test is skipped unless `TEST_DATABASE_URL` is set.
 It verifies KFA UID principal binding and concurrent quota reservations:
 
