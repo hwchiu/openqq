@@ -1,0 +1,90 @@
+apiVersion: sandbox.opensandbox.io/v1alpha1
+kind: Pool
+metadata:
+  name: python-warm-pool
+  namespace: opensandbox
+  labels:
+    app.kubernetes.io/part-of: opensandbox
+    app.kubernetes.io/managed-by: opensandbox-demo
+spec:
+  capacitySpec:
+    bufferMin: 0
+    bufferMax: 0
+    poolMin: 10
+    poolMax: 30
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: opensandbox
+        purpose: opensandbox-warm-pool
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      terminationGracePeriodSeconds: 1
+      tolerations:
+      - operator: Exists
+      containers:
+      - name: sandbox
+        image: python:3.12-slim
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-c"]
+        args: ["mkdir -p /workspace && exec /opt/opensandbox/bootstrap.sh tail -f /dev/null"]
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: EXECD
+          value: /opt/opensandbox/execd
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        volumeMounts:
+        - name: opensandbox-bin
+          mountPath: /opt/opensandbox
+      - name: egress
+        image: opensandbox/egress:v1.1.5
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          capabilities:
+            add: ["NET_ADMIN"]
+        env:
+        - name: OPENSANDBOX_EGRESS_MODE
+          value: dns+nft
+        - name: OPENSANDBOX_EGRESS_HTTP_ADDR
+          value: ":18080"
+        - name: OPENSANDBOX_EGRESS_RULES
+          value: '{"defaultAction":"deny","egress":[{"action":"allow","target":"opensandbox-server.opensandbox-system.svc.cluster.local"}]}'
+        - name: OPENSANDBOX_EGRESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: opensandbox-egress-secret
+              key: token
+        ports:
+        - name: egress-api
+          containerPort: 18080
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      initContainers:
+      - name: execd-installer
+        image: opensandbox/execd:v1.0.21
+        command: ["/bin/sh", "-c"]
+        args:
+        - >-
+          cp ./execd /opt/opensandbox/execd &&
+          cp ./bootstrap.sh /opt/opensandbox/bootstrap.sh &&
+          chmod +x /opt/opensandbox/execd /opt/opensandbox/bootstrap.sh &&
+          (cp /usr/local/bin/bwrap /opt/opensandbox/bwrap && chmod +x /opt/opensandbox/bwrap || true)
+        volumeMounts:
+        - name: opensandbox-bin
+          mountPath: /opt/opensandbox
+      volumes:
+      - name: opensandbox-bin
+        emptyDir: {}

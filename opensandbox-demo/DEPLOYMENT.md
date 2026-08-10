@@ -119,26 +119,44 @@ brief workflow section and keep the complete architecture in the root page.
   storage class.
 - `kubectl` configured for the target cluster.
 
-Install the controller with the matching Helm release before applying
-`k8s/platform.yaml`:
+Install the official OpenSandbox all-in-one chart from a checkout of the
+OpenSandbox repository. This single chart installs the Controller, CRDs, and
+OpenSandbox Server; do not install a separate controller chart or apply a
+second flattened Server Deployment:
 
 ```bash
-helm upgrade --install opensandbox-controller \
-  https://github.com/opensandbox-group/OpenSandbox/releases/download/helm/opensandbox-controller/0.2.0/opensandbox-controller-0.2.0.tgz \
+git clone --depth=1 https://github.com/opensandbox-group/OpenSandbox.git /tmp/OpenSandbox
+helm dependency build /tmp/OpenSandbox/kubernetes/charts/opensandbox
+kubectl apply -f k8s/opensandbox-server-pvc.yaml
+helm upgrade --install opensandbox /tmp/OpenSandbox/kubernetes/charts/opensandbox \
   --namespace opensandbox-system \
-  --create-namespace
+  --create-namespace \
+  --values k8s/opensandbox-values.yaml
 ```
 
-Verify the CRDs:
+Verify the chart, CRDs, and Server:
 
 ```bash
+helm status opensandbox -n opensandbox-system
 kubectl api-resources | grep -E 'batchsandboxes|pools'
 kubectl get crd batchsandboxes.sandbox.opensandbox.io pools.sandbox.opensandbox.io
+kubectl -n opensandbox-system get deployment opensandbox-controller opensandbox-server
+```
+
+The official chart installs the CRDs through the Controller sub-chart. The
+environment-specific warm pool remains a separate resource and is applied
+after the chart:
+
+```bash
+kubectl apply -f k8s/opensandbox-pool.yaml
+kubectl -n opensandbox get pool python-warm-pool
 ```
 
 ## Server configuration
 
-The server is deployed by `k8s/platform.yaml` with:
+The server is deployed by the official chart with the values in
+`k8s/opensandbox-values.yaml` and the PVC in
+`k8s/opensandbox-server-pvc.yaml`:
 
 - internal `ClusterIP` service on port `8080`;
 - Kubernetes `BatchSandbox` provider;
@@ -264,21 +282,25 @@ helm upgrade --install tenant-postgresql bitnami/postgresql \
 The Tenant Server database Secret must then use the Bitnami Service DNS name:
 
 ```text
-postgresql://tenant_server:<tenant-password>@tenant-postgresql-postgresql.opensandbox-tenant-server.svc.cluster.local:5432/opensandbox_tenant_server
+postgresql://tenant_server:<tenant-password>@tenant-postgresql.opensandbox-tenant-server.svc.cluster.local:5432/opensandbox_tenant_server
 ```
 
 Run the PostgreSQL integration test and deployment smoke test before switching
 an existing Tenant Server from another database. Do not delete the old PVC
 until the migration has been explicitly accepted.
 
-First create the demo token and apply the platform resources:
+First create the demo token and apply the chart-managed platform resources:
 
 ```bash
 kubectl -n opensandbox-system create secret generic opensandbox-demo-secret \
   --from-literal=token='<long-random-demo-token>' \
   --dry-run=client -o yaml | kubectl apply -f -
 
-kubectl apply --validate=false -f k8s/platform.yaml
+kubectl apply --validate=false -f k8s/opensandbox-server-pvc.yaml
+helm upgrade --install opensandbox /tmp/OpenSandbox/kubernetes/charts/opensandbox \
+  --namespace opensandbox-system \
+  --values k8s/opensandbox-values.yaml
+kubectl apply --validate=false -f k8s/opensandbox-pool.yaml
 kubectl apply --validate=false -f k8s/tenant-server.yaml
 kubectl apply --validate=false -f k8s/tenant-server-alerts.yaml
 ```
