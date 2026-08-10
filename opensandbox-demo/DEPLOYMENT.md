@@ -152,6 +152,13 @@ kubectl apply -f k8s/opensandbox-pool.yaml
 kubectl -n opensandbox get pool python-warm-pool
 ```
 
+The tested chart release is `opensandbox-0.2.0` with the repository values
+file `k8s/opensandbox-values.yaml`. The values explicitly disable
+`controller.snapshot.containerdSocketPath` because the current `v0.2.0`
+controller image does not accept that legacy command-line flag. Keep this
+override when upgrading the chart until the upstream compatibility issue is
+resolved.
+
 ## Server configuration
 
 The server is deployed by the official chart with the values in

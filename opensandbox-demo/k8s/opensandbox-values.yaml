@@ -14,6 +14,9 @@ opensandbox-controller:
       enabled: false
     leaderElection:
       enabled: true
+    snapshot:
+      # v0.2.0 controller image no longer exposes this flag.
+      containerdSocketPath: ""
   crds:
     install: true
     keep: true
