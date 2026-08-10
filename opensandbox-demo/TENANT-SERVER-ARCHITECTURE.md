@@ -716,30 +716,29 @@ CPU、memory、Pod churn，應透過 `sandbox_id -> tenant_id` ownership mapping
 
 ## 8. Store 選擇
 
-### PostgreSQL HA
+### PostgreSQL（驗證環境）
 
-正式多副本架構使用 PostgreSQL HA，而不是三個互相獨立的 PostgreSQL Pod。
-建議使用 CloudNativePG 管理三個 PostgreSQL instances：一個 primary、兩個
-replicas，由 operator 提供 read-write Service、failover、replication 與各自的
-PVC。Tenant Server 永遠連線 operator 管理的 read-write Service，不直接連特定
-PostgreSQL Pod。
+目前先使用 Bitnami PostgreSQL Helm chart 的單副本模式，讓驗證環境保持
+簡單。PostgreSQL 使用一個 PVC，並透過 ClusterIP Service 提供穩定的 DNS
+名稱；Tenant Server 只連線 Service，不直接連線 Pod。
 
 ```text
 OpenSandbox Tenant Server ×3
           |
           v
-PostgreSQL read-write Service
+PostgreSQL ClusterIP Service
           |
-   PostgreSQL HA ×3
-   primary + 2 replicas
+   Bitnami PostgreSQL ×1
+          |
+        PVC ×1
 ```
 
 租戶與 ownership state 都必須寫入 PostgreSQL；Tenant Server 不依賴本地檔案或
 本地 PVC。資料庫故障轉移時，connection pool 應使用 retry/backoff 重新建立連線。
 
-目前環境已先部署 PostgreSQL shared state，正式 HA migration 應以 CloudNativePG
-Cluster resource 取代單一 PostgreSQL Deployment。CloudNativePG 官方也建議
-應用程式連接 operator 管理的 Service，而不是固定某個資料庫 instance。
+此模式適合目前的功能驗證，不提供自動 failover 或多副本 HA。未來若需要 HA，
+應另行設計資料庫 replication、backup、failover 與 restore 流程，不應在本驗證
+環境中混用多種 PostgreSQL operator。
 
 ### SQLite
 
@@ -812,5 +811,5 @@ egress grant、Pod 與檔案都已清理。
 - Go Tenant Server：[main.go](tenant-server-go/main.go)
 - Go module：[go.mod](tenant-server-go/go.mod)
 - immutable runtime image：[Dockerfile](tenant-server-go/Dockerfile)
-- PostgreSQL HA target：[postgres-ha.yaml](k8s/postgres-ha.yaml)
+- Bitnami PostgreSQL values：[postgresql-bitnami-values.yaml](k8s/postgresql-bitnami-values.yaml)
 - Tenant Server deployment：[tenant-server.yaml](k8s/tenant-server.yaml)

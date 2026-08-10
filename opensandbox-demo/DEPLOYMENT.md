@@ -242,6 +242,35 @@ source control.
 
 ## Deploy the server and pool
 
+For the validation environment, install one Bitnami PostgreSQL instance before
+starting the Tenant Server. This is a standalone database with one PVC; it is
+not an HA deployment:
+
+```bash
+kubectl -n opensandbox-tenant-server create secret generic \
+  opensandbox-tenant-server-postgres-auth \
+  --from-literal=postgres-password='<admin-password>' \
+  --from-literal=password='<tenant-password>' \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+helm upgrade --install tenant-postgresql bitnami/postgresql \
+  --namespace opensandbox-tenant-server \
+  --create-namespace \
+  --values k8s/postgresql-bitnami-values.yaml
+```
+
+The Tenant Server database Secret must then use the Bitnami Service DNS name:
+
+```text
+postgresql://tenant_server:<tenant-password>@tenant-postgresql-postgresql.opensandbox-tenant-server.svc.cluster.local:5432/opensandbox_tenant_server
+```
+
+Run the PostgreSQL integration test and deployment smoke test before switching
+an existing Tenant Server from another database. Do not delete the old PVC
+until the migration has been explicitly accepted.
+
 First create the demo token and apply the platform resources:
 
 ```bash
@@ -591,20 +620,15 @@ Prometheus `up{job="opensandbox-tenant-server"}` query.
 ### Current deployment verification
 
 The deployed Go Tenant Server runs in `opensandbox-tenant-server` with PostgreSQL mode
-enabled. There are three Ready replicas on the three nodes. PostgreSQL state is
-currently shared through the existing transitional single-instance Service and its
-PVC; the target production
-manifest is a three-instance CloudNativePG HA Cluster with its operator-managed
-read-write Service. The Tenant Server listens on Pod port `18080`; its Service
+enabled. There are three Ready replicas on the three nodes. The validation environment
+uses one Bitnami PostgreSQL instance, one PVC, and a ClusterIP Service. This is a
+deliberately simple non-HA setup; the Tenant Server listens on Pod port `18080`; its Service
 provides internal ClusterIP/DNS routing and NodePort `30081` remains only for
 private lab validation. OpenSandbox Server remains ClusterIP-only.
 
 The Go Tenant Server migration is complete and currently has three Ready replicas.
-The CloudNativePG operator and `opensandbox-postgres-ha` Cluster manifest are
-also installed, but the HA Cluster is not yet Ready because the cluster's
-cross-node Cilium datapath prevents the operator from retrieving instance
-status. Do not remove the transitional PostgreSQL instance until the HA
-Cluster reports `READY=3`; otherwise the Tenant Server would lose its database.
+Do not remove the PostgreSQL PVC or change the database Secret without first
+running the PostgreSQL integration test and deployment smoke test.
 
 Verified after deployment:
 

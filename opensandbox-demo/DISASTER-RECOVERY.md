@@ -14,7 +14,7 @@ RTO: maximum time to restore Tenant Server admission
 ```
 
 The minimum recommended starting target is RPO 15 minutes and RTO 30 minutes,
-but the actual target depends on the CloudNativePG backup destination and
+but the actual target depends on the Bitnami PostgreSQL backup destination and
 whether OpenSandbox sandboxes are disposable.
 
 ## What is authoritative
@@ -34,8 +34,8 @@ Restore them independently from their PVC or remote metric storage.
 
 ## Normal backup requirements
 
-CloudNativePG must be configured with a durable object-store destination before
-the HA Cluster is considered production-ready. The destination must support:
+Bitnami PostgreSQL must have a tested, durable object-store backup destination
+before the environment is considered production-ready. The destination must support:
 
 - encrypted base backups;
 - WAL archiving / point-in-time recovery;
@@ -47,32 +47,25 @@ Do not treat a PostgreSQL PVC snapshot as the only backup. A PVC failure,
 operator mistake, or cluster-wide loss can remove both the primary and local
 replicas.
 
-The repository provides a template overlay at
-`k8s/overlays/postgres-backup/`. It adds a CloudNativePG `barmanObjectStore`
-configuration and a 15-minute `ScheduledBackup`, but deliberately leaves the
-bucket, endpoint, and Secret values as placeholders. Render and review it
-before use:
+The current validation deployment uses a Bitnami PostgreSQL chart and does not
+install a PostgreSQL operator. Run `pg_dump` from a disposable client Pod or
+use the chart's backup mechanism; keep bucket, endpoint, and Secret values
+outside Git.
 
-```bash
-kubectl kustomize --load-restrictor=LoadRestrictionsNone \
-  k8s/overlays/postgres-backup
-```
-
-Create `opensandbox-postgres-backup` through an external secret manager or a
-sealed Secret; never commit access keys. The overlay is not considered
+Create the backup credentials through an external secret manager or a sealed
+Secret; never commit access keys. The backup process is not considered
 production-ready until one completed backup and one restore exercise have
 been recorded.
 
 The operator should record evidence for every backup cycle:
 
 ```bash
-kubectl -n opensandbox-tenant-server get cluster opensandbox-postgres-ha
-kubectl -n opensandbox-tenant-server get backup
-kubectl -n opensandbox-tenant-server describe cluster opensandbox-postgres-ha
+kubectl -n opensandbox-tenant-server get pod,svc,pvc
+kubectl -n opensandbox-tenant-server get secret
 ```
 
-The backup is not accepted until the CloudNativePG status reports a completed
-backup and the object-store retention policy is verified.
+The backup is not accepted until a restore into a temporary Bitnami PostgreSQL
+instance has completed and the object-store retention policy is verified.
 
 ## Restore procedure
 
@@ -80,9 +73,9 @@ backup and the object-store retention policy is verified.
 2. Preserve diagnostics: Tenant Server logs, KFA logs, Kubernetes events,
    PostgreSQL status, and the last Prometheus snapshots.
 3. Identify the recovery timestamp or backup ID and record the chosen RPO.
-4. Restore PostgreSQL into a new temporary namespace/Cluster using the
-   CloudNativePG recovery configuration for the selected backup.
-5. Wait until all required instances are Ready and verify the restored schema:
+4. Restore PostgreSQL into a new temporary namespace using the Bitnami chart
+   and the selected dump or volume backup.
+5. Wait until the PostgreSQL Pod is Ready and verify the restored schema:
 
    ```sql
    SELECT version, name, applied_at
@@ -143,7 +136,8 @@ its username. The UID and cluster identity must match.
 
 ## Recovery acceptance criteria
 
-- CloudNativePG reports the intended recovery point and Ready instances.
+- The restored Bitnami PostgreSQL Pod is Ready and the intended recovery point
+  is recorded.
 - `schema_migrations` contains every required version exactly once.
 - Existing tenant IDs and enabled state match the incident-approved snapshot.
 - Principal UID mappings are present; no unexpected same-name principal is
@@ -156,5 +150,5 @@ its username. The UID and cluster identity must match.
 - No recovery step deleted unrelated tenants, sandboxes, or warm-pool Pods.
 
 The recovery exercise should be repeated at least quarterly and after every
-change to CloudNativePG, object-store credentials, schema migrations, or
+change to the Bitnami chart, object-store credentials, schema migrations, or
 Tenant Server ownership logic.

@@ -1,0 +1,21 @@
+# Values for the simple validation PostgreSQL deployment.
+# Create the referenced Secret before installing the Bitnami chart.
+#
+# Secret keys expected by the Bitnami chart:
+#   postgres-password: administrator password
+#   password: tenant_server password
+
+auth:
+  existingSecret: opensandbox-tenant-server-postgres-auth
+  database: opensandbox_tenant_server
+  username: tenant_server
+
+architecture: standalone
+
+primary:
+  persistence:
+    enabled: true
+    storageClass: local-path
+    size: 1Gi
+  service:
+    type: ClusterIP

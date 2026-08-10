@@ -124,10 +124,10 @@ It requires three replicas, a ClusterIP Service, normal Pod networking, and a
 PodDisruptionBudget, and rejects an accidental production NodePort or
 `hostNetwork` setting.
 
-The CloudNativePG backup overlay can be rendered without applying it:
+The PostgreSQL backup template can be rendered without applying it:
 
 ```bash
-./postgres-backup-render-smoke.sh
+./postgresql-bitnami-values-smoke.sh
 ```
 
 It intentionally contains bucket/endpoint placeholders and no credentials.
