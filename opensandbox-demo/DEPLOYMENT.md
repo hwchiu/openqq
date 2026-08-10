@@ -92,14 +92,15 @@ both application images to `hwchiu/mon` for `linux/amd64` (x86_64):
 
 | Image | Immutable tag | Deployment tag |
 | --- | --- | --- |
-| Tenant Server | `hwchiu/mon:tenant-server-<git-sha>` | `hwchiu/mon:tenant-server-latest` |
+| Tenant Server | `hwchiu/mon:tenant-server-<git-sha>` | `hwchiu/mon:tenant-server-pgx-5.9.0` |
 | Demo Server | `hwchiu/mon:demo-server-<git-sha>` | `hwchiu/mon:demo-server-latest` |
 
 The workflow requires the repository secrets `DOCKERHUB_USERNAME` and
 `DOCKERHUB_TOKEN`. The Tenant Server image cross-compiles the Go binary for
 amd64; the Demo Server image contains the FastAPI backend and its interactive
-runtime frontend. Kubernetes deployments use the `*-latest` tags for the
-test environment; production should pin the immutable SHA tags.
+runtime frontend. The `tenant-server-pgx-5.9.0` tag identifies the patched
+PostgreSQL driver version; production should still pin the immutable SHA tag
+when exact provenance is required.
 
 The repository-root `index.html` is the canonical GitHub Pages product
 architecture document. It contains the complete Tenant Server, KFA,

@@ -87,6 +87,7 @@ jobs:
           push: true
           tags: |
             ${{ env.REGISTRY_REPOSITORY }}:tenant-server-${{ github.sha }}
+            ${{ env.REGISTRY_REPOSITORY }}:tenant-server-pgx-5.9.0
             ${{ env.REGISTRY_REPOSITORY }}:tenant-server-latest
           labels: ${{ steps.meta.outputs.labels }}
 

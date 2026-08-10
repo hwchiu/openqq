@@ -52,7 +52,7 @@ spec:
             app.kubernetes.io/name: opensandbox-tenant-server
       containers:
       - name: tenant-server
-        image: hwchiu/mon:tenant-server-latest
+        image: hwchiu/mon:tenant-server-pgx-5.9.0
         imagePullPolicy: Always
         env:
         - name: OPENSANDBOX_SERVER_URL
