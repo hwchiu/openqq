@@ -65,6 +65,26 @@ The validated deployment uses:
 
 Use an accessible registry mirror if another cluster cannot pull these images.
 
+### CVE-2026-33815 and CVE-2026-33816
+
+The Tenant Server previously depended on `github.com/jackc/pgx/v5 v5.1.1`.
+Both CVE-2026-33815 and CVE-2026-33816 affect vulnerable `pgx/v5` protocol
+decoding paths before the fixed `v5.9.0` release. The remediation is now
+checked into the repository:
+
+| Control | Remediation |
+| --- | --- |
+| PostgreSQL driver | Pin `github.com/jackc/pgx/v5` to `v5.9.0` |
+| Go toolchain | Build and test with Go `1.25.x` |
+| Container build | `Dockerfile.registry` uses `golang:1.25-alpine` and still emits a `linux/amd64` image |
+| Regression guard | GitHub Actions rejects any pgx version other than `v5.9.0`, then runs race tests and `go vet` |
+
+After publishing a repaired image, roll out the immutable SHA tag (preferred)
+or restart the deployment using `tenant-server-latest`, and verify the running
+image digest. The security floor protects the Tenant Server's PostgreSQL
+protocol handling; it does not replace a full image/base-layer vulnerability
+scan or the normal PostgreSQL access controls.
+
 ## Docker Hub images and GitHub Actions
 
 The repository workflow `.github/workflows/publish-mon-images.yml` publishes

@@ -23,6 +23,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Go 1.25
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.x'
+          cache-dependency-path: opensandbox-demo/tenant-server-go/go.sum
+
+      - name: Verify pgx security floor
+        working-directory: opensandbox-demo/tenant-server-go
+        run: |
+          test "$(go list -m -f '{{.Version}}' github.com/jackc/pgx/v5)" = "v5.9.0"
+
       - name: Run Tenant Server unit and race tests
         working-directory: opensandbox-demo/tenant-server-go
         run: go test -race -count=1 ./...
