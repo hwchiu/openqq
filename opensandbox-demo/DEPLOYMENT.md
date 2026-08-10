@@ -39,11 +39,11 @@ files, executes commands through Execd, and proxies downloads.
 | Demo namespace | `opensandbox-system` |
 | Sandbox namespace | `opensandbox` |
 | Demo Service | `opensandbox-demo`, `NodePort 30080` |
-| OpenSandbox API Service | `opensandbox-server`, internal `ClusterIP:80` |
+| OpenSandbox API Service | chart default `ClusterIP:80`; lab compatibility `NodePort:30083` |
 | Server replicas | `1` |
 | Demo replicas | `1` |
-| Server state | SQLite on `opensandbox-server-data` |
-| Server PVC | `2Gi`, `ReadWriteOnce`, `azure-disk-premium` |
+| Server state | OpenSandbox/Kubernetes control-plane state |
+| Server PVC | None; official chart leaves Server volumes empty |
 | Sandbox timeout | `180` seconds in the demo backend |
 
 The public demo URL is provided by the cluster's public node address and
@@ -115,8 +115,6 @@ brief workflow section and keep the complete architecture in the root page.
 - Kubernetes cluster with a working CNI and enough capacity for the pool.
 - OpenSandbox Kubernetes controller installed, including `BatchSandbox` and
   `Pool` CRDs.
-- A storage class supporting `ReadWriteOnce` Azure Disk or an equivalent block
-  storage class.
 - `kubectl` configured for the target cluster.
 
 Install the official OpenSandbox all-in-one chart from a checkout of the
@@ -127,7 +125,6 @@ second flattened Server Deployment:
 ```bash
 git clone --depth=1 https://github.com/opensandbox-group/OpenSandbox.git /tmp/OpenSandbox
 helm dependency build /tmp/OpenSandbox/kubernetes/charts/opensandbox
-kubectl apply -f k8s/opensandbox-server-pvc.yaml
 helm upgrade --install opensandbox /tmp/OpenSandbox/kubernetes/charts/opensandbox \
   --namespace opensandbox-system \
   --create-namespace \
@@ -162,24 +159,23 @@ resolved.
 ## Server configuration
 
 The server is deployed by the official chart with the values in
-`k8s/opensandbox-values.yaml` and the PVC in
-`k8s/opensandbox-server-pvc.yaml`:
+`k8s/opensandbox-values.yaml`. The official chart does not mount a Server PVC:
 
 - internal `ClusterIP` service on port `80`;
 - Kubernetes `BatchSandbox` provider;
 - `opensandbox/execd:v1.0.21` as the Execd installer image;
-- SQLite state at `/data/opensandbox.db`;
-- a 2Gi `ReadWriteOnce` PVC;
-- `Recreate` deployment strategy.
+- no Server `volumeMounts` or `volumes`;
+- Server runtime state managed through the OpenSandbox/Kubernetes control plane.
 
-The `Recreate` strategy is required because the SQLite PVC is RWO. A normal
-rolling update can leave the old pod attached while the new pod is scheduled on
-another node, producing an Azure Disk `Multi-Attach` error. The tradeoff is a
-short server interruption during a server rollout.
+The previous flattened manifest mounted a 2Gi SQLite PVC at `/data`. That was
+not part of the official chart and has been removed from the Helm values and
+deployment instructions. Any old PVC with that name is an orphaned resource
+and is not used by the Helm-managed Server.
 
 The server currently uses `OPENSANDBOX_INSECURE_SERVER=YES`, but its Service is
-internal only. Do not expose this Service directly to the Internet without
-adding authentication and TLS.
+internal to the cluster by default. In this lab it is patched to NodePort
+`30083` only so the host-network Tenant Server can reach it through the known
+private node address; do not expose that port to the Internet.
 
 Tenant Server PostgreSQL schema changes are applied through the versioned
 `schema_migrations` table. The current migration set creates the tenant and
@@ -191,7 +187,8 @@ the migration chain with `TEST_DATABASE_URL`.
 The server ConfigMap also sets `max_sandbox_timeout_seconds=900`,
 `limit_concurrency=128`, `thread_pool_size=32`, Kubernetes
 `workload_provider=batchsandbox`, `image_pull_policy=IfNotPresent`, informer
-support, direct ingress mode, and SQLite storage at `/data/opensandbox.db`.
+support, and direct ingress mode; it does not configure persistent Server
+storage.
 
 Tenant Server is deployed separately by `k8s/tenant-server.yaml` with three
 replicas, a rolling update (`maxUnavailable=1`, compatible with exactly three
@@ -303,7 +300,6 @@ kubectl -n opensandbox-system create secret generic opensandbox-demo-secret \
   --from-literal=token='<long-random-demo-token>' \
   --dry-run=client -o yaml | kubectl apply -f -
 
-kubectl apply --validate=false -f k8s/opensandbox-server-pvc.yaml
 helm upgrade --install opensandbox /tmp/OpenSandbox/kubernetes/charts/opensandbox \
   --namespace opensandbox-system \
   --values k8s/opensandbox-values.yaml
@@ -513,7 +509,6 @@ must be collected through the existing monitoring stack.
 kubectl -n opensandbox-system get pods -o wide
 kubectl -n opensandbox get pool python-warm-pool
 kubectl -n opensandbox get pods -l purpose=opensandbox-warm-pool
-kubectl -n opensandbox-system get pvc opensandbox-server-data
 kubectl -n opensandbox-system rollout status deployment/opensandbox-server
 kubectl -n opensandbox-system rollout status deployment/opensandbox-demo
 ```
@@ -524,7 +519,7 @@ Expected steady state:
 opensandbox-server:       1/1 Running
 opensandbox-demo:         1/1 Running
 python-warm-pool:         total=10 available=10 allocated=0
-opensandbox-server-data:  Bound, 2Gi, RWO
+opensandbox-server:       no data PVC mounted
 ```
 
 ## Security and production gaps

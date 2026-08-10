@@ -39,13 +39,6 @@ opensandbox-server:
       limits:
         cpu: 500m
         memory: 1Gi
-    volumeMounts:
-    - name: data
-      mountPath: /data
-    volumes:
-    - name: data
-      persistentVolumeClaim:
-        claimName: opensandbox-server-data
   configToml: |
     [server]
     host = "0.0.0.0"

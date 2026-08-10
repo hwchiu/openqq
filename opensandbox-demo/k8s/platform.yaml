@@ -1,3 +1,7 @@
+# LEGACY FILE: OpenSandbox Controller, Server, and Pool are now managed by the
+# official Helm chart. Do not apply this file as a whole. Use the chart values
+# and the separate Pool manifest instead; this file is retained only for the
+# legacy demo resources below.
 apiVersion: v1
 kind: Namespace
 metadata:
